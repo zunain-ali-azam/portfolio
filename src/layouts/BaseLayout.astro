@@ -1,6 +1,7 @@
 ---
 import Header from '@/components/Header.astro';
 import Footer from '@/components/Footer.astro';
+import Analytics from '@vercel/analytics/astro';
 import '@/styles/global.css';
 
 interface Props {
@@ -74,6 +75,9 @@ const person = {
     <meta name="twitter:image" content={new URL(image, Astro.site)} />
 
     <script type="application/ld+json" set:html={JSON.stringify(person)} />
+
+    <!-- Vercel Web Analytics: cookieless page views, only reports on Vercel deployments -->
+    <Analytics />
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
