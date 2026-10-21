@@ -4,54 +4,49 @@ const problems = [
   {
     problem: 'Your app is stuck on an old framework version',
     proof: "I led Estenarh's migrations from Next.js 14 to 16 and Angular 14 to 17, improving scalability, maintainability and long-term stability.",
-    href: '/projects/estenarh',
-    linkLabel: 'See Estenarh',
+    links: [{ href: '/projects/estenarh', label: 'See Estenarh' }],
   },
   {
     problem: "Your site isn't showing up in search",
     proof: "I resolved technical SEO issues on Estenarh's marketing site to improve its search visibility.",
-    href: '/projects/estenarh',
-    linkLabel: 'See Estenarh',
+    links: [{ href: '/projects/estenarh', label: 'See Estenarh' }],
   },
   {
     problem: 'Your team still builds reports by hand',
     proof: 'I built dashboards tracking client acquisition, retention, bookings and revenue that replaced manual reporting and cut reporting effort by about 30–40%.',
-    href: '/projects/estenarh',
-    linkLabel: 'See Estenarh',
+    links: [{ href: '/projects/estenarh', label: 'See Estenarh' }],
   },
   {
     problem: 'You need to serve Arabic-speaking users',
-    proof: 'I implemented bilingual English and Arabic UI in AZM, with correct right-to-left and left-to-right layout switching throughout the app.',
-    href: '/projects/azm',
-    linkLabel: 'See AZM',
+    proof: "I implemented bilingual English and Arabic UI in AZM, with correct right-to-left and left-to-right layout switching throughout the app, and maintain Estenarh's English and Arabic marketing website.",
+    links: [{ href: '/projects/azm', label: 'See AZM' }, { href: '/projects/estenarh', label: 'See Estenarh' }],
   },
   {
     problem: 'Your product keeps breaking in production',
     proof: 'I fixed critical pricing, VAT and order-reporting bugs in AZM that were affecting production accuracy.',
-    href: '/projects/azm',
-    linkLabel: 'See AZM',
+    links: [{ href: '/projects/azm', label: 'See AZM' }],
   },
   {
     problem: 'You want to turn unstructured text into data',
     proof: 'I fine-tuned a BERT model that pulls medical entities out of clinical notes as structured JSON, reaching 96% accuracy, precision, recall and F1.',
-    href: '/projects/medical-ner',
-    linkLabel: 'See Medical NER',
+    links: [{ href: '/projects/medical-ner', label: 'See Medical NER' }],
   },
   {
     problem: 'You need a product built from scratch',
     proof: 'I co-founded Calyndrs and am building it as a product: event creation, RSVPs, payments and analytics, with Next.js, Nest.js and MongoDB, tested with Vitest and Playwright.',
-    href: '/projects/calyndrs',
-    linkLabel: 'See Calyndrs',
+    links: [{ href: '/projects/calyndrs', label: 'See Calyndrs' }],
   },
 ];
 ---
 
 <ul class="grid gap-x-12 sm:grid-cols-2">
-  {problems.map(({ problem, proof, href, linkLabel }) => (
+  {problems.map(({ problem, proof, links }) => (
     <li class="border-t border-rule py-7" data-reveal="rule">
       <h3 class="type-item">{problem}</h3>
       <p class="mt-3 text-ink/80 max-w-[52ch]">{proof}</p>
-      <a href={href} class="link mt-3 inline-block text-[15px]">{linkLabel}</a>
+      <p class="mt-3 flex flex-wrap gap-x-5 text-[15px]">
+        {links.map(({ href, label }) => <a href={href} class="link">{label}</a>)}
+      </p>
     </li>
   ))}
 </ul>
