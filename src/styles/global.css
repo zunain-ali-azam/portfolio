@@ -3,125 +3,200 @@
 @tailwind utilities;
 
 @layer base {
+  /* Design tokens: RGB channels so Tailwind can apply alpha (e.g. bg-ink/10).
+     Palette taken from Sindhi kashi tilework: cobalt and turquoise on white, indigo ink. */
   :root {
+    --paper: 243 245 248;
+    --ink: 27 35 64;
+    --mut: 86 96 120;
+    --rule: 214 220 232;
+    --tint: 232 236 243;
+    --accent: 31 63 191;
+    --on-accent: 255 255 255;
+    --now: 11 122 122;
+    color-scheme: light;
     scroll-behavior: smooth;
   }
 
+  .dark {
+    --paper: 14 20 40;
+    --ink: 228 233 243;
+    --mut: 150 160 184;
+    --rule: 40 50 82;
+    --tint: 22 30 58;
+    --accent: 143 166 255;
+    --on-accent: 14 20 40;
+    --now: 79 209 197;
+    color-scheme: dark;
+  }
+
   ::selection {
-    @apply bg-orange-400/30 text-orange-900 dark:text-orange-100;
+    background: rgb(var(--accent));
+    color: rgb(var(--on-accent));
   }
 
   body {
-    @apply bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans antialiased;
+    @apply bg-paper text-ink font-sans antialiased;
+    font-size: 17px;
+    line-height: 1.6;
   }
 
-  h1, h2, h3, h4 {
-    @apply font-heading;
+  :focus-visible {
+    outline: 2px solid rgb(var(--accent));
+    outline-offset: 3px;
+    border-radius: 4px;
   }
 
-  /* Subtle grain overlay */
-  body::after {
-    content: '';
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 9999;
-    opacity: 0.03;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");
-    background-repeat: repeat;
-    background-size: 200px 200px;
+  time,
+  .nums {
+    font-variant-numeric: tabular-nums;
   }
 }
 
 @layer components {
   .container {
-    @apply max-w-5xl mx-auto px-4 sm:px-6 lg:px-8;
+    @apply max-w-6xl mx-auto px-4 sm:px-6 lg:px-8;
   }
 
-  .text-gradient {
-    @apply bg-gradient-to-r from-orange-400 via-rose-400 to-pink-400 bg-clip-text text-transparent;
+  /* Hero statement: Readex Pro's hyper-expansion axis widened a little for presence */
+  .type-hero {
+    @apply text-[2.5rem] sm:text-6xl lg:text-[4.75rem];
+    font-weight: 600;
+    font-variation-settings: 'HEXP' 35;
+    letter-spacing: -0.04em;
+    line-height: 1.02;
   }
 
-  .card {
-    @apply bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl transition-all duration-300;
+  .type-page {
+    @apply text-[2.75rem] sm:text-6xl lg:text-7xl;
+    font-weight: 600;
+    font-variation-settings: 'HEXP' 40;
+    letter-spacing: -0.035em;
+    line-height: 1;
   }
 
-  .card:hover {
-    @apply border-orange-300/70 dark:border-orange-500/30 shadow-xl;
-    box-shadow: 0 8px 40px -8px rgba(249, 115, 22, 0.12);
+  .type-section {
+    @apply text-2xl sm:text-[2rem];
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    line-height: 1.15;
+  }
+
+  .type-item {
+    @apply text-xl sm:text-2xl;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+
+  .btn {
+    @apply inline-flex items-center gap-2 rounded-md px-4 py-2.5 text-[15px] font-medium border transition-colors duration-150;
   }
 
   .btn-primary {
-    @apply inline-flex items-center gap-2 px-5 py-2.5 bg-orange-500 hover:bg-orange-400 active:bg-orange-600 text-white rounded-xl font-medium text-sm transition-all duration-200;
-  }
-
-  .btn-primary:hover {
-    box-shadow: 0 0 22px -3px rgba(249, 115, 22, 0.5);
+    @apply btn bg-accent text-on-accent border-accent hover:bg-ink hover:border-ink hover:text-paper;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center gap-2 px-5 py-2.5 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 rounded-xl font-medium text-sm transition-all duration-200 border border-zinc-200 dark:border-zinc-700;
+    @apply btn border-ink/25 text-ink hover:border-ink;
   }
 
-  .tech-tag {
-    @apply inline-flex items-center px-2.5 py-1 text-xs font-mono font-medium bg-orange-500/5 dark:bg-orange-500/10 text-orange-700 dark:text-orange-300 rounded-lg border border-orange-500/15 dark:border-orange-500/20;
+  .link {
+    @apply underline decoration-accent/40 underline-offset-[0.22em] decoration-[1.5px] transition-colors hover:text-accent hover:decoration-accent;
   }
 
-  .section-label {
-    @apply text-xs font-mono uppercase tracking-widest text-orange-500 dark:text-orange-400 mb-3;
+  .bullets > li {
+    @apply relative ps-5 text-ink/85;
   }
-
-  .skill-pill {
-    @apply inline-flex items-center px-3.5 py-1.5 text-sm font-medium rounded-xl border
-           bg-white dark:bg-zinc-900
-           border-zinc-200 dark:border-zinc-700
-           text-zinc-700 dark:text-zinc-300
-           hover:border-orange-400 dark:hover:border-orange-500
-           hover:text-orange-600 dark:hover:text-orange-400
-           hover:bg-orange-50 dark:hover:bg-orange-500/10
-           transition-all duration-200 cursor-default;
+  .bullets > li::before {
+    content: '';
+    @apply absolute start-0 top-[0.7em] w-1.5 h-1.5 rounded-full bg-mut/60;
   }
 
   .form-input {
-    @apply w-full px-4 py-2.5 text-sm bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700 rounded-xl text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 outline-none transition-all duration-200;
+    @apply w-full rounded-md px-3 py-2.5 text-base bg-paper border border-rule text-ink placeholder:text-mut/70 outline-none transition-colors focus:border-accent;
   }
 
-  .form-input:focus {
-    @apply border-orange-400 dark:border-orange-500 ring-2 ring-orange-400/20 dark:ring-orange-500/20;
+  /* Long-form content (blog posts, project write-ups) */
+  .prose-site {
+    @apply prose max-w-none;
+  }
+
+  /* Higher specificity than the plugin's own defaults, so our tokens always win */
+  html .prose-site {
+    --tw-prose-body: rgb(var(--ink) / 0.86);
+    --tw-prose-headings: rgb(var(--ink));
+    --tw-prose-lead: rgb(var(--mut));
+    --tw-prose-links: rgb(var(--ink));
+    --tw-prose-bold: rgb(var(--ink));
+    --tw-prose-counters: rgb(var(--mut));
+    --tw-prose-bullets: rgb(var(--mut) / 0.7);
+    --tw-prose-hr: rgb(var(--rule));
+    --tw-prose-quotes: rgb(var(--ink));
+    --tw-prose-quote-borders: rgb(var(--accent));
+    --tw-prose-captions: rgb(var(--mut));
+    --tw-prose-code: rgb(var(--ink));
+    --tw-prose-pre-code: inherit;
+    --tw-prose-pre-bg: rgb(var(--tint));
+    --tw-prose-th-borders: rgb(var(--ink) / 0.4);
+    --tw-prose-td-borders: rgb(var(--rule));
+    font-size: 1.0625rem;
+    line-height: 1.7;
+  }
+
+  .prose-site :where(h2, h3, h4) {
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    scroll-margin-top: 5rem;
+  }
+
+  .prose-site a {
+    @apply link font-medium;
+  }
+
+  .prose-site :not(pre) > code {
+    @apply font-mono text-[0.86em] font-normal px-1.5 py-0.5 rounded bg-tint;
+  }
+  .prose-site :not(pre) > code::before,
+  .prose-site :not(pre) > code::after {
+    content: none;
+  }
+
+  .prose-site blockquote {
+    @apply not-italic font-normal;
+  }
+  .prose-site blockquote p::before,
+  .prose-site blockquote p::after {
+    content: none;
   }
 }
 
-/* Scroll-reveal — outside @layer to avoid Tailwind purge */
-[data-animate] {
-  opacity: 0;
-  transform: translateY(30px);
-  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+/* Code blocks: dual Shiki themes, framed with a language label */
+.astro-code {
+  @apply font-mono text-[13.5px] leading-relaxed;
+  background-color: rgb(var(--tint)) !important;
+  border-radius: 0 0 8px 8px !important;
+  padding: 1.1rem 1.25rem !important;
+}
+html.dark .astro-code span {
+  color: var(--shiki-dark) !important;
+}
+.code-frame {
+  @apply my-7;
+}
+.code-frame > .astro-code {
+  @apply my-0;
+}
+.code-frame-bar {
+  @apply flex items-center justify-between px-4 py-2 rounded-t-lg bg-tint border-b border-rule text-xs text-mut;
 }
 
-[data-animate].in-view {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-[data-animate-stagger] > * {
-  opacity: 0;
-  transform: translateY(22px);
-  transition: opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-[data-animate-stagger].in-view > *:nth-child(1) { opacity: 1; transform: none; transition-delay: 0ms; }
-[data-animate-stagger].in-view > *:nth-child(2) { opacity: 1; transform: none; transition-delay: 90ms; }
-[data-animate-stagger].in-view > *:nth-child(3) { opacity: 1; transform: none; transition-delay: 180ms; }
-[data-animate-stagger].in-view > *:nth-child(4) { opacity: 1; transform: none; transition-delay: 270ms; }
-[data-animate-stagger].in-view > *:nth-child(5) { opacity: 1; transform: none; transition-delay: 360ms; }
-[data-animate-stagger].in-view > *:nth-child(6) { opacity: 1; transform: none; transition-delay: 450ms; }
-
-@layer utilities {
-  .delay-100 { animation-delay: 100ms; }
-  .delay-200 { animation-delay: 200ms; }
-  .delay-300 { animation-delay: 300ms; }
-  .delay-400 { animation-delay: 400ms; }
-  .delay-500 { animation-delay: 500ms; }
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    scroll-behavior: auto;
+  }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

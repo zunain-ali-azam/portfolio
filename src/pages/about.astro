@@ -1,5 +1,7 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHeader from '@/components/PageHeader.astro';
+import Stack from '@/components/Stack.astro';
 
 const certifications = [
   {
@@ -27,94 +29,110 @@ const certifications = [
     url: 'https://www.udemy.com/certificate/UC-c26bd80f-ce34-4b3a-8739-2d29994e2e24/',
   },
 ];
+
+const activities = [
+  {
+    org: 'B17 Fund Initiative',
+    role: 'Volunteer',
+    period: 'Feb 2025 – Present',
+    detail: 'Conducting mock interviews, mentoring students, and supporting career-readiness programs.',
+  },
+  {
+    org: 'Google Developers Student Club — UOK',
+    role: 'Public Relations Lead',
+    period: 'Jan 2023 – Sep 2023',
+    detail: 'Led outreach and organised technical workshops engaging 250+ students, connecting them with mentorship and career opportunities.',
+  },
+];
 ---
 
 <BaseLayout
   title="About"
-  description="Learn more about Zunain Ali Azam — a Software Engineer with a focus on building scalable frontend applications using React, Angular, Next.js, and TypeScript."
+  description="Learn more about Zunain Ali Azam — a Software Engineer building scalable web applications across the frontend and backend with Next.js, Angular, Node.js, Nest.js, and TypeScript."
 >
-  <div class="container py-16 sm:py-24">
-    <div class="max-w-2xl">
-      <p class="section-label">About Me</p>
-      <h1 class="text-3xl sm:text-4xl font-bold tracking-tight mb-8">
-        Shipping scalable web products.
-      </h1>
+  <div class="container">
+    <PageHeader title="About" />
 
-      <div class="prose prose-zinc dark:prose-invert max-w-none mb-16
-                  prose-p:text-zinc-500 dark:prose-p:text-zinc-400
-                  prose-a:text-indigo-500 prose-a:no-underline hover:prose-a:underline">
+    <div class="grid gap-12 lg:grid-cols-[minmax(0,1fr)_18rem] lg:gap-20">
+      <div class="prose-site max-w-[64ch]">
+        <p class="!text-xl sm:!text-2xl !leading-snug !text-ink">
+          I'm Zunain Ali Azam, a Software Engineer based in Karachi, Pakistan, with nearly two years
+          of experience in frontend and full-stack web development.
+        </p>
         <p>
-          I'm Zunain Ali Azam, a Software Engineer based in Karachi, Pakistan. I specialize in
-          frontend architecture across React, Angular, and Next.js — building UIs that handle
-          real scale, real users, and real operational complexity.
+          I work across Next.js, Angular, Node.js, and Nest.js — building reusable UI architectures and
+          backend services, and backing them with unit, integration, and end-to-end tests, performance
+          work, technical SEO, and CI/CD-driven deployments.
         </p>
         <p>
           Currently at <a href="https://iomechs.com" target="_blank" rel="noopener">IOMechs</a>,
           I work across multiple live products: maintaining and evolving Admin dashboards on
           Estenarh (80,000+ users), building inventory and POS workflows on AZM, and stabilizing
-          the NowCutz platform. I've led Angular v14→v17 and Next.js v14→v16 migrations,
-          resolved technical SEO issues, and built analytical dashboards that replaced manual
-          reporting for client teams — cutting reporting effort by ~30–40%.
-        </p>
-        <p>
-          I also volunteer at the <strong>B17 Fund Initiative</strong>, conducting mock interviews
-          and mentoring students on career readiness. Previously, I led public relations for the
-          <strong>Google Developers Student Club</strong> at the University of Karachi, organizing
-          workshops that connected 250+ students with mentorship and career opportunities.
+          the NowCut platform. I've led Angular v14→v17 and Next.js v14→v16 migrations,
+          resolved technical SEO issues, delivered bilingual English/Arabic (LTR/RTL) interfaces, and
+          built analytical dashboards that replaced manual reporting for client teams — cutting
+          reporting effort by ~30–40%.
         </p>
       </div>
 
-      <!-- Education -->
-      <div class="mb-16">
-        <h2 class="text-xl font-bold mb-6 text-zinc-900 dark:text-zinc-100">Education</h2>
-        <div class="card px-5 py-4 flex items-center justify-between gap-4">
-          <div>
-            <p class="font-medium text-sm text-zinc-900 dark:text-zinc-100">Bachelor of Science in Computer Science</p>
-            <p class="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">University of Karachi &mdash; Karachi, Pakistan</p>
-          </div>
-          <span class="text-xs font-mono text-zinc-400 dark:text-zinc-500 shrink-0">2021 &ndash; 2024</span>
-        </div>
-      </div>
-
-      <!-- Certifications -->
-      <div class="mb-16">
-        <h2 class="text-xl font-bold mb-6 text-zinc-900 dark:text-zinc-100">Certifications</h2>
-        <div class="flex flex-col gap-3">
-          {certifications.map((cert) => (
-            <div class="card px-5 py-4 flex items-center justify-between gap-4">
-              <div>
-                <p class="font-medium text-sm text-zinc-900 dark:text-zinc-100">{cert.name}</p>
-                <p class="text-xs text-zinc-400 dark:text-zinc-500">{cert.issuer}</p>
-              </div>
-              <div class="flex items-center gap-3 shrink-0">
-                <span class="text-xs font-mono text-zinc-400 dark:text-zinc-500">{cert.year}</span>
-                {cert.url && (
-                  <a
-                    href={cert.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="text-zinc-400 hover:text-orange-500 dark:text-zinc-500 dark:hover:text-orange-400 transition-colors"
-                    aria-label={`Verify ${cert.name} certificate`}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                      <polyline points="15 3 21 3 21 9"/>
-                      <line x1="10" x2="21" y1="14" y2="3"/>
-                    </svg>
-                  </a>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <!-- CTA -->
-      <div class="flex flex-wrap gap-3">
-        <a href="/contact" class="btn-primary">Work With Me</a>
-        <a href="/experience" class="btn-secondary">View Experience</a>
-        <a href="/projects" class="btn-secondary">View Projects</a>
-      </div>
+      <aside class="self-start rounded-xl bg-tint p-6">
+        <dl class="space-y-4">
+          <div><dt class="text-sm text-mut">Based in</dt><dd>Karachi, Pakistan (UTC+5)</dd></div>
+          <div><dt class="text-sm text-mut">Working at</dt><dd>IOMechs</dd></div>
+          <div><dt class="text-sm text-mut">Availability</dt><dd class="inline-flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-now" aria-hidden="true"></span>Open to remote work and relocation</dd></div>
+        </dl>
+      </aside>
     </div>
+
+    <section class="mt-24">
+      <h2 class="type-section mb-6">What I work with</h2>
+      <Stack />
+    </section>
+
+    <section class="mt-20">
+      <h2 class="type-section mb-6">Education</h2>
+      <div class="border-t border-rule py-6 grid sm:grid-cols-[9rem_minmax(0,1fr)] gap-x-8 gap-y-1">
+        <p class="text-sm text-mut sm:pt-1"><time>2021</time> to <time>2024</time></p>
+        <div>
+          <p class="type-item">B.S. Computer Science</p>
+          <p class="mt-1 text-ink/80">University of Karachi</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="mt-20">
+      <h2 class="type-section mb-6">Certifications</h2>
+      <ul class="border-b border-rule">
+        {certifications.map((cert) => (
+          <li class="border-t border-rule py-5 grid grid-cols-[minmax(0,1fr)_auto] sm:grid-cols-[9rem_minmax(0,1fr)_auto] gap-x-8 gap-y-1 items-baseline">
+            <time class="hidden sm:block text-sm text-mut">{cert.year}</time>
+            <div>
+              <p class="font-medium">{cert.name}</p>
+              <p class="text-sm text-mut mt-0.5">{cert.issuer}<span class="sm:hidden">, {cert.year}</span></p>
+            </div>
+            {cert.url ? (
+              <a href={cert.url} target="_blank" rel="noopener noreferrer" class="link text-sm" aria-label={`Verify ${cert.name} certificate`}>
+                Verify
+              </a>
+            ) : <span />}
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <section class="mt-20">
+      <h2 class="type-section mb-6">Community</h2>
+      <ul class="border-b border-rule">
+        {activities.map((a) => (
+          <li class="border-t border-rule py-6 grid sm:grid-cols-[9rem_minmax(0,1fr)] gap-x-8 gap-y-1">
+            <p class="text-sm text-mut sm:pt-1">{a.period}</p>
+            <div>
+              <p class="type-item">{a.role}, {a.org}</p>
+              <p class="mt-2 text-ink/80 max-w-[62ch]">{a.detail}</p>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </section>
   </div>
 </BaseLayout>

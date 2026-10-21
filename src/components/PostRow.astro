@@ -1,0 +1,27 @@
+---
+import { shortDate } from '@/lib/format';
+
+interface Props {
+  title: string;
+  description: string;
+  date: Date;
+  slug: string;
+  minutes: number;
+}
+
+const { title, description, date, slug, minutes } = Astro.props;
+---
+
+<a
+  href={`/blog/${slug}`}
+  class="group grid gap-x-8 gap-y-1 py-6 border-t border-rule sm:grid-cols-[8.5rem_minmax(0,1fr)]"
+>
+  <p class="text-sm text-mut sm:pt-1.5">
+    <time datetime={date.toISOString()}>{shortDate(date)}</time>
+    <span class="sm:hidden">, </span><span class="sm:block">{minutes} min read</span>
+  </p>
+  <div class="min-w-0">
+    <h3 class="type-item group-hover:text-accent transition-colors">{title}</h3>
+    <p class="mt-2 text-ink/80 max-w-[62ch] line-clamp-2">{description}</p>
+  </div>
+</a>

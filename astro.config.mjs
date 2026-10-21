@@ -10,6 +10,11 @@ export default defineConfig({
     mdx(),
     sitemap(),
   ],
+  markdown: {
+    shikiConfig: {
+      themes: { light: 'vitesse-light', dark: 'vitesse-dark' },
+    },
+  },
   server: {
     host: true,
   },

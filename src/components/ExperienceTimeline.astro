@@ -6,71 +6,32 @@ interface Props {
 }
 
 const { preview = false } = Astro.props;
+const yearOf = (d: string) => d.split(' ').pop();
 ---
 
-<div data-animate-stagger>
-  {experience.map((job, i) => {
-    const isLast = i === experience.length - 1;
-    return (
-      <div class="flex gap-5 sm:gap-7">
-        <!-- Timeline spine -->
-        <div class="flex flex-col items-center shrink-0 pt-[5px]">
-          <div class={`w-3 h-3 rounded-full border-2 shrink-0 ${job.current ? 'border-orange-500 bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.5)]' : 'border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-950'}`}></div>
-          {!isLast && <div class="w-px grow bg-zinc-200 dark:bg-zinc-800 mt-2"></div>}
-        </div>
+<!-- A real sequence, so it gets a line: newest role first, current role marked in turquoise -->
+<ol class="relative border-s-2 border-rule ms-1.5">
+  {experience.map((job) => (
+    <li class="relative ps-7 sm:ps-10 pb-10 last:pb-0">
+      <span
+        class:list={[
+          'absolute -start-[9px] top-1.5 w-4 h-4 rounded-full border-[3px] border-paper',
+          job.current ? 'bg-now' : 'bg-mut/50',
+        ]}
+        aria-hidden="true"
+      ></span>
 
-        {preview ? (
-          <!-- Preview: compact row, no card border -->
-          <div class={`flex-1 min-w-0 ${isLast ? 'pb-0' : 'pb-6'}`}>
-            <div class="flex flex-wrap items-start justify-between gap-2 mb-1.5">
-              <div>
-                <h3 class="font-semibold text-sm text-zinc-900 dark:text-zinc-100">{job.role}</h3>
-                <p class="text-xs text-orange-500 dark:text-orange-400 mt-0.5">{job.company}</p>
-              </div>
-              <div class="flex items-center gap-2 shrink-0">
-                {job.current && (
-                  <span class="text-xs font-mono px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">Current</span>
-                )}
-                <span class="text-xs font-mono text-zinc-400 dark:text-zinc-500">{job.start} – {job.current ? 'Present' : job.end}</span>
-              </div>
-            </div>
-            <p class="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed line-clamp-2">{job.bullets[0]}</p>
-          </div>
-        ) : (
-          <!-- Full: card with all details -->
-          <div class={`card p-5 sm:p-6 flex-1 min-w-0 ${isLast ? 'mb-0' : 'mb-5'}`}>
-            <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
-              <div>
-                <h3 class="font-semibold text-zinc-900 dark:text-zinc-100">{job.role}</h3>
-                <p class="text-sm text-orange-500 dark:text-orange-400 mt-0.5">{job.company}</p>
-                <p class="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">{job.location}</p>
-              </div>
-              <div class="flex flex-col items-end gap-1.5 shrink-0 text-right">
-                {job.current && (
-                  <span class="text-xs font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">Current</span>
-                )}
-                <span class="text-xs font-mono text-zinc-400 dark:text-zinc-500">{job.start} – {job.current ? 'Present' : job.end}</span>
-                <span class="text-xs font-mono text-zinc-400 dark:text-zinc-500 opacity-70">{job.type}</span>
-              </div>
-            </div>
+      <p class="text-sm text-mut">
+        <time>{job.start}</time> to <time>{job.current ? 'now' : job.end}</time>{job.current && <span class="text-now font-medium">, current role</span>}
+      </p>
+      <h3 class="mt-1 type-item">{job.role}, {job.company}</h3>
+      <p class="mt-1 text-sm text-mut">{job.location}, {job.type.toLowerCase()}</p>
 
-            <ul class="space-y-2">
-              {job.bullets.map((b) => (
-                <li class="flex gap-2.5 text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                  <span class="text-orange-500 shrink-0 mt-0.5 text-xs">▸</span>
-                  <span>{b}</span>
-                </li>
-              ))}
-            </ul>
+      <ul class="bullets mt-4 space-y-2 max-w-[68ch]">
+        {(preview ? job.bullets.slice(0, 2) : job.bullets).map((b) => <li>{b}</li>)}
+      </ul>
 
-            <div class="flex flex-wrap gap-2 mt-4 pt-4 border-t border-zinc-100 dark:border-zinc-800/70">
-              {job.tech.map((t) => (
-                <span class="tech-tag">{t}</span>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  })}
-</div>
+      {!preview && <p class="mt-4 text-sm text-mut max-w-[68ch]">{job.tech.join(', ')}</p>}
+    </li>
+  ))}
+</ol>

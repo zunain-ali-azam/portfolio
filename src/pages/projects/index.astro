@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
-import ProjectCard from '@/components/ProjectCard.astro';
+import PageHeader from '@/components/PageHeader.astro';
+import ProjectRow from '@/components/ProjectRow.astro';
 import { getCollection } from 'astro:content';
 
 const allProjects = await getCollection('projects');
@@ -13,39 +14,33 @@ const categories = ['All', ...new Set(allProjects.flatMap((p) => p.data.category
   title="Projects"
   description="A collection of full-stack and frontend projects by Zunain Ali Azam — across SaaS platforms, telemedicine, EdTech, real estate, and on-demand services."
 >
-  <div class="container py-16 sm:py-24">
-    <p class="section-label">My Work</p>
-    <h1 class="text-3xl sm:text-4xl font-bold tracking-tight mb-4">Projects</h1>
-    <p class="text-zinc-500 dark:text-zinc-400 mb-12 max-w-xl">
-      A curated collection of things I've built — from event management SaaS and telemedicine platforms to EdTech tools and real estate apps.
-    </p>
+  <div class="container">
+    <PageHeader
+      title="Work"
+      intro="Production platforms I work on at IOMechs, and products I've built end to end, from event management and telemedicine to EdTech and real estate."
+    />
 
-    <!-- Filter buttons -->
-    <div class="flex flex-wrap gap-2 mb-10" id="filter-bar">
+    <div class="flex flex-wrap items-center gap-2" id="filter-bar" role="group" aria-label="Filter projects by type">
       {categories.map((cat) => (
         <button
-          class="filter-btn px-4 py-1.5 rounded-full text-sm font-medium border transition-colors
-                 border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400
-                 hover:border-orange-300 dark:hover:border-orange-700 hover:text-orange-600 dark:hover:text-orange-400"
+          type="button"
+          class="filter-btn rounded-md px-3 py-1.5 text-[15px] border border-rule text-ink hover:border-ink transition-colors aria-pressed:bg-ink aria-pressed:text-paper aria-pressed:border-ink"
           data-category={cat}
+          aria-pressed={cat === 'All' ? 'true' : 'false'}
         >
           {cat}
         </button>
       ))}
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="projects-grid">
+    <div class="mt-8 border-b border-rule" id="projects-list">
       {sorted.map((project) => (
         <div data-categories={project.data.category.join(',')}>
-          <ProjectCard
+          <ProjectRow
             title={project.data.title}
             description={project.data.description}
             tech={project.data.tech}
-            category={project.data.category}
-            github={project.data.github}
-            live={project.data.live}
             slug={project.slug}
-            featured={project.data.featured}
             yearCompleted={project.data.yearCompleted}
             image={project.data.image}
           />
@@ -56,40 +51,17 @@ const categories = ['All', ...new Set(allProjects.flatMap((p) => p.data.category
 </BaseLayout>
 
 <script>
-  const filterBar = document.getElementById('filter-bar');
-  const grid = document.getElementById('projects-grid');
-  const buttons = filterBar?.querySelectorAll('.filter-btn');
-  const cards = grid?.querySelectorAll('[data-categories]');
+  const buttons = document.querySelectorAll<HTMLButtonElement>('#filter-bar .filter-btn');
+  const rows = document.querySelectorAll<HTMLElement>('#projects-list [data-categories]');
 
-  let active = 'All';
-
-  const activeClass = ['bg-orange-600', 'text-white', 'border-orange-600', 'dark:border-orange-600'];
-  const inactiveClass = ['border-zinc-200', 'dark:border-zinc-800', 'text-zinc-500', 'dark:text-zinc-400'];
-
-  function setActive(btn: Element, category: string) {
-    active = category;
-    buttons?.forEach((b) => {
-      b.classList.remove(...activeClass);
-      b.classList.add(...inactiveClass);
-    });
-    btn.classList.remove(...inactiveClass);
-    btn.classList.add(...activeClass);
-
-    cards?.forEach((card) => {
-      const cats = (card as HTMLElement).dataset.categories?.split(',') ?? [];
-      const visible = active === 'All' || cats.includes(active);
-      (card as HTMLElement).style.display = visible ? '' : 'none';
-    });
-  }
-
-  buttons?.forEach((btn) => {
+  buttons.forEach((btn) => {
     btn.addEventListener('click', () => {
-      const cat = (btn as HTMLElement).dataset.category ?? 'All';
-      setActive(btn, cat);
+      const active = btn.dataset.category ?? 'All';
+      buttons.forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+      rows.forEach((row) => {
+        const cats = row.dataset.categories?.split(',') ?? [];
+        row.hidden = !(active === 'All' || cats.includes(active));
+      });
     });
   });
-
-  // Set "All" active on load
-  const allBtn = filterBar?.querySelector('[data-category="All"]');
-  if (allBtn) setActive(allBtn, 'All');
 </script>

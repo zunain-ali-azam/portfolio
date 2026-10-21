@@ -1,28 +1,11 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHeader from '@/components/PageHeader.astro';
 
 const contactLinks = [
-  {
-    label: 'Email',
-    value: 'zunainazam456@gmail.com',
-    href: 'mailto:zunainazam456@gmail.com',
-    description: 'Best for project inquiries and opportunities',
-    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>`,
-  },
-  {
-    label: 'LinkedIn',
-    value: 'linkedin.com/in/zunain-azam',
-    href: 'https://linkedin.com/in/zunain-azam',
-    description: 'Connect professionally',
-    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>`,
-  },
-  {
-    label: 'GitHub',
-    value: 'github.com/ZunainAliAzam',
-    href: 'https://github.com/ZunainAliAzam',
-    description: 'Browse my open source work',
-    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>`,
-  },
+  { label: 'Email',    value: 'zunainazam456@gmail.com',    href: 'mailto:zunainazam456@gmail.com' },
+  { label: 'LinkedIn', value: 'linkedin.com/in/zunain-azam', href: 'https://linkedin.com/in/zunain-azam' },
+  { label: 'GitHub',   value: 'github.com/ZunainAliAzam',    href: 'https://github.com/ZunainAliAzam' },
 ];
 ---
 
@@ -30,105 +13,68 @@ const contactLinks = [
   title="Contact"
   description="Get in touch with Zunain Ali Azam — open to new projects, collaboration, and opportunities."
 >
-  <div class="container py-16 sm:py-24">
-    <div class="max-w-xl">
-      <p class="section-label">Get in Touch</p>
-      <h1 class="text-3xl sm:text-4xl font-bold tracking-tight mb-4">Let's Talk</h1>
-      <p class="text-zinc-500 dark:text-zinc-400 mb-12 leading-relaxed">
-        Whether you have a project in mind, an opportunity to share, or just want to connect —
-        I'd love to hear from you. I typically respond within 24 hours.
-      </p>
+  <div class="container">
+    <PageHeader
+      title="Get in touch"
+      intro="Have a role to share, a project in mind, or a question about my work? I usually reply within a day."
+    />
 
-      <!-- Contact form -->
-      <form
-        action="https://formsubmit.co/zunainazam456@gmail.com"
-        method="POST"
-        class="card p-6 flex flex-col gap-4 mb-8"
-      >
+    <div class="grid gap-14 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-20">
+      <form action="https://formsubmit.co/zunainazam456@gmail.com" method="POST" class="flex flex-col gap-6 max-w-2xl">
         <input type="hidden" name="_subject" value="New message from portfolio" />
-        <input type="hidden" name="_next" value="https://zunainaliazam.vercel.app/sent" />
+        <input type="hidden" name="_next" value={new URL('/sent', Astro.site).toString()} />
         <input type="hidden" name="_template" value="table" />
-        <input type="text" name="_honey" style="display:none" />
+        <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off" />
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div class="flex flex-col gap-1.5">
-            <label for="name" class="text-xs font-medium text-zinc-500 dark:text-zinc-400">Name</label>
-            <input
-              id="name"
-              name="name"
-              type="text"
-              required
-              placeholder="Your name"
-              class="form-input"
-            />
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div class="flex flex-col gap-2">
+            <label for="name" class="font-medium">Name</label>
+            <input id="name" name="name" type="text" required autocomplete="name" class="form-input" />
           </div>
-          <div class="flex flex-col gap-1.5">
-            <label for="email" class="text-xs font-medium text-zinc-500 dark:text-zinc-400">Email</label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              required
-              placeholder="you@example.com"
-              class="form-input"
-            />
+          <div class="flex flex-col gap-2">
+            <label for="email" class="font-medium">Email</label>
+            <input id="email" name="email" type="email" required autocomplete="email" placeholder="you@company.com" class="form-input" />
           </div>
         </div>
 
-        <div class="flex flex-col gap-1.5">
-          <label for="message" class="text-xs font-medium text-zinc-500 dark:text-zinc-400">Message</label>
-          <textarea
-            id="message"
-            name="message"
-            required
-            rows="5"
-            placeholder="What's on your mind?"
-            class="form-input resize-none"
-          ></textarea>
+        <fieldset class="flex flex-col gap-3">
+          <legend class="font-medium">What's this about?</legend>
+          <div class="flex flex-wrap gap-x-6 gap-y-2">
+            {['Full-time role', 'Freelance project', 'Something else'].map((topic, i) => (
+              <label class="inline-flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="topic" value={topic} required={i === 0} class="w-4 h-4 accent-[rgb(var(--accent))]" />
+                {topic}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
+        <div class="flex flex-col gap-2">
+          <label for="message" class="font-medium">Message</label>
+          <textarea id="message" name="message" required rows="6" placeholder="What are you building, and where could I help?" class="form-input resize-y"></textarea>
         </div>
 
-        <button type="submit" class="btn-primary self-start">
-          Send Message
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M22 2 11 13"/><path d="M22 2 15 22 11 13 2 9l20-7z"/>
-          </svg>
-        </button>
+        <button type="submit" class="btn-primary self-start">Send message</button>
       </form>
 
-      <!-- Contact links -->
-      <div class="flex flex-col gap-3">
-        {contactLinks.map(({ label, value, href, description, icon }) => (
-          <a
-            href={href}
-            target={href.startsWith('mailto') ? '_self' : '_blank'}
-            rel="noopener noreferrer"
-            class="card p-5 flex items-center gap-4 group"
-          >
-            <div class="p-2.5 rounded-xl bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 shrink-0" set:html={icon} />
-            <div class="flex-1 min-w-0">
-              <p class="text-xs text-zinc-400 dark:text-zinc-500 font-medium mb-0.5">{label}</p>
-              <p class="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
+      <aside class="self-start">
+        <h2 class="font-medium">Or reach me directly</h2>
+        <ul class="mt-3 border-b border-rule">
+          {contactLinks.map(({ label, value, href }) => (
+            <li class="border-t border-rule py-4">
+              <p class="text-sm text-mut">{label}</p>
+              <a
+                href={href}
+                target={href.startsWith('mailto') ? undefined : '_blank'}
+                rel={href.startsWith('mailto') ? undefined : 'noopener noreferrer'}
+                class="link break-all"
+              >
                 {value}
-              </p>
-              <p class="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">{description}</p>
-            </div>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="text-zinc-300 dark:text-zinc-600 group-hover:text-orange-400 transition-colors shrink-0"
-            >
-              <path d="m9 18 6-6-6-6"/>
-            </svg>
-          </a>
-        ))}
-      </div>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </aside>
     </div>
   </div>
 </BaseLayout>

@@ -1,36 +1,28 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHeader from '@/components/PageHeader.astro';
 import ExperienceTimeline from '@/components/ExperienceTimeline.astro';
 ---
 
 <BaseLayout
   title="Experience"
-  description="Work history and career timeline for Zunain Ali Azam — Software Engineer specializing in React, Angular, Next.js, and TypeScript."
+  description="Work history for Zunain Ali Azam — Software Engineer working across frontend and full-stack web development with Next.js, Angular, Node.js, Nest.js, and TypeScript."
 >
-  <div class="container py-16 sm:py-24">
-    <div class="mb-12" data-animate>
-      <p class="section-label">Career</p>
-      <h1 class="text-3xl sm:text-4xl font-bold tracking-tight mb-3">Work Experience</h1>
-      <p class="text-zinc-500 dark:text-zinc-400 max-w-xl leading-relaxed">
-        A timeline of my professional journey — from internship to building products used by 80,000+ users.
-      </p>
-    </div>
+  <div class="container">
+    <PageHeader
+      title="Experience"
+      intro="From an internship building hiring flows to dashboards, framework migrations and bilingual platforms used by 80,000+ people."
+    />
 
     <ExperienceTimeline />
 
-    <div class="mt-14 flex flex-wrap gap-3" data-animate>
-      <a href="/contact" class="btn-primary">
-        Work with me
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M5 12h14M12 5l7 7-7 7"/>
-        </svg>
-      </a>
-      <a href="/resume" class="btn-secondary">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/>
-        </svg>
-        Download Resume
-      </a>
+    <p class="mt-14 text-ink/80">
+      Education: B.S. Computer Science, University of Karachi, 2021 to 2024.
+    </p>
+
+    <div class="mt-8 flex flex-wrap gap-3">
+      <a href="/contact" class="btn-primary">Get in touch</a>
+      <a href="/resume" class="btn-secondary">Resume (PDF)</a>
     </div>
   </div>
 </BaseLayout>

@@ -1,0 +1,33 @@
+---
+const groups = [
+  {
+    label: 'Frontend',
+    items: ['TypeScript', 'JavaScript', 'React', 'Next.js', 'Angular', 'Redux Toolkit', 'TanStack Query', 'Tailwind CSS', 'Angular Material'],
+  },
+  {
+    label: 'Backend and data',
+    items: ['Node.js', 'Nest.js', 'Express.js', 'REST APIs', 'Prisma ORM', 'MongoDB', 'MySQL', 'PostgreSQL', 'Firebase'],
+  },
+  {
+    label: 'Testing',
+    items: ['Vitest', 'React Testing Library', 'Playwright', 'MSW'],
+  },
+  {
+    label: 'UI architecture',
+    items: ['Reusable component systems', 'Responsive design', 'i18n with Arabic RTL and English LTR', 'Cross-browser support'],
+  },
+  {
+    label: 'Engineering',
+    items: ['Git', 'Monorepos', 'CI/CD', 'Performance work', 'Technical SEO', 'Vercel', 'AWS', 'Agile and Scrum'],
+  },
+];
+---
+
+<dl class="grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
+  {groups.map(({ label, items }) => (
+    <div class="border-t border-rule pt-4">
+      <dt class="font-medium">{label}</dt>
+      <dd class="mt-2 text-ink/80">{items.join(', ')}</dd>
+    </div>
+  ))}
+</dl>

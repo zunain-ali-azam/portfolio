@@ -2,16 +2,22 @@
 import BaseLayout from '@/layouts/BaseLayout.astro';
 ---
 
-<BaseLayout
-  title="404 — Page Not Found"
-  description="This page doesn't exist."
->
-  <div class="container py-32 sm:py-48 flex flex-col items-center text-center">
-    <p class="text-8xl sm:text-9xl font-bold text-zinc-100 dark:text-zinc-800 font-mono select-none mb-6">404</p>
-    <h1 class="text-2xl sm:text-3xl font-bold tracking-tight mb-4">Page not found</h1>
-    <p class="text-zinc-500 dark:text-zinc-400 mb-8 max-w-sm leading-relaxed">
-      The page you're looking for doesn't exist or may have been moved.
+<BaseLayout title="404 — Page Not Found" description="This page doesn't exist.">
+  <div class="container pt-12 sm:pt-20">
+    <p class="type-hero !text-[clamp(6rem,26vw,16rem)] !leading-none text-accent" aria-hidden="true">404</p>
+    <h1 class="type-section mt-6">This page doesn't exist</h1>
+    <p class="mt-3 text-ink/80 max-w-[56ch]">
+      Nothing lives at <code id="missing-path" class="font-mono text-[0.9em] px-1.5 py-0.5 rounded bg-tint break-all">this address</code>.
+      It may have moved, or the link has a typo.
     </p>
-    <a href="/" class="btn-primary">Back to home</a>
+    <div class="mt-8 flex flex-wrap gap-3">
+      <a href="/" class="btn-primary">Go to home</a>
+      <a href="/projects" class="btn-secondary">See my work</a>
+    </div>
   </div>
 </BaseLayout>
+
+<script>
+  const el = document.getElementById('missing-path');
+  if (el && location.pathname !== '/404') el.textContent = location.pathname;
+</script>
