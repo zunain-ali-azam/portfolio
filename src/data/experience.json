@@ -1,5 +1,21 @@
 [
   {
+    "company": "Calyndrs",
+    "location": "Karachi, Pakistan",
+    "role": "Founder",
+    "type": "Own product",
+    "start": "Feb 2026",
+    "end": null,
+    "current": true,
+    "bullets": [
+      "Founded Calyndrs, an event management and discovery platform, and build it as a product from product decisions to code.",
+      "Built event creation, RSVPs, payments, marketing workflows, attendee engagement and performance analytics, with event discovery and booking for attendees.",
+      "Designed workflows connecting organizers, venues and event management companies.",
+      "Set up testing: Vitest unit tests for authentication and event/calendar CRUD flows, and React Testing Library and Playwright integration and end-to-end tests with MSW-mocked APIs."
+    ],
+    "tech": ["Next.js", "Nest.js", "MongoDB", "TypeScript", "Tailwind CSS", "Vitest", "Playwright"]
+  },
+  {
     "company": "IOMechs",
     "location": "Karachi, Pakistan",
     "role": "Software Engineer",
