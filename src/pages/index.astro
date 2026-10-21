@@ -19,7 +19,7 @@ const hasScreenshot = (p: (typeof projects)[number]) => !!p.data.image && !p.dat
 
 const projectGroups = [
   { title: 'Products I work on at IOMechs', intro: 'Live platforms with real users, where I work on dashboards, framework migrations and bilingual UI.', items: atWork },
-  { title: 'Things I built end to end', intro: 'Full-stack products I designed, built and shipped myself.', items: ownBuilds },
+  { title: 'My own products', intro: "Full-stack products I've designed and built, including Calyndrs, which I co-founded.", items: ownBuilds },
 ];
 
 const posts = (await getCollection('blog', ({ data }) => !data.draft))
