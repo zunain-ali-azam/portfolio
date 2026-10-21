@@ -1,163 +1,36 @@
 ---
-const techStack = ['React', 'Angular', 'TypeScript', 'Next.js', 'Redux Toolkit', 'TanStack Query', 'Tailwind CSS', 'Node.js', 'Firebase', 'MongoDB'];
 ---
 
-<section class="hero-section relative overflow-hidden pt-14 pb-10 sm:pt-20 sm:pb-16">
-  <!-- Mesh gradient blobs -->
-  <div class="blob blob-fire" aria-hidden="true"></div>
-  <div class="blob blob-rose" aria-hidden="true"></div>
-
-  <div class="container relative z-10">
-    <div class="max-w-3xl">
-      <!-- Availability badge -->
-      <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono mb-5 animate-fade-in">
-        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-        Available for new opportunities
-      </div>
-
-      <h1 class="text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.05] mb-4 animate-fade-up">
-        Hi, I'm
-        <br />
-        <span class="text-gradient relative">
-          <span id="typed-name"></span><span
-            id="type-cursor"
-            class="inline-block w-[3px] h-[0.8em] bg-orange-400 ml-0.5 align-middle animate-blink"
-          ></span>
-        </span>
-      </h1>
-
-      <p class="text-lg sm:text-xl font-medium text-zinc-500 dark:text-zinc-300 mb-3 animate-fade-up delay-100">
-        Software Engineer
+<section class="border-b border-rule">
+  <div class="container grid items-start gap-x-12 md:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] lg:grid-cols-[minmax(0,1fr)_minmax(0,27rem)]">
+    <div class="pt-12 sm:pt-20 pb-12 md:pb-20">
+      <p class="flex items-start gap-2 text-[15px] text-mut">
+        <span class="mt-[0.55em] w-2 h-2 shrink-0 rounded-full bg-now" aria-hidden="true"></span>
+        <span>Zunain Ali Azam. Based in Karachi, open to remote work and relocation.</span>
       </p>
 
-      <p class="text-base sm:text-lg text-zinc-500 dark:text-zinc-400 leading-relaxed mb-7 max-w-xl animate-fade-up delay-200">
-        Frontend engineer specializing in Angular and React at scale — shipping dashboards,
-        framework migrations, and platform features to 80,000+ users at
-        <a href="https://iomechs.com" class="text-orange-500 hover:text-orange-400 transition-colors underline underline-offset-2" target="_blank" rel="noopener">IOMechs</a>.
+      <h1 class="type-hero mt-8 max-w-[15ch]">Code that ships, scales, learns and ranks.</h1>
+
+      <p class="mt-8 max-w-[56ch] text-lg sm:text-xl leading-relaxed text-ink/80">
+        I'm a full-stack software engineer. I ship web apps end to end, deploy them to the cloud, train models
+        that learn from messy data, and make sure the result ranks in search. Right now that's Estenarh,
+        a healthcare platform with 80,000+ users.
       </p>
 
-      <div class="flex flex-wrap gap-3 mb-8 animate-fade-up delay-300">
-        <a href="/projects" class="btn-primary">
-          View My Work
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M5 12h14M12 5l7 7-7 7"/>
-          </svg>
-        </a>
-        <a href="/contact" class="btn-secondary">Get in Touch</a>
-        <a href="/resume" class="btn-secondary">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/>
-          </svg>
-          Resume
-        </a>
-      </div>
-
-      <!-- Scrolling tech ticker -->
-      <div class="overflow-hidden -mx-4 animate-fade-up delay-400 mask-fade-x">
-        <div class="marquee-track flex gap-3 w-max animate-marquee">
-          {[...techStack, ...techStack].map((tech) => (
-            <span class="shrink-0 px-3 py-1 text-xs font-mono font-medium text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700">
-              {tech}
-            </span>
-          ))}
-        </div>
+      <div class="mt-10 flex flex-wrap gap-3">
+        <a href="/contact" class="btn-primary">Get in touch</a>
+        <a href="/projects" class="btn-secondary">See my work</a>
       </div>
     </div>
+
+    <!-- Cut-out portrait, top-aligned with the copy; only its flat-cut bottom edge fades -->
+    <img
+      src="/portrait.webp"
+      alt="Zunain Ali Azam"
+      width="760"
+      height="695"
+      fetchpriority="high"
+      class="block w-full max-w-[18rem] md:max-w-none justify-self-center md:justify-self-end mb-12 md:mb-16 md:mt-20 select-none [mask-image:linear-gradient(to_bottom,black_92%,transparent)]"
+    />
   </div>
 </section>
-
-<style>
-  .hero-section {
-    --blob-opacity: 0.13;
-  }
-
-  .blob {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(100px);
-    pointer-events: none;
-    will-change: transform;
-  }
-
-  .blob-fire {
-    width: 650px;
-    height: 650px;
-    background: radial-gradient(circle, #FF6600 0%, #FF3300 55%, transparent 100%);
-    top: -200px;
-    right: -100px;
-    opacity: var(--blob-opacity);
-    animation: floatA 11s ease-in-out infinite;
-  }
-
-  .blob-rose {
-    width: 480px;
-    height: 480px;
-    background: radial-gradient(circle, #FF1A4B 0%, #FF5500 55%, transparent 100%);
-    bottom: -120px;
-    left: -80px;
-    opacity: calc(var(--blob-opacity) * 0.75);
-    animation: floatB 14s ease-in-out infinite;
-  }
-
-  @keyframes floatA {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    40%       { transform: translate(30px, -30px) scale(1.05); }
-    70%       { transform: translate(-15px, 20px) scale(0.96); }
-  }
-
-  @keyframes floatB {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    35%       { transform: translate(-25px, 25px) scale(1.04); }
-    65%       { transform: translate(20px, -15px) scale(0.97); }
-  }
-
-  .mask-fade-x {
-    -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
-    mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
-  }
-
-  /* Light mode: softer blobs */
-  :global(:not(.dark)) .blob {
-    opacity: 0.06;
-  }
-</style>
-
-<script>
-  // Typewriter effect
-  const nameEl = document.getElementById('typed-name');
-  const cursorEl = document.getElementById('type-cursor');
-  const fullName = 'Zunain Ali Azam';
-  let idx = 0;
-
-  function typeChar() {
-    if (!nameEl) return;
-    if (idx <= fullName.length) {
-      nameEl.textContent = fullName.slice(0, idx);
-      idx++;
-      setTimeout(typeChar, 70 + Math.random() * 45);
-    } else if (cursorEl) {
-      setTimeout(() => {
-        cursorEl.style.transition = 'opacity 0.6s';
-        cursorEl.style.opacity = '0';
-      }, 1800);
-    }
-  }
-
-  setTimeout(typeChar, 350);
-
-  // Parallax blobs on scroll
-  const blobFire = document.querySelector<HTMLElement>('.blob-fire');
-  const blobRose = document.querySelector<HTMLElement>('.blob-rose');
-
-  let rafPending = false;
-  window.addEventListener('scroll', () => {
-    if (rafPending) return;
-    rafPending = true;
-    requestAnimationFrame(() => {
-      const y = window.scrollY;
-      if (blobFire) blobFire.style.transform = `translate(0, ${y * 0.18}px) scale(1)`;
-      if (blobRose) blobRose.style.transform = `translate(0, ${-y * 0.12}px) scale(1)`;
-      rafPending = false;
-    });
-  }, { passive: true });
-</script>
