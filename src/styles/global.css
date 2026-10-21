@@ -191,6 +191,30 @@ html.dark .astro-code span {
   @apply flex items-center justify-between px-4 py-2 rounded-t-lg bg-tint border-b border-rule text-xs text-mut;
 }
 
+/* Mobile menu: grid rows animate the height open; visibility keeps closed links out of the tab order */
+.mobile-menu {
+  display: grid;
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  transition: grid-template-rows 0.3s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0.3s;
+}
+.mobile-menu[data-open='true'] {
+  grid-template-rows: 1fr;
+  visibility: visible;
+  transition: grid-template-rows 0.3s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s;
+}
+.menu-icon path {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 0.25s ease;
+}
+[aria-expanded='true'] .menu-icon-top {
+  transform: translateY(3px) rotate(45deg);
+}
+[aria-expanded='true'] .menu-icon-bottom {
+  transform: translateY(-3px) rotate(-45deg);
+}
+
 /* ---------- Motion ---------- */
 
 /* Smooth page changes; project screenshots and titles morph into their detail page */
