@@ -1,7 +1,7 @@
 ---
 title: "InsightEdu"
-description: "A full-stack AI-powered EdTech platform enabling real-time attentiveness tracking and personalized analytics in online classrooms, built with React, TypeScript, Firebase, and MediaPipe."
-tech: ["React", "TypeScript", "Tailwind CSS", "Node.js", "MediaPipe", "Firebase", "Agora.io"]
+description: "An AI-powered EdTech platform that tracks student attentiveness in real time during online classes and gives educators personalized analytics."
+tech: ["React", "TypeScript", "Tailwind CSS", "Firebase", "Node.js", "Express", "MediaPipe", "Brevo"]
 category: ["Full Stack"]
 live: "https://acadist-beta.vercel.app"
 image: "/insightEdu/insightEdu.png"
@@ -9,21 +9,12 @@ featured: true
 order: 2
 yearCompleted: 2024
 highlights:
-  - "Real-time attentiveness tracking via MediaPipe during live sessions"
-  - "Personalized analytics dashboard providing actionable insights for educators"
-  - "Automated email notifications via Brevo for student engagement"
-  - "Secure APIs for managing users, meetings, and session reports"
+  - "Built real-time attentiveness tracking with MediaPipe during live sessions"
+  - "Built secure Node.js and Express APIs for managing users, meetings and reports"
+  - "Added personalized analytics that give educators actionable insights"
+  - "Automated email notifications through Brevo to keep students engaged"
 ---
 
 ## Overview
 
-InsightEdu is a full-stack AI-powered EdTech platform designed to bring real-time attentiveness tracking and personalized analytics into online classrooms. Instructors gain live visibility into student engagement, while students receive a focused, interactive learning experience with automated follow-up communication.
-
-## What I Built
-
-- **Attentiveness Tracking** — Integrated MediaPipe to monitor student activity during live sessions, generating real-time engagement signals used to adapt the learning experience
-- **Personalized Analytics** — Built an educator-facing analytics dashboard surfacing actionable insights on attention scores, participation, and session performance
-- **Live Video** — Implemented Agora.io SDK for low-latency video sessions between instructors and learners
-- **Backend APIs** — Developed Node.js and Express APIs for managing users, meetings, session reports, and authentication flows
-- **Email Notifications** — Integrated Brevo to automate post-session email notifications, improving student follow-through and engagement
-- **Auth & Data** — Implemented Firebase Authentication and Realtime Database for secure sessions and live data sync across the platform
+InsightEdu helps teachers see how engaged a class is while it happens. I built it full stack, with a React, TypeScript and Tailwind frontend on Firebase, MediaPipe for activity monitoring, and an Express API behind it.

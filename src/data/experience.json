@@ -10,11 +10,12 @@
     "bullets": [
       "Contributed to Estenarh (80,000+ users) by developing and maintaining Admin dashboards and customer-facing modules using Angular, Angular Material, and Tailwind CSS.",
       "Improved Estenarh's search visibility and frontend maintainability by resolving Technical SEO issues and leading migration efforts from Next.js v14 to v16.",
-      "Designed and implemented analytical dashboards tracking client acquisition, retention rates, bookings, and revenue metrics — replacing manual reporting and reducing reporting effort by ~30–40%.",
-      "Migrated Estenarh Admin from Angular v14 to v17 through structured refactoring, improving scalability, UI consistency, and long-term maintainability.",
+      "Developed and maintained extensive bilingual UI experiences for English LTR and Arabic RTL, implementing i18n across customer-facing and administrative interfaces while ensuring consistent, responsive layouts and reusable components across both languages.",
+      "Designed and implemented analytical dashboards tracking client acquisition, retention rates, bookings, and revenue metrics for consultants and platform-wide performance — replacing manual reporting and reducing reporting effort by ~30–40%.",
+      "Led the migration of Estenarh Admin from Angular v14 to v17 through structured refactoring, improving scalability, UI consistency, and long-term maintainability.",
       "Contributed to IMS and Admin workflows for AZM using Angular, Angular Material, and reusable component architecture, streamlining internal operational processes.",
-      "Stabilized NowCutz Admin and Shop portals by resolving 12+ production issues and delivering new features within a monorepo setup using Next.js, TailwindCSS, and TanStack Query.",
-      "Collaborated with backend and QA teams across multiple products to ensure reliable API integrations and smooth production releases."
+      "Stabilized NowCut Admin and Shop portals by resolving 12+ production issues and delivering new features within a monorepo setup using Next.js, TailwindCSS, and TanStack Query.",
+      "Collaborated with backend and QA teams across multiple products to validate API integrations and catch regressions ahead of production releases."
     ],
     "tech": ["Angular", "Angular Material", "Next.js", "TailwindCSS", "TanStack Query", "TypeScript"]
   },

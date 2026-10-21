@@ -1,7 +1,7 @@
 ---
 title: "Calyndrs"
-description: "A scalable event management and discovery SaaS platform. Built end-to-end features covering event creation, RSVPs, payments, marketing workflows, and performance analytics."
-tech: ["Next.js", "TypeScript", "Tailwind CSS", "Node.js", "Nest.js"]
+description: "An event management and discovery platform where organizers create, manage, promote and analyze events, and attendees find and book them. Built end to end with test coverage."
+tech: ["Next.js", "Nest.js", "MongoDB", "TypeScript", "Tailwind CSS", "Vitest", "React Testing Library", "Playwright"]
 category: ["Full Stack", "SaaS"]
 live: "https://calyndrs.app"
 image: "/calyndrs/calyndrs.png"
@@ -9,20 +9,13 @@ featured: true
 order: 1
 yearCompleted: 2024
 highlights:
-  - "End-to-end event lifecycle: creation, RSVPs, payments, and performance analytics"
-  - "Marketing workflows and attendee engagement tools for organizers"
-  - "Platform workflows connecting organizers, venues, and event management companies"
+  - "Built event creation, RSVPs, payments, marketing workflows, attendee engagement and performance analytics"
+  - "Gave attendees event discovery and booking in the same platform"
+  - "Designed workflows connecting organizers, venues and event management companies"
+  - "Wrote Vitest unit tests for authentication and event/calendar CRUD flows"
+  - "Built integration and end-to-end authentication tests with React Testing Library and Playwright, using MSW to mock and validate APIs"
 ---
 
 ## Overview
 
-Calyndrs is a scalable event management and discovery platform built to give organizers a unified ecosystem for the full event lifecycle. The platform connects organizers, venues, and event management companies to streamline operations and support community-driven experiences at scale.
-
-## What I Built
-
-- **Event Creation & Management** — Built organizer-facing flows for creating, configuring, and managing events with fine-grained control over scheduling and capacity
-- **RSVPs & Payments** — Implemented integrated booking flows with payment processing for seamless attendee onboarding
-- **Marketing Workflows** — Developed built-in tools for promoting events and driving attendee engagement
-- **Performance Analytics** — Built a dashboard giving organizers visibility into attendance, revenue, and engagement metrics
-- **Discovery Experience** — Developed the user-facing browse, filter, and booking interface
-- **Platform Workflows** — Designed and implemented the workflows connecting organizers, venues, and event management companies to streamline operations and support scalable community-driven experiences
+Calyndrs brings everything around an event into one place: organizers set it up, promote it and track how it performs, venues and event companies plug into the same workflows, and attendees discover and book. I built it end to end with a Next.js frontend and a Nest.js API on MongoDB.

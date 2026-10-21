@@ -1,25 +1,24 @@
 ---
 title: "AZM"
-description: "Made significant contributions to the Inventory Management System (IMS) and Admin Portal of a cloud-based POS platform unifying retail operations across stock tracking, sales, multi-store management, and analytics."
-tech: ["Angular", "TypeScript", "Tailwind CSS", "Angular Material"]
+description: "A multi-store retail management platform for handling inventory, orders, finances and staff operations. I built invoicing, shift reporting and bilingual English/Arabic UI, and fixed pricing and VAT bugs in production."
+tech: ["Angular 17", "TypeScript", "RxJS", "Angular Material", "Tailwind CSS", "ngx-translate"]
 category: ["SaaS", "Enterprise"]
 live: "https://azm.csolit.com"
 image: "/azm/hero_new.svg"
 featured: false
 order: 5
+employer: "IOMechs"
 yearCompleted: 2025
 highlights:
-  - "IMS — real-time stock tracking, purchase orders, and inventory reporting across locations"
-  - "Admin Portal — multi-store configuration, user roles, and operational analytics dashboard"
-  - "Multi-store, multi-user architecture with role-based access control"
-  - "Contributed at IOMechs to a live retail platform with iOS mobile app support"
+  - "Built and redesigned the invoice system with print support, QR codes and correct handling of refunded and cancelled orders"
+  - "Developed shift reporting with a side drawer view and CSV export"
+  - "Implemented bilingual English/Arabic UI with correct RTL/LTR layout switching throughout the app"
+  - "Added a configurable refund policy module that prints custom text on invoices"
+  - "Fixed critical bugs in pricing, VAT calculations and order reporting that affected production accuracy"
+  - "Built an invoice listing page and an active shifts sub-tab as new features from scratch"
+  - "Improved search, dropdown and barcode workflows in the print labels and item management screens"
 ---
 
 ## Overview
 
-AZM is a cloud-based POS and inventory management platform for retail businesses. At IOMechs, I made significant contributions to the **Inventory Management System (IMS)** and the **Admin Portal** — the two core operational surfaces of the product.
-
-## My Contributions
-
-- **Inventory Management System (IMS)** — Contributed extensively to the inventory interface covering stock tracking, purchase order management, low-stock alerts, and inventory reporting across multiple store locations
-- **Admin Portal** — Contributed to the central operations dashboard for platform administrators with multi-store configuration, role-based user management, sales analytics, and automated reporting tools
+AZM runs day-to-day retail operations across multiple stores: inventory, orders, finances and staff. At IOMechs I work on its [main app](https://azm.csolit.com) and its [inventory management system](https://ims.azm.csolit.com), with Angular 17, RxJS and ngx-translate against REST APIs.

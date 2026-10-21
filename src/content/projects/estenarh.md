@@ -1,26 +1,23 @@
 ---
 title: "Estenarh"
-description: "Made significant contributions to the Partner Portal, Admin Portal, and marketing website of a Middle Eastern telemedicine platform connecting users with licensed mental health professionals and medical specialists."
+description: "A telemedicine platform for the Middle East with 80,000+ users, connecting people with licensed mental health professionals and medical specialists. I work on its customer-facing app, Admin platform and marketing website."
 tech: ["Next.js", "Angular", "TypeScript", "Angular Material", "Tailwind CSS"]
 category: ["Healthcare", "SaaS"]
 live: "https://estenarh.com"
 image: "/estenarh/estenarh.png"
 featured: false
 order: 4
+employer: "IOMechs"
 yearCompleted: 2025
 highlights:
-  - "Partner Portal — onboarding and management dashboard for licensed practitioners"
-  - "Admin Portal — platform operations, user management, and consultation oversight"
-  - "Marketing website with Arabic & English support and App Store / Play Store deep links"
-  - "Contributed at IOMechs to a live product rated 4.8★ on iOS and 4.5★ on Android"
+  - "Developed and maintained customer-facing and Admin platform features for a healthcare application serving 80,000+ users"
+  - "Designed analytical dashboards tracking client acquisition, retention, bookings, consultant performance and revenue, reducing manual reporting effort by about 30–40%"
+  - "Built and optimized CRUD management modules across Admin and operational systems, improving content management, configurability and internal workflows"
+  - "Configured WHO-recommended ICD-10 medical classification codes for categories and specialties, improving compliance and data standardization"
+  - "Maintained the Next.js website with reusable components, resolved technical SEO issues and optimized frontend performance"
+  - "Led the migrations from Next.js 14 to 16 and Angular 14 to 17, improving scalability and long-term stability"
 ---
 
 ## Overview
 
-Estenarh is a telemedicine platform purpose-built for the Middle Eastern market, offering confidential mental health and medical consultations in Arabic and English. At IOMechs, I made significant contributions across the **Partner Portal**, **Admin Portal**, and the **marketing website**.
-
-## My Contributions
-
-- **Partner Portal** — Worked extensively on the onboarding and management dashboard for licensed practitioners, covering profile setup, availability scheduling, consultation history, and earnings tracking
-- **Admin Portal** — Contributed to the internal operations dashboard for platform administrators, including user management, practitioner verification, consultation oversight, and analytics
-- **Marketing Website** — Contributed to the public-facing site with bilingual (Arabic/English) content, App Store and Google Play deep links, and conversion-focused landing pages
+Estenarh offers confidential mental health and medical consultations in Arabic and English. At IOMechs I work across three parts of it: the app patients use, the Admin platform the business runs on, and the public marketing website built with Next.js.
