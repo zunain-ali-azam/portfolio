@@ -90,7 +90,7 @@
   }
 
   .btn {
-    @apply inline-flex items-center gap-2 rounded-md px-4 py-2.5 text-[15px] font-medium border transition-colors duration-150;
+    @apply inline-flex items-center gap-2 rounded-md px-4 py-2.5 text-[15px] font-medium border transition-[color,background-color,border-color,transform] duration-150 active:scale-[0.97];
   }
 
   .btn-primary {
@@ -191,7 +191,77 @@ html.dark .astro-code span {
   @apply flex items-center justify-between px-4 py-2 rounded-t-lg bg-tint border-b border-rule text-xs text-mut;
 }
 
+/* ---------- Motion ---------- */
+
+/* Smooth page changes; project screenshots and titles morph into their detail page */
+@view-transition {
+  navigation: auto;
+}
+::view-transition-group(*) {
+  animation-duration: 0.45s;
+  animation-timing-function: cubic-bezier(0.65, 0, 0.25, 1);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Hero verbs: each one acts out its meaning, staggered, once */
+  .verb {
+    display: inline-block;
+    animation: 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .verb-ships  { animation-name: verb-ships;  animation-delay: 0.15s; }
+  .verb-scales { animation-name: verb-scales; animation-delay: 0.45s; transform-origin: 0 85%; }
+  .verb-learns { animation-name: verb-learns; animation-delay: 0.75s; animation-duration: 1s; }
+  .verb-ranks  { animation-name: verb-ranks;  animation-delay: 1.05s; }
+
+  /* Timeline draws itself as it scrolls into view, where scroll-driven animation is supported */
+  @supports (animation-timeline: view()) {
+    .timeline::before {
+      content: '';
+      position: absolute;
+      inset-inline-start: -2px;
+      top: 0;
+      width: 2px;
+      height: 100%;
+      background: rgb(var(--accent));
+      transform-origin: top;
+      animation: timeline-draw linear both;
+      animation-timeline: view();
+      animation-range: entry 10% cover 55%;
+    }
+    .timeline-dot {
+      animation: timeline-dot linear both;
+      animation-timeline: view();
+      animation-range: entry 30% entry 90%;
+    }
+  }
+}
+
+@keyframes verb-ships {
+  from { opacity: 0; transform: translateX(-0.5em); }
+}
+@keyframes verb-scales {
+  from { opacity: 0; transform: scale(0.35); }
+  70% { opacity: 1; transform: scale(1.03); }
+}
+@keyframes verb-learns {
+  from { opacity: 0.15; filter: blur(12px); }
+}
+@keyframes verb-ranks {
+  from { opacity: 0; transform: translateY(0.55em); }
+  75% { opacity: 1; transform: translateY(-0.06em); }
+}
+@keyframes timeline-draw {
+  from { transform: scaleY(0); }
+}
+@keyframes timeline-dot {
+  from { transform: scale(0); }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  @view-transition {
+    navigation: none;
+  }
+
   :root {
     scroll-behavior: auto;
   }

@@ -13,7 +13,7 @@ const { title, description, tech, slug, yearCompleted, image } = Astro.props;
 ---
 
 <a href={`/projects/${slug}`} class="group block">
-  <div class="aspect-[16/10] rounded-xl overflow-hidden border border-rule bg-tint">
+  <div class="aspect-[16/10] rounded-xl overflow-hidden border border-rule bg-tint" style={`view-transition-name: project-image-${slug}`}>
     <img
       src={image}
       alt={`${title} screenshot`}
@@ -23,7 +23,7 @@ const { title, description, tech, slug, yearCompleted, image } = Astro.props;
     />
   </div>
   <div class="mt-5 flex items-baseline justify-between gap-4">
-    <h3 class="type-item group-hover:text-accent transition-colors">{title}</h3>
+    <h3 class="type-item group-hover:text-accent transition-colors" style={`view-transition-name: project-title-${slug}`}>{title}</h3>
     <time class="text-sm text-mut">{yearCompleted}</time>
   </div>
   <p class="mt-2 text-ink/80 line-clamp-3">{description}</p>

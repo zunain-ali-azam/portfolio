@@ -21,7 +21,7 @@ const isLogo = image?.toLowerCase().includes('logo');
   <article class="container">
     <header class="pt-10 sm:pt-16 pb-12">
       <a href="/projects" class="link text-[15px]">All work</a>
-      <h1 class="type-page mt-8">{title}</h1>
+      <h1 class="type-page mt-8" style={`view-transition-name: project-title-${project.slug}`}>{title}</h1>
       <p class="mt-6 max-w-[60ch] text-lg sm:text-xl text-ink/80 leading-relaxed">{description}</p>
       {(live || github) && (
         <div class="mt-8 flex flex-wrap gap-3">
@@ -37,6 +37,7 @@ const isLogo = image?.toLowerCase().includes('logo');
           'aspect-[16/8] rounded-xl overflow-hidden border border-rule flex items-center justify-center',
           isLogo ? 'bg-white' : 'bg-tint',
         ]}
+        style={`view-transition-name: project-image-${project.slug}`}
       >
         <img
           src={image}

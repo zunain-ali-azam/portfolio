@@ -10,12 +10,12 @@ const yearOf = (d: string) => d.split(' ').pop();
 ---
 
 <!-- A real sequence, so it gets a line: newest role first, current role marked in turquoise -->
-<ol class="relative border-s-2 border-rule ms-1.5">
+<ol class="timeline relative border-s-2 border-rule ms-1.5">
   {experience.map((job) => (
     <li class="relative ps-7 sm:ps-10 pb-10 last:pb-0">
       <span
         class:list={[
-          'absolute -start-[9px] top-1.5 w-4 h-4 rounded-full border-[3px] border-paper',
+          'timeline-dot absolute -start-[9px] top-1.5 w-4 h-4 rounded-full border-[3px] border-paper',
           job.current ? 'bg-now' : 'bg-mut/50',
         ]}
         aria-hidden="true"

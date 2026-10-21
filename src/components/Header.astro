@@ -13,7 +13,7 @@ const currentPath = Astro.url.pathname;
 const isActive = (href: string) => currentPath.startsWith(href);
 ---
 
-<header class="sticky top-0 z-50 bg-paper/90 backdrop-blur-md border-b border-rule">
+<header class="sticky top-0 z-50 bg-paper/90 backdrop-blur-md border-b border-rule" style="view-transition-name: site-header">
   <div class="container">
     <div class="flex items-center justify-between h-16 gap-6">
       <a href="/" class="font-semibold tracking-[-0.02em] text-ink hover:text-accent transition-colors">

@@ -18,7 +18,7 @@ const isLogo = image?.toLowerCase().includes('logo');
 >
   <div class="min-w-0">
     <div class="flex items-baseline justify-between gap-4">
-      <h3 class="type-item group-hover:text-accent transition-colors">{title}</h3>
+      <h3 class="type-item group-hover:text-accent transition-colors" style={`view-transition-name: project-title-${slug}`}>{title}</h3>
       <time class="text-sm text-mut sm:hidden">{yearCompleted}</time>
     </div>
     <p class="mt-2 text-ink/80 max-w-[62ch] line-clamp-2">{description}</p>
@@ -33,6 +33,7 @@ const isLogo = image?.toLowerCase().includes('logo');
         'hidden sm:block aspect-[16/10] rounded-lg overflow-hidden border border-rule',
         isLogo ? 'bg-white' : 'bg-tint',
       ]}
+      style={`view-transition-name: project-image-${slug}`}
     >
       <img
         src={image}
