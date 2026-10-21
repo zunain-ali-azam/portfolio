@@ -1,57 +1,146 @@
 ---
 import BaseLayout from './BaseLayout.astro';
+import { longDate } from '@/lib/format';
+
+interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+
+interface Neighbour {
+  slug: string;
+  title: string;
+}
 
 interface Props {
   title: string;
   description: string;
   date: Date;
+  slug: string;
+  minutes: number;
   tags?: string[];
   image?: string;
+  headings?: Heading[];
+  prev?: Neighbour;
+  next?: Neighbour;
 }
 
-const { title, description, date, tags = [], image } = Astro.props;
-
-const formattedDate = new Intl.DateTimeFormat('en-US', {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
-}).format(date);
+const { title, description, date, slug, minutes, tags = [], image, headings = [], prev, next } = Astro.props;
+const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
 ---
 
 <BaseLayout title={title} description={description} image={image} type="article">
-  <article class="container py-16 sm:py-24">
-    <header class="max-w-2xl mb-12">
-      <div class="flex flex-wrap gap-2 mb-4">
-        {tags.map((tag) => <span class="tech-tag">{tag}</span>)}
-      </div>
-      <h1 class="text-3xl sm:text-4xl font-bold tracking-tight mb-4">{title}</h1>
-      <p class="text-zinc-500 dark:text-zinc-400 text-lg mb-6">{description}</p>
-      <time
-        datetime={date.toISOString()}
-        class="text-sm text-zinc-400 dark:text-zinc-500 font-mono"
-      >
-        {formattedDate}
-      </time>
+  <article class="container">
+    <header class="pt-10 sm:pt-16 pb-10 border-b border-rule">
+      <a href="/blog" class="link text-[15px]">All writing</a>
+      <h1 class="mt-8 text-4xl sm:text-[3.25rem] font-semibold tracking-[-0.03em] leading-[1.08] max-w-[24ch]">{title}</h1>
+      <p class="mt-6 max-w-[60ch] text-lg sm:text-xl text-ink/80 leading-relaxed">{description}</p>
+      <p class="mt-6 text-mut">
+        <time datetime={date.toISOString()}>{longDate(date)}</time>, {minutes} min read
+        {tags.length > 0 && <>. Filed under {tags.join(', ')}.</>}
+      </p>
     </header>
 
-    <div
-      class="prose prose-zinc dark:prose-invert max-w-2xl
-             prose-headings:font-semibold prose-headings:tracking-tight
-             prose-a:text-indigo-500 prose-a:no-underline hover:prose-a:underline
-             prose-code:text-indigo-400 prose-code:bg-zinc-100 dark:prose-code:bg-zinc-800
-             prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:font-mono prose-code:text-sm
-             prose-pre:bg-zinc-900 prose-pre:border prose-pre:border-zinc-800"
-    >
-      <slot />
+    <div class="mt-12 grid gap-12 lg:grid-cols-[minmax(0,42rem)_1fr] lg:gap-20">
+      <div class="prose-site" id="article-body">
+        <slot />
+      </div>
+
+      {toc.length > 0 && (
+        <aside class="hidden lg:block">
+          <nav class="sticky top-24" aria-label="On this page">
+            <p class="font-medium mb-3">On this page</p>
+            <ol class="space-y-2 text-[15px] border-s border-rule">
+              {toc.map((h) => (
+                <li>
+                  <a
+                    href={`#${h.slug}`}
+                    data-toc={h.slug}
+                    class:list={[
+                      'block -ms-px border-s-2 border-transparent text-mut hover:text-ink transition-colors data-[active]:text-ink data-[active]:border-accent',
+                      h.depth === 3 ? 'ps-7' : 'ps-4',
+                    ]}
+                  >{h.text}</a>
+                </li>
+              ))}
+            </ol>
+          </nav>
+        </aside>
+      )}
     </div>
 
-    <div class="mt-16 pt-8 border-t border-zinc-200 dark:border-zinc-800">
-      <a href="/blog" class="btn-secondary">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="m15 18-6-6 6-6"/>
-        </svg>
-        Back to Writing
-      </a>
-    </div>
+    <footer class="mt-20 border-t border-rule pt-6 grid gap-6 sm:grid-cols-2">
+      {prev ? (
+        <a href={`/blog/${prev.slug}`} class="group">
+          <span class="text-mut">Older post</span>
+          <span class="block mt-1 type-item group-hover:text-accent transition-colors">{prev.title}</span>
+        </a>
+      ) : (
+        <a href="/blog" class="group">
+          <span class="text-mut">Back to</span>
+          <span class="block mt-1 type-item group-hover:text-accent transition-colors">All writing</span>
+        </a>
+      )}
+      {next && (
+        <a href={`/blog/${next.slug}`} class="group sm:text-end">
+          <span class="text-mut">Newer post</span>
+          <span class="block mt-1 type-item group-hover:text-accent transition-colors">{next.title}</span>
+        </a>
+      )}
+    </footer>
   </article>
 </BaseLayout>
+
+<script>
+  const body = document.getElementById('article-body');
+
+  // Frame each code block with a language label and a copy button
+  body?.querySelectorAll<HTMLPreElement>('pre.astro-code').forEach((pre) => {
+    const frame = document.createElement('div');
+    frame.className = 'code-frame not-prose';
+    const bar = document.createElement('div');
+    bar.className = 'code-frame-bar';
+    const lang = document.createElement('span');
+    lang.textContent = pre.dataset.language ?? 'code';
+    const copy = document.createElement('button');
+    copy.type = 'button';
+    copy.className = 'hover:text-accent transition-colors';
+    copy.textContent = 'Copy';
+    copy.addEventListener('click', async () => {
+      await navigator.clipboard.writeText(pre.innerText);
+      copy.textContent = 'Copied';
+      setTimeout(() => (copy.textContent = 'Copy'), 1500);
+    });
+    bar.append(lang, copy);
+    pre.replaceWith(frame);
+    frame.append(bar, pre);
+  });
+
+  // Hover anchors on headings
+  body?.querySelectorAll<HTMLHeadingElement>('h2[id], h3[id]').forEach((h) => {
+    const a = document.createElement('a');
+    a.href = `#${h.id}`;
+    a.setAttribute('aria-label', `Link to “${h.textContent}”`);
+    a.className = 'ms-2 no-underline font-normal text-[0.7em] text-mut opacity-0 hover:text-accent transition-opacity';
+    a.textContent = '#';
+    h.append(a);
+    h.addEventListener('mouseenter', () => (a.style.opacity = '1'));
+    h.addEventListener('mouseleave', () => (a.style.opacity = '0'));
+  });
+
+  // Highlight the section currently in view in the table of contents
+  const tocLinks = document.querySelectorAll<HTMLAnchorElement>('[data-toc]');
+  if (tocLinks.length) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          tocLinks.forEach((l) => l.toggleAttribute('data-active', l.dataset.toc === entry.target.id));
+        });
+      },
+      { rootMargin: '0px 0px -70% 0px' }
+    );
+    body?.querySelectorAll('h2[id], h3[id]').forEach((h) => observer.observe(h));
+  }
+</script>

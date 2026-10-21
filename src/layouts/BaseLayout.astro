@@ -12,13 +12,38 @@ interface Props {
 
 const {
   title,
-  description = 'Zunain Ali Azam — Software Engineer specializing in React, Angular, Next.js, and TypeScript.',
+  description = 'Zunain Ali Azam — Software Engineer working across frontend and full-stack web development with Next.js, Angular, Node.js, Nest.js, and TypeScript.',
   image = '/og-image.png',
   type = 'website',
 } = Astro.props;
 
 const siteTitle = title === 'Zunain Ali Azam' ? title : `${title} | Zunain Ali Azam`;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+
+// Structured data so search engines can connect the name, role, skills and profiles
+const person = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: 'Zunain Ali Azam',
+  jobTitle: 'Software Engineer',
+  description: 'Full-stack software engineer and co-founder of Calyndrs, based in Karachi, open to remote work and relocation. Works across web apps (Next.js, Angular, Node.js, Nest.js, TypeScript), machine learning and technical SEO.',
+  url: Astro.site?.toString(),
+  image: new URL('/og-image.png', Astro.site).toString(),
+  email: 'mailto:zunainazam456@gmail.com',
+  address: { '@type': 'PostalAddress', addressLocality: 'Karachi', addressCountry: 'PK' },
+  worksFor: { '@type': 'Organization', name: 'IOMechs', url: 'https://iomechs.com' },
+  alumniOf: { '@type': 'CollegeOrUniversity', name: 'University of Karachi' },
+  knowsAbout: [
+    'Next.js', 'Angular', 'React', 'Node.js', 'Nest.js', 'TypeScript',
+    'Technical SEO', 'Framework migrations', 'Internationalization (i18n)', 'Right-to-left (RTL) interfaces',
+    'Dashboards', 'Vitest', 'Playwright', 'Machine learning', 'BERT', 'Natural language processing',
+  ],
+  sameAs: [
+    'https://github.com/zunain-ali-azam',
+    'https://linkedin.com/in/zunain-azam',
+    'https://zunainaliazam.medium.com',
+  ],
+};
 ---
 
 <!doctype html>
@@ -48,11 +73,13 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={new URL(image, Astro.site)} />
 
+    <script type="application/ld+json" set:html={JSON.stringify(person)} />
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Instrument+Sans:ital,wght@0,400..700;1,400..500&family=JetBrains+Mono:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Readex+Pro:HEXP,wght@0..100,160..700&display=swap"
       rel="stylesheet"
     />
 
@@ -63,31 +90,37 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         const isDark = stored === 'dark' || (!stored && prefersDark);
         document.documentElement.classList.toggle('dark', isDark);
+        document.documentElement.classList.add('js');
       })();
     </script>
   </head>
   <body class="min-h-screen flex flex-col">
     <Header />
-    <main class="flex-1 pb-20 md:pb-0">
+    <main class="flex-1">
       <slot />
     </main>
     <Footer />
 
     <script is:inline>
+      // Scroll reveals: content already on screen shows at once (so page transitions stay clean);
+      // content scrolled into view animates in, staggered within each batch
       (function () {
-        const observer = new IntersectionObserver(
-          (entries) => {
-            entries.forEach((entry) => {
-              if (entry.isIntersecting) {
-                entry.target.classList.add('in-view');
-                observer.unobserve(entry.target);
-              }
-            });
-          },
-          { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
-        );
-        document.querySelectorAll('[data-animate], [data-animate-stagger]').forEach((el) => {
-          observer.observe(el);
+        const els = document.querySelectorAll('[data-reveal]');
+        if (!('IntersectionObserver' in window) || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          els.forEach((el) => el.classList.add('is-in'));
+          return;
+        }
+        const vh = window.innerHeight;
+        const io = new IntersectionObserver((entries) => {
+          entries.filter((e) => e.isIntersecting).forEach((entry, i) => {
+            entry.target.style.setProperty('--reveal-delay', `${i * 90}ms`);
+            entry.target.classList.add('is-in');
+            io.unobserve(entry.target);
+          });
+        }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
+        els.forEach((el) => {
+          if (el.getBoundingClientRect().top < vh * 0.94) el.classList.add('is-in', 'reveal-instant');
+          else io.observe(el);
         });
       })();
     </script>

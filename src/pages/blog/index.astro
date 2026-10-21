@@ -1,7 +1,9 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
-import BlogCard from '@/components/BlogCard.astro';
+import PageHeader from '@/components/PageHeader.astro';
+import PostRow from '@/components/PostRow.astro';
 import { getCollection } from 'astro:content';
+import { readingTime } from '@/lib/format';
 
 const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
   (a, b) => b.data.date.getTime() - a.data.date.getTime()
@@ -9,30 +11,32 @@ const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
 ---
 
 <BaseLayout
-  title="Blog"
-  description="Zunain Ali Azam writes about JavaScript, React, Angular, TypeScript, and web development. Practical articles for working developers."
+  title="Writing"
+  description="Zunain Ali Azam writes about frontend architecture, full-stack TypeScript, testing, and performance. Practical notes for working developers."
 >
-  <div class="container py-16 sm:py-24">
-    <p class="section-label">Writing</p>
-    <h1 class="text-3xl sm:text-4xl font-bold tracking-tight mb-4">Blog</h1>
-    <p class="text-zinc-500 dark:text-zinc-400 mb-12 max-w-xl">
-      Thoughts on React, Node.js, cloud architecture, and the craft of building for the web.
-      I also publish on <a href="https://zunainaliazam.medium.com" target="_blank" rel="noopener" class="text-indigo-500 hover:text-indigo-400 transition-colors">Medium</a>.
-    </p>
+  <div class="container">
+    <PageHeader
+      title="Writing"
+      intro="Notes from shipping production software: frontend architecture, framework migrations, testing and performance."
+    >
+      <p class="mt-4 text-mut">
+        I also publish on <a href="https://zunainaliazam.medium.com" target="_blank" rel="noopener noreferrer" class="link text-ink">Medium</a>.
+      </p>
+    </PageHeader>
 
     {posts.length === 0 ? (
-      <div class="card p-12 text-center">
-        <p class="text-zinc-400 dark:text-zinc-500">No posts yet — check back soon.</p>
-      </div>
+      <p class="py-16 text-mut border-t border-rule">
+        No posts yet. The first one is in progress.
+      </p>
     ) : (
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="border-b border-rule">
         {posts.map((post) => (
-          <BlogCard
+          <PostRow
             title={post.data.title}
             description={post.data.description}
             date={post.data.date}
-            tags={post.data.tags}
             slug={post.slug}
+            minutes={readingTime(post.body)}
           />
         ))}
       </div>

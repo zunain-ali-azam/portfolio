@@ -41,7 +41,6 @@ src/
 └── styles/
     └── global.css
 public/
-├── robots.txt
 ├── og-image.png       # Default Open Graph image
 └── favicon.svg
 ```
@@ -184,3 +183,5 @@ Sitemap: https://zunainaliazam.vercel.app/sitemap-index.xml
 ## Deployment
 
 The site is a static build (`pnpm build` → `dist/`). Deploy the `dist/` folder to any static host (Vercel, Netlify, Cloudflare Pages, etc.). Make sure the host serves the site at `https://zunainaliazam.vercel.app` so canonical URLs and the sitemap resolve correctly.
+
+The site address lives in one place: `site` in `astro.config.mjs`. Canonical URLs, the sitemap, `robots.txt`, structured data and the contact form redirect all read from it, so moving to a new domain is a one-line change there (plus updating this README).

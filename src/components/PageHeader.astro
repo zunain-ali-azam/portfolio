@@ -1,0 +1,14 @@
+---
+interface Props {
+  title: string;
+  intro?: string;
+}
+
+const { title, intro } = Astro.props;
+---
+
+<header class="pt-12 sm:pt-20 pb-12 sm:pb-16">
+  <h1 class="type-page">{title}</h1>
+  {intro && <p class="mt-6 max-w-[56ch] text-lg sm:text-xl text-ink/80 leading-relaxed">{intro}</p>}
+  <slot />
+</header>
