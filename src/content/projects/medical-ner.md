@@ -3,7 +3,7 @@ title: "Medical NER with BERT"
 description: "A fine-tuned BERT model that extracts medical entities from clinical text and turns them into structured JSON, reaching 96% accuracy, precision, recall and F1."
 tech: ["Python", "Hugging Face", "Google Colab"]
 category: ["Machine Learning"]
-github: "https://github.com/ZunainAliAzam/Medical-Data-NER-with-BERT"
+github: "https://github.com/zunain-ali-azam/Medical-Data-NER-with-BERT"
 featured: false
 order: 7
 yearCompleted: 2024

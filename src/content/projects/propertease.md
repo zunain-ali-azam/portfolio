@@ -3,7 +3,7 @@ title: "Propertease"
 description: "A full-stack real estate marketplace where users post properties, search listings on a map, save favorites, and chat with sellers in real time."
 tech: ["React", "SCSS", "Node.js", "Express", "MongoDB", "Prisma ORM", "WebSocket", "Cloudinary", "Docker"]
 category: ["Full Stack", "Marketplace"]
-github: "https://github.com/ZunainAliAzam/Propertease"
+github: "https://github.com/zunain-ali-azam/Propertease"
 featured: true
 order: 3
 yearCompleted: 2024
