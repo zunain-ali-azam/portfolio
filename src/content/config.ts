@@ -15,6 +15,7 @@ const projects = defineCollection({
     yearCompleted: z.union([z.number(), z.string()]),
     highlights: z.array(z.string()).default([]),
     employer: z.string().optional(),
+    role: z.string().optional(),
   }),
 });
 
