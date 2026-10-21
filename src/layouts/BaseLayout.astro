@@ -90,6 +90,7 @@ const person = {
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         const isDark = stored === 'dark' || (!stored && prefersDark);
         document.documentElement.classList.toggle('dark', isDark);
+        document.documentElement.classList.add('js');
       })();
     </script>
   </head>
@@ -100,5 +101,28 @@ const person = {
     </main>
     <Footer />
 
+    <script is:inline>
+      // Scroll reveals: content already on screen shows at once (so page transitions stay clean);
+      // content scrolled into view animates in, staggered within each batch
+      (function () {
+        const els = document.querySelectorAll('[data-reveal]');
+        if (!('IntersectionObserver' in window) || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          els.forEach((el) => el.classList.add('is-in'));
+          return;
+        }
+        const vh = window.innerHeight;
+        const io = new IntersectionObserver((entries) => {
+          entries.filter((e) => e.isIntersecting).forEach((entry, i) => {
+            entry.target.style.setProperty('--reveal-delay', `${i * 90}ms`);
+            entry.target.classList.add('is-in');
+            io.unobserve(entry.target);
+          });
+        }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
+        els.forEach((el) => {
+          if (el.getBoundingClientRect().top < vh * 0.94) el.classList.add('is-in', 'reveal-instant');
+          else io.observe(el);
+        });
+      })();
+    </script>
   </body>
 </html>

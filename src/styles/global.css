@@ -236,6 +236,69 @@ html.dark .astro-code span {
   }
 }
 
+/* Section reveals (JS adds .is-in; without JS or with reduced motion nothing is hidden) */
+@media (prefers-reduced-motion: no-preference) {
+  .js [data-reveal] {
+    opacity: 0;
+    transform: translateY(18px);
+    transition: opacity 0.6s ease, transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+  .js [data-reveal='pop'] {
+    transform: scale(0.96);
+  }
+  /* Screenshots: the frame fades in and the image wipes down inside it. The clip sits on the
+     image, not the observed frame, because a clipped target never reports as intersecting. */
+  .js [data-reveal='screen'] {
+    transform: none;
+    transition: opacity 0.4s ease, border-color 0.3s, transform 0.3s;
+    transition-delay: var(--reveal-delay, 0ms), 0ms, 0ms;
+  }
+  .js [data-reveal='screen'] > img {
+    clip-path: inset(0 0 100% 0);
+    transition: clip-path 0.9s cubic-bezier(0.65, 0, 0.25, 1);
+    transition-delay: calc(var(--reveal-delay, 0ms) + 0.15s);
+  }
+  .js [data-reveal='screen'].is-in > img {
+    clip-path: inset(0);
+  }
+  .js [data-reveal].is-in {
+    opacity: 1;
+    transform: none;
+  }
+  /* Hover lift on screenshots must still apply after the reveal */
+  .js .group:hover [data-reveal='screen'].is-in {
+    transform: translateY(-0.25rem);
+  }
+
+  /* Rule rows: a cobalt line draws across the divider, then fades back to the rule colour */
+  .js [data-reveal='rule'] {
+    position: relative;
+  }
+  .js [data-reveal='rule']::before {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    top: -1px;
+    height: 1px;
+    background: rgb(var(--accent));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.8s cubic-bezier(0.65, 0, 0.25, 1), opacity 0.6s ease 1s;
+    transition-delay: var(--reveal-delay, 0ms), calc(var(--reveal-delay, 0ms) + 0.9s);
+  }
+  .js [data-reveal='rule'].is-in::before {
+    transform: scaleX(1);
+    opacity: 0;
+  }
+
+  .js [data-reveal].reveal-instant,
+  .js [data-reveal].reveal-instant::before,
+  .js [data-reveal].reveal-instant > img {
+    transition: none;
+  }
+}
+
 @keyframes verb-ships {
   from { opacity: 0; transform: translateX(-0.5em); }
 }

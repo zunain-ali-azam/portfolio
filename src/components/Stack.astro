@@ -25,7 +25,7 @@ const groups = [
 
 <dl class="grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
   {groups.map(({ label, items }) => (
-    <div class="border-t border-rule pt-4">
+    <div class="border-t border-rule pt-4" data-reveal="rule">
       <dt class="font-medium">{label}</dt>
       <dd class="mt-2 text-ink/80">{items.join(', ')}</dd>
     </div>
