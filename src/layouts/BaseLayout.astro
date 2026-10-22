@@ -90,9 +90,12 @@ const person = {
     <!-- Prevent flash of wrong theme -->
     <script is:inline>
       (function () {
-        const stored = localStorage.getItem('theme');
+        let stored = null;
+        try { stored = localStorage.getItem('theme'); } catch (e) {}
+        const pref = stored === 'light' || stored === 'dark' ? stored : 'system';
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const isDark = stored === 'dark' || (!stored && prefersDark);
+        const isDark = pref === 'dark' || (pref === 'system' && prefersDark);
+        document.documentElement.dataset.themePref = pref;
         document.documentElement.classList.toggle('dark', isDark);
         document.documentElement.classList.add('js');
       })();
@@ -105,19 +108,26 @@ const person = {
     </main>
     <Footer />
 
+    <!-- iOS Safari only shows :active press states once the page listens for touches -->
+    <script is:inline>
+      document.addEventListener('touchstart', function () {}, { passive: true });
+    </script>
+
     <script is:inline>
       // Scroll reveals: content already on screen shows at once (so page transitions stay clean);
       // content scrolled into view animates in, staggered within each batch
       (function () {
         const els = document.querySelectorAll('[data-reveal]');
-        if (!('IntersectionObserver' in window) || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        // Reduced motion still gets a plain fade (handled in CSS), so only bail out without IntersectionObserver
+        if (!('IntersectionObserver' in window)) {
           els.forEach((el) => el.classList.add('is-in'));
           return;
         }
         const vh = window.innerHeight;
         const io = new IntersectionObserver((entries) => {
           entries.filter((e) => e.isIntersecting).forEach((entry, i) => {
-            entry.target.style.setProperty('--reveal-delay', `${i * 90}ms`);
+            // Cap the stagger so nothing waits long when many items arrive at once
+            entry.target.style.setProperty('--reveal-delay', `${Math.min(i, 3) * 70}ms`);
             entry.target.classList.add('is-in');
             io.unobserve(entry.target);
           });

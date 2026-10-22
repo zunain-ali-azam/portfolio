@@ -20,7 +20,7 @@ const isLogo = image?.toLowerCase().includes('logo');
 <BaseLayout title={title} description={description} image={image && !image.endsWith('.svg') ? image : undefined}>
   <article class="container">
     <header class="pt-10 sm:pt-16 pb-12">
-      <a href="/projects" class="link text-[15px]">All work</a>
+      <a href="/projects" class="link text-[0.9375rem]">All work</a>
       <h1 class="type-page mt-8" style={`view-transition-name: project-title-${project.slug}`}>{title}</h1>
       <p class="mt-6 max-w-[60ch] text-lg sm:text-xl text-ink/80 leading-relaxed">{description}</p>
       {(live || github) && (
