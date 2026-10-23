@@ -1,6 +1,9 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import PageHeader from '@/components/PageHeader.astro';
+import { TOPICS } from '@/lib/contact';
+
+const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 
 const contactLinks = [
   { label: 'Email',    value: 'zunainazam456@gmail.com',    href: 'mailto:zunainazam456@gmail.com' },
@@ -20,42 +23,56 @@ const contactLinks = [
     />
 
     <div class="grid gap-14 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-20">
-      <form action="https://formsubmit.co/zunainazam456@gmail.com" method="POST" class="flex flex-col gap-6 max-w-2xl">
-        <input type="hidden" name="_subject" value="New message from portfolio" />
-        <input type="hidden" name="_next" value={new URL('/sent', Astro.site).toString()} />
-        <input type="hidden" name="_template" value="table" />
-        <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off" />
+      <div id="contact-area" class="max-w-2xl">
+        <form id="contact-form" action="/api/contact" method="POST" class="flex flex-col gap-6">
+          <!-- Honeypot: hidden from people, filled in by bots -->
+          <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off" aria-hidden="true" />
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div class="flex flex-col gap-2">
+              <label for="name" class="font-medium">Name</label>
+              <input id="name" name="name" type="text" required maxlength="100" autocomplete="name" aria-describedby="name-error" class="form-input" />
+              <p id="name-error" class="form-error" hidden></p>
+            </div>
+            <div class="flex flex-col gap-2">
+              <label for="email" class="font-medium">Email</label>
+              <input id="email" name="email" type="email" required maxlength="254" autocomplete="email" placeholder="you@company.com" aria-describedby="email-error" class="form-input" />
+              <p id="email-error" class="form-error" hidden></p>
+            </div>
+          </div>
+
+          <fieldset class="flex flex-col gap-3" aria-describedby="topic-error">
+            <legend class="font-medium">What's this about?</legend>
+            <div class="flex flex-wrap gap-x-6 gap-y-2">
+              {TOPICS.map((topic, i) => (
+                <label class="inline-flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="topic" value={topic} required={i === 0} class="w-4 h-4 accent-[rgb(var(--accent))]" />
+                  {topic}
+                </label>
+              ))}
+            </div>
+            <p id="topic-error" class="form-error" hidden></p>
+          </fieldset>
+
           <div class="flex flex-col gap-2">
-            <label for="name" class="font-medium">Name</label>
-            <input id="name" name="name" type="text" required autocomplete="name" class="form-input" />
+            <label for="message" class="font-medium">Message</label>
+            <textarea id="message" name="message" required minlength="10" maxlength="5000" rows="6" placeholder="What are you building, and where could I help?" aria-describedby="message-error" class="form-input resize-y"></textarea>
+            <p id="message-error" class="form-error" hidden></p>
           </div>
-          <div class="flex flex-col gap-2">
-            <label for="email" class="font-medium">Email</label>
-            <input id="email" name="email" type="email" required autocomplete="email" placeholder="you@company.com" class="form-input" />
-          </div>
+
+          {turnstileSiteKey && <div id="turnstile" data-sitekey={turnstileSiteKey}></div>}
+
+          <p id="form-alert" role="alert" class="form-error" hidden></p>
+
+          <button id="contact-submit" type="submit" class="btn-primary self-start disabled:opacity-60 disabled:cursor-wait">Send message</button>
+        </form>
+
+        <!-- Replaces the form once the message is sent -->
+        <div id="contact-sent" class="fade-in" hidden>
+          <h2 class="type-section outline-none" tabindex="-1">Message sent</h2>
+          <p class="mt-3 text-ink/80 max-w-[52ch]">Thanks for getting in touch. Your message is in my inbox, and I'll reply within a day.</p>
         </div>
-
-        <fieldset class="flex flex-col gap-3">
-          <legend class="font-medium">What's this about?</legend>
-          <div class="flex flex-wrap gap-x-6 gap-y-2">
-            {['Full-time role', 'Freelance project', 'Something else'].map((topic, i) => (
-              <label class="inline-flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="topic" value={topic} required={i === 0} class="w-4 h-4 accent-[rgb(var(--accent))]" />
-                {topic}
-              </label>
-            ))}
-          </div>
-        </fieldset>
-
-        <div class="flex flex-col gap-2">
-          <label for="message" class="font-medium">Message</label>
-          <textarea id="message" name="message" required rows="6" placeholder="What are you building, and where could I help?" class="form-input resize-y"></textarea>
-        </div>
-
-        <button type="submit" class="btn-primary self-start">Send message</button>
-      </form>
+      </div>
 
       <aside class="self-start">
         <h2 class="font-medium">Or reach me directly</h2>
@@ -78,3 +95,128 @@ const contactLinks = [
     </div>
   </div>
 </BaseLayout>
+
+<script>
+  import { readContact, validateContact, type ContactErrors } from '@/lib/contact';
+
+  type Turnstile = {
+    render: (el: HTMLElement, opts: Record<string, unknown>) => string;
+    reset: (id: string) => void;
+  };
+
+  const form = document.getElementById('contact-form') as HTMLFormElement;
+  const submit = document.getElementById('contact-submit') as HTMLButtonElement;
+  const alertEl = document.getElementById('form-alert') as HTMLElement;
+  const sent = document.getElementById('contact-sent') as HTMLElement;
+  const widget = document.getElementById('turnstile');
+  const FIELDS = ['name', 'email', 'topic', 'message'] as const;
+  let widgetId: string | undefined;
+  let attempted = false; // after the first submit, errors update as people type
+
+  // The script shows its own inline errors; without it, the browser's built-in checks still apply
+  form.noValidate = true;
+
+  // Turnstile loads on this page only, themed to match the site; it stays invisible unless it needs a click
+  if (widget) {
+    (window as any).onTurnstileLoad = () => {
+      widgetId = ((window as any).turnstile as Turnstile).render(widget, {
+        sitekey: widget.dataset.sitekey,
+        theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light',
+        appearance: 'interaction-only',
+      });
+    };
+    const script = document.createElement('script');
+    script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onTurnstileLoad';
+    script.async = true;
+    document.head.append(script);
+  }
+
+  const showErrors = (errors: ContactErrors, only?: (typeof FIELDS)[number]) => {
+    for (const field of only ? [only] : FIELDS) {
+      const slot = document.getElementById(`${field}-error`)!;
+      const message = errors[field];
+      slot.textContent = message ?? '';
+      slot.hidden = !message;
+      form.querySelectorAll(`[name="${field}"]`).forEach((input) => {
+        if (message) input.setAttribute('aria-invalid', 'true');
+        else input.removeAttribute('aria-invalid');
+      });
+    }
+  };
+
+  const focusFirstError = (errors: ContactErrors) => {
+    const first = FIELDS.find((f) => errors[f]);
+    if (first) (form.querySelector(`[name="${first}"]`) as HTMLElement | null)?.focus();
+  };
+
+  const setAlert = (message?: string) => {
+    alertEl.hidden = !message;
+    alertEl.innerHTML = message
+      ? `${message} Please try again, or email me at <a class="link" href="mailto:zunainazam456@gmail.com">zunainazam456@gmail.com</a>.`
+      : '';
+  };
+
+  const setSending = (sending: boolean) => {
+    submit.disabled = sending;
+    submit.setAttribute('aria-busy', String(sending));
+    submit.textContent = sending ? 'Sending…' : 'Send message';
+  };
+
+  // Check a field when the visitor leaves it, but don't flag an empty field they only tabbed through
+  form.addEventListener('focusout', (e) => {
+    const name = (e.target as HTMLInputElement).name as (typeof FIELDS)[number];
+    if (!FIELDS.includes(name) || name === 'topic') return;
+    const fields = readContact(new FormData(form));
+    if (!attempted && !fields[name].trim()) return;
+    showErrors(validateContact(fields), name);
+  });
+
+  // Clear an error as soon as it's fixed
+  form.addEventListener('input', (e) => {
+    const name = (e.target as HTMLInputElement).name as (typeof FIELDS)[number];
+    if (!FIELDS.includes(name)) return;
+    const message = validateContact(readContact(new FormData(form)))[name];
+    if (attempted || !message) showErrors(message ? { [name]: message } : {}, name);
+  });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (submit.disabled) return;
+    attempted = true;
+    setAlert();
+
+    const data = new FormData(form);
+    const errors = validateContact(readContact(data));
+    showErrors(errors);
+    if (Object.keys(errors).length) return focusFirstError(errors);
+
+    setSending(true);
+    try {
+      const res = await fetch(form.action, {
+        method: 'POST',
+        body: data,
+        headers: { Accept: 'application/json' },
+        signal: AbortSignal.timeout(15000),
+      });
+      const body = (await res.json().catch(() => ({}))) as { ok?: boolean; errors?: ContactErrors; error?: string };
+
+      if (res.ok && body.ok) {
+        form.hidden = true;
+        sent.hidden = false;
+        sent.querySelector('h2')?.focus();
+        return;
+      }
+      if (body.errors) {
+        showErrors(body.errors);
+        focusFirstError(body.errors);
+      } else {
+        setAlert(body.error ?? 'Your message didn’t go through.');
+      }
+    } catch {
+      setAlert('Your message didn’t go through. Check your connection.');
+    }
+    // A Turnstile token works once, so get a fresh one for the retry
+    if (widgetId) ((window as any).turnstile as Turnstile).reset(widgetId);
+    setSending(false);
+  });
+</script>

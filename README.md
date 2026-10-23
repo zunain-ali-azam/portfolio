@@ -11,6 +11,8 @@ Personal portfolio and blog built with [Astro](https://astro.build), Tailwind CS
 | Framework | Astro 4 |
 | Styling | Tailwind CSS 3 + `@tailwindcss/typography` |
 | Content | MDX via `@astrojs/mdx` |
+| Hosting | Vercel (`@astrojs/vercel`, hybrid output) |
+| Contact form | Vercel function + Resend + Cloudflare Turnstile |
 | Language | TypeScript |
 | Package Manager | pnpm |
 
@@ -32,12 +34,16 @@ src/
 │   ├── about.astro
 │   ├── experience.astro
 │   ├── resume.astro
-│   ├── contact.astro
-│   ├── sent.astro
+│   ├── contact.astro      # Contact form (enhanced by its own script)
+│   ├── api/contact.ts     # Form endpoint, the only on-demand route
+│   ├── sent.astro         # No-JS confirmation
+│   ├── not-sent.astro     # No-JS failure
 │   ├── 404.astro
 │   ├── blog/[slug].astro
 │   └── projects/[slug].astro
 ├── components/        # Reusable Astro components
+├── lib/
+│   └── contact.ts     # Contact validation shared by form and endpoint
 └── styles/
     └── global.css
 public/
@@ -175,13 +181,25 @@ Sitemap: https://zunainaliazam.vercel.app/sitemap-index.xml
 
 - Always pass a unique, specific `description` prop (120–160 characters) — this is what appears as the snippet in Google results.
 - Provide a custom `image` prop for blog posts and project pages — custom OG images dramatically increase click-through rate from social shares.
-- The `sent.astro` and `404.astro` pages are intentionally excluded from the sitemap by Astro (they aren't linked content) — no action needed.
+- `sent`, `not-sent` and `404` are kept out of the sitemap (the filter is in `astro.config.mjs`) — no action needed.
 - Page titles are automatically de-duped: only the homepage renders without the `| Zunain Ali Azam` suffix.
 
 ---
 
 ## Deployment
 
-The site is a static build (`pnpm build` → `dist/`). Deploy the `dist/` folder to any static host (Vercel, Netlify, Cloudflare Pages, etc.). Make sure the host serves the site at `https://zunainaliazam.vercel.app` so canonical URLs and the sitemap resolve correctly.
+The site deploys to Vercel. Every page is prerendered at build time; the only code that runs on request is the contact endpoint, `src/pages/api/contact.ts`, which the Vercel adapter bundles as a function. Make sure the site is served at `https://zunainaliazam.vercel.app` so canonical URLs and the sitemap resolve correctly.
 
-The site address lives in one place: `site` in `astro.config.mjs`. Canonical URLs, the sitemap, `robots.txt`, structured data and the contact form redirect all read from it, so moving to a new domain is a one-line change there (plus updating this README).
+The site address lives in one place: `site` in `astro.config.mjs`. Canonical URLs, the sitemap, `robots.txt` and structured data all read from it, so moving to a new domain is a one-line change there (plus updating this README and the Turnstile widget's hostnames).
+
+### Contact form setup
+
+The form posts to `/api/contact`, which validates the message (rules in `src/lib/contact.ts`, shared with the form's script), checks it with Cloudflare Turnstile and emails it through Resend with Reply-To set to the visitor. Set these in Vercel → Project → Settings → Environment Variables (see `.env.example`), then redeploy:
+
+| Variable | Where it comes from |
+|---|---|
+| `RESEND_API_KEY` | [resend.com](https://resend.com) → API Keys. Sending from `onboarding@resend.dev` only delivers to the Resend account's own email, so `CONTACT_TO_EMAIL` must be that address (or verify a domain). |
+| `CONTACT_TO_EMAIL` | The inbox that receives messages. |
+| `TURNSTILE_SECRET_KEY`, `PUBLIC_TURNSTILE_SITE_KEY` | Cloudflare dashboard → Turnstile → add a widget for `zunainaliazam.vercel.app` and `localhost`. |
+
+In `pnpm dev` without `RESEND_API_KEY`, messages are printed to the terminal instead of sent, and the Turnstile check is skipped when its keys are unset. Cloudflare's test keys (site `1x00000000000000000000AA`, secret `1x0000000000000000000000000000000AA`) always pass. The spam check needs JavaScript, so visitors with it turned off are sent to `/not-sent`, which points them to email.

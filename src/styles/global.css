@@ -16,6 +16,7 @@
     --accent: 31 63 191;
     --on-accent: 255 255 255;
     --now: 11 122 122;
+    --danger: 176 32 48;
     color-scheme: light;
     scroll-behavior: smooth;
   }
@@ -30,6 +31,7 @@
     --accent: 143 166 255;
     --on-accent: 14 20 40;
     --now: 79 209 197;
+    --danger: 255 140 150;
     color-scheme: dark;
   }
 
@@ -45,6 +47,11 @@
     .dark {
       --mut: 190 198 216;
     }
+  }
+
+  /* `hidden` must win over display utilities like .flex on the same element */
+  [hidden] {
+    display: none !important;
   }
 
   /* We draw our own press states, so drop the grey tap flash */
@@ -143,6 +150,12 @@
 
   .form-input {
     @apply w-full rounded-md px-3 py-2.5 text-base bg-paper border border-control text-ink placeholder:text-mut/70 outline-none transition-colors focus:border-accent;
+  }
+  .form-input[aria-invalid='true'] {
+    @apply border-danger;
+  }
+  .form-error {
+    @apply text-sm text-danger;
   }
 
   /* Long-form content (blog posts, project write-ups) */
@@ -244,6 +257,14 @@ html.dark .astro-code span {
 }
 
 /* ---------- Motion ---------- */
+
+/* Contact form: the sent confirmation fades in where the form was */
+.fade-in {
+  animation: fade-in 0.3s ease both;
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+}
 
 /* Smooth page changes; project screenshots and titles morph into their detail page */
 @view-transition {

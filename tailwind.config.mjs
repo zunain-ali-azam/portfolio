@@ -18,6 +18,7 @@ export default {
         accent: token('accent'),
         'on-accent': token('on-accent'),
         now: token('now'),
+        danger: token('danger'),
       },
       fontFamily: {
         sans: ['"Readex Pro"', 'system-ui', '-apple-system', 'sans-serif'],
