@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
-    "build": "astro build && node scripts/check-csp.mjs",
+    "build": "astro build && node scripts/set-function-runtime.mjs && node scripts/check-csp.mjs",
     "preview": "astro preview",
     "astro": "astro"
   },

@@ -188,7 +188,7 @@ Sitemap: https://zunainaliazam.vercel.app/sitemap-index.xml
 
 ## Deployment
 
-The site deploys to Vercel. Every page is prerendered at build time; the only code that runs on request is the contact endpoint, `src/pages/api/contact.ts`, which the Vercel adapter bundles as a function. Make sure the site is served at `https://zunainaliazam.vercel.app` so canonical URLs and the sitemap resolve correctly.
+The site deploys to Vercel. Every page is prerendered at build time; the only code that runs on request is the contact endpoint, `src/pages/api/contact.ts`, which the Vercel adapter bundles as a function. The adapter version used with Astro 4 falls back to the retired Node 18 runtime, so `pnpm build` runs `scripts/set-function-runtime.mjs` to set the function to the Node version that built it. Make sure the site is served at `https://zunainaliazam.vercel.app` so canonical URLs and the sitemap resolve correctly.
 
 The site address lives in one place: `site` in `astro.config.mjs`. Canonical URLs, the sitemap, `robots.txt` and structured data all read from it, so moving to a new domain is a one-line change there (plus updating this README and the Turnstile widget's hostnames).
 
