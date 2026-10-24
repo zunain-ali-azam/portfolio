@@ -1,7 +1,7 @@
 {
   "headers": [
     {
-      "source": "/(.*)",
+      "source": "/((?!.*\\.pdf$).*)",
       "headers": [
         {
           "key": "Content-Security-Policy",
