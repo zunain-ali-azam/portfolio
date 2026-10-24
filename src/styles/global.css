@@ -10,10 +10,13 @@
     --ink: 27 35 64;
     --mut: 86 96 120;
     --rule: 214 220 232;
+    /* Outlines of controls (inputs, toggles): 3.3:1 against paper, unlike the decorative rule */
+    --control: 124 134 156;
     --tint: 232 236 243;
     --accent: 31 63 191;
     --on-accent: 255 255 255;
     --now: 11 122 122;
+    --danger: 176 32 48;
     color-scheme: light;
     scroll-behavior: smooth;
   }
@@ -23,11 +26,43 @@
     --ink: 228 233 243;
     --mut: 150 160 184;
     --rule: 40 50 82;
+    --control: 92 106 144;
     --tint: 22 30 58;
     --accent: 143 166 255;
     --on-accent: 14 20 40;
     --now: 79 209 197;
+    --danger: 255 140 150;
     color-scheme: dark;
+  }
+
+  /* Higher contrast on request: dividers become control-strength, the header turns solid */
+  @media (prefers-contrast: more) {
+    :root,
+    .dark {
+      --rule: var(--control);
+    }
+    :root {
+      --mut: 64 72 94;
+    }
+    .dark {
+      --mut: 190 198 216;
+    }
+  }
+
+  /* `hidden` must win over display utilities like .flex on the same element */
+  [hidden] {
+    display: none !important;
+  }
+
+  /* We draw our own press states, so drop the grey tap flash */
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Instant press feedback on links that aren't buttons (no transition: it shows on pointer-down).
+     Buttons get .btn's styles through @apply, not the class itself, so each is listed. */
+  a:not(.btn, .btn-primary, .btn-secondary):active {
+    opacity: 0.6;
   }
 
   ::selection {
@@ -37,7 +72,7 @@
 
   body {
     @apply bg-paper text-ink font-sans antialiased;
-    font-size: 17px;
+    font-size: 1.0625rem;
     line-height: 1.6;
   }
 
@@ -90,7 +125,7 @@
   }
 
   .btn {
-    @apply inline-flex items-center gap-2 rounded-md px-4 py-2.5 text-[15px] font-medium border transition-[color,background-color,border-color,transform] duration-150 active:scale-[0.97];
+    @apply inline-flex items-center gap-2 rounded-md px-4 py-2.5 text-[0.9375rem] font-medium border transition-[color,background-color,border-color,transform] duration-150 active:scale-[0.97];
   }
 
   .btn-primary {
@@ -98,7 +133,7 @@
   }
 
   .btn-secondary {
-    @apply btn border-ink/25 text-ink hover:border-ink;
+    @apply btn border-control text-ink hover:border-ink;
   }
 
   .link {
@@ -114,7 +149,13 @@
   }
 
   .form-input {
-    @apply w-full rounded-md px-3 py-2.5 text-base bg-paper border border-rule text-ink placeholder:text-mut/70 outline-none transition-colors focus:border-accent;
+    @apply w-full rounded-md px-3 py-2.5 text-base bg-paper border border-control text-ink placeholder:text-mut/70 outline-none transition-colors focus:border-accent;
+  }
+  .form-input[aria-invalid='true'] {
+    @apply border-danger;
+  }
+  .form-error {
+    @apply text-sm text-danger;
   }
 
   /* Long-form content (blog posts, project write-ups) */
@@ -173,7 +214,7 @@
 
 /* Code blocks: dual Shiki themes, framed with a language label */
 .astro-code {
-  @apply font-mono text-[13.5px] leading-relaxed;
+  @apply font-mono text-[0.84375rem] leading-relaxed;
   background-color: rgb(var(--tint)) !important;
   border-radius: 0 0 8px 8px !important;
   padding: 1.1rem 1.25rem !important;
@@ -216,6 +257,14 @@ html.dark .astro-code span {
 }
 
 /* ---------- Motion ---------- */
+
+/* Contact form: the sent confirmation fades in where the form was */
+.fade-in {
+  animation: fade-in 0.3s ease both;
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+}
 
 /* Smooth page changes; project screenshots and titles morph into their detail page */
 @view-transition {
@@ -265,7 +314,7 @@ html.dark .astro-code span {
   .js [data-reveal] {
     opacity: 0;
     transform: translateY(18px);
-    transition: opacity 0.6s ease, transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    transition: opacity 0.5s ease, transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
     transition-delay: var(--reveal-delay, 0ms);
   }
   .js [data-reveal='pop'] {
@@ -275,13 +324,13 @@ html.dark .astro-code span {
      image, not the observed frame, because a clipped target never reports as intersecting. */
   .js [data-reveal='screen'] {
     transform: none;
-    transition: opacity 0.4s ease, border-color 0.3s, transform 0.3s;
+    transition: opacity 0.5s ease, border-color 0.3s, transform 0.3s;
     transition-delay: var(--reveal-delay, 0ms), 0ms, 0ms;
   }
   .js [data-reveal='screen'] > img {
     clip-path: inset(0 0 100% 0);
-    transition: clip-path 0.9s cubic-bezier(0.65, 0, 0.25, 1);
-    transition-delay: calc(var(--reveal-delay, 0ms) + 0.15s);
+    transition: clip-path 0.7s cubic-bezier(0.65, 0, 0.25, 1);
+    transition-delay: var(--reveal-delay, 0ms);
   }
   .js [data-reveal='screen'].is-in > img {
     clip-path: inset(0);
@@ -308,8 +357,8 @@ html.dark .astro-code span {
     background: rgb(var(--accent));
     transform: scaleX(0);
     transform-origin: left;
-    transition: transform 0.8s cubic-bezier(0.65, 0, 0.25, 1), opacity 0.6s ease 1s;
-    transition-delay: var(--reveal-delay, 0ms), calc(var(--reveal-delay, 0ms) + 0.9s);
+    transition: transform 0.7s cubic-bezier(0.65, 0, 0.25, 1), opacity 0.4s ease;
+    transition-delay: var(--reveal-delay, 0ms), calc(var(--reveal-delay, 0ms) + 0.75s);
   }
   .js [data-reveal='rule'].is-in::before {
     transform: scaleX(1);
@@ -344,16 +393,62 @@ html.dark .astro-code span {
   from { transform: scale(0); }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  @view-transition {
-    navigation: none;
-  }
+/* Theme switch: a short cross-fade instead of a one-frame brightness jump */
+html.theme-switching::view-transition-group(*),
+html.theme-switching::view-transition-old(*),
+html.theme-switching::view-transition-new(*) {
+  animation-duration: 0.2s;
+}
 
+/* Reduced motion keeps feedback but drops movement: fades and colour changes stay,
+   slides, scales, morphs and wipes go */
+@media (prefers-reduced-motion: reduce) {
   :root {
     scroll-behavior: auto;
   }
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
+
+  /* Page changes become a plain cross-fade: nothing morphs between pages */
+  [style*='view-transition-name'] {
+    view-transition-name: none !important;
+  }
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation-duration: 0.2s;
+  }
+
+  /* Sections fade in where they are */
+  .js [data-reveal] {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .js [data-reveal].is-in {
+    opacity: 1;
+  }
+  .js [data-reveal].reveal-instant {
+    transition: none;
+  }
+
+  /* No movement on press, hover or menu open */
+  .btn:active,
+  .press:active,
+  .group:hover [data-reveal='screen'] {
+    transform: none !important;
+  }
+  .mobile-menu {
+    opacity: 0;
+    transition: opacity 0.2s ease, visibility 0s linear 0.2s;
+  }
+  .mobile-menu[data-open='true'] {
+    opacity: 1;
+    transition: opacity 0.2s ease, visibility 0s;
+  }
+}
+
+/* Translucency on request only where it helps: a solid header when transparency is reduced */
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  .site-header {
+    background-color: rgb(var(--paper));
+    backdrop-filter: none;
   }
 }

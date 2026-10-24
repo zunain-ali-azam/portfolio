@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
-    "build": "astro build",
+    "build": "astro build && node scripts/set-function-runtime.mjs && node scripts/check-csp.mjs",
     "preview": "astro preview",
     "astro": "astro"
   },
@@ -20,6 +20,7 @@
     "@astrojs/mdx": "^3.1.9",
     "@astrojs/sitemap": "~3.1.6",
     "@astrojs/tailwind": "^5.1.4",
+    "@astrojs/vercel": "^7.8.2",
     "@tailwindcss/typography": "^0.5.15",
     "@vercel/analytics": "^2.0.1",
     "astro": "^4.16.18",

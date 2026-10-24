@@ -33,7 +33,7 @@ const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
 <BaseLayout title={title} description={description} image={image} type="article">
   <article class="container">
     <header class="pt-10 sm:pt-16 pb-10 border-b border-rule">
-      <a href="/blog" class="link text-[15px]">All writing</a>
+      <a href="/blog" class="link text-[0.9375rem]">All writing</a>
       <h1 class="mt-8 text-4xl sm:text-[3.25rem] font-semibold tracking-[-0.03em] leading-[1.08] max-w-[24ch]">{title}</h1>
       <p class="mt-6 max-w-[60ch] text-lg sm:text-xl text-ink/80 leading-relaxed">{description}</p>
       <p class="mt-6 text-mut">
@@ -51,7 +51,7 @@ const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
         <aside class="hidden lg:block">
           <nav class="sticky top-24" aria-label="On this page">
             <p class="font-medium mb-3">On this page</p>
-            <ol class="space-y-2 text-[15px] border-s border-rule">
+            <ol class="space-y-2 text-[0.9375rem] border-s border-rule">
               {toc.map((h) => (
                 <li>
                   <a

@@ -1,0 +1,19 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHeader from '@/components/PageHeader.astro';
+---
+
+<!-- Only reached when the form is posted without JavaScript, which can't pass the Turnstile check -->
+<BaseLayout title="Message Not Sent" description="Your message didn't go through.">
+  <div class="container">
+    <PageHeader
+      title="Message not sent"
+      intro="Your message didn't go through. The form's spam check needs JavaScript, so if it's turned off, please email me directly instead."
+    >
+      <div class="mt-8 flex flex-wrap gap-3">
+        <a href="/contact" class="btn-primary">Back to the form</a>
+        <a href="mailto:zunainazam456@gmail.com" class="btn-secondary">Email me</a>
+      </div>
+    </PageHeader>
+  </div>
+</BaseLayout>

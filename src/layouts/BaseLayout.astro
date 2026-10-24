@@ -90,9 +90,12 @@ const person = {
     <!-- Prevent flash of wrong theme -->
     <script is:inline>
       (function () {
-        const stored = localStorage.getItem('theme');
+        let stored = null;
+        try { stored = localStorage.getItem('theme'); } catch (e) {}
+        const pref = stored === 'light' || stored === 'dark' ? stored : 'system';
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const isDark = stored === 'dark' || (!stored && prefersDark);
+        const isDark = pref === 'dark' || (pref === 'system' && prefersDark);
+        document.documentElement.dataset.themePref = pref;
         document.documentElement.classList.toggle('dark', isDark);
         document.documentElement.classList.add('js');
       })();
@@ -105,26 +108,64 @@ const person = {
     </main>
     <Footer />
 
+    <!-- iOS Safari only shows :active press states once the page listens for touches -->
     <script is:inline>
-      // Scroll reveals: content already on screen shows at once (so page transitions stay clean);
-      // content scrolled into view animates in, staggered within each batch
+      document.addEventListener('touchstart', function () {}, { passive: true });
+    </script>
+
+    <script is:inline>
+      // Scroll reveals. Content already on screen shows at once (so page transitions stay clean).
+      // Reveals start once content is a little way into the viewport, so they're seen; when the visitor is scrolling
+      // fast, content appears instantly instead of making them wait for an animation.
       (function () {
         const els = document.querySelectorAll('[data-reveal]');
-        if (!('IntersectionObserver' in window) || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        // Reduced motion still gets a plain fade (handled in CSS), so only bail out without IntersectionObserver
+        if (!('IntersectionObserver' in window)) {
           els.forEach((el) => el.classList.add('is-in'));
           return;
         }
+
+        // Scroll speed in px/ms, measured over the last 100ms of scrolling. A window is steadier than
+        // per-event deltas, which spike when two scroll events land in the same millisecond.
+        const samples = [];
+        let settleTimer;
+        addEventListener('scroll', () => {
+          const now = performance.now();
+          samples.push([now, scrollY]);
+          while (samples.length > 2 && now - samples[0][0] > 100) samples.shift();
+          clearTimeout(settleTimer);
+          settleTimer = setTimeout(settle, 150);
+        }, { passive: true });
+        const speed = () => {
+          const now = performance.now();
+          if (samples.length < 2 || now - samples[samples.length - 1][0] > 150) return 0; // stopped
+          const [t0, y0] = samples[0], [t1, y1] = samples[samples.length - 1];
+          return Math.abs(y1 - y0) / Math.max(t1 - t0, 16);
+        };
+        const FAST = 1.2; // ~1200px/s: faster than reading, so skip the animation
+
         const vh = window.innerHeight;
+        const pending = new Set();
+        const reveal = (el, i, fast) => {
+          if (fast) el.classList.add('reveal-instant');
+          // Cap the stagger so nothing waits long when several items arrive at once
+          else el.style.setProperty('--reveal-delay', `${Math.min(i, 3) * 80}ms`);
+          el.classList.add('is-in');
+          io.unobserve(el);
+          pending.delete(el);
+        };
         const io = new IntersectionObserver((entries) => {
-          entries.filter((e) => e.isIntersecting).forEach((entry, i) => {
-            entry.target.style.setProperty('--reveal-delay', `${i * 90}ms`);
-            entry.target.classList.add('is-in');
-            io.unobserve(entry.target);
-          });
-        }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
+          const fast = speed() > FAST;
+          entries.filter((e) => e.isIntersecting).forEach((entry, i) => reveal(entry.target, i, fast));
+        }, { threshold: 0, rootMargin: '0px 0px -10% 0px' });
+        // Reveals wait until content is 10% into the screen; once scrolling stops, show anything
+        // still waiting in that bottom strip so nothing sits blank while the visitor reads
+        function settle() {
+          [...pending].filter((el) => el.getBoundingClientRect().top < innerHeight).forEach((el, i) => reveal(el, i, false));
+        }
         els.forEach((el) => {
-          if (el.getBoundingClientRect().top < vh * 0.94) el.classList.add('is-in', 'reveal-instant');
-          else io.observe(el);
+          if (el.getBoundingClientRect().top < vh) el.classList.add('is-in', 'reveal-instant');
+          else { pending.add(el); io.observe(el); }
         });
       })();
     </script>

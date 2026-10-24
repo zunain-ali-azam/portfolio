@@ -1,0 +1,13 @@
+{
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'sha256-Enuza/9f4b5Pgf4ZDda23tyMV7UPZeDU6qWCXfHcgTE=' 'sha256-EuapM2j6qGgA4wAT4cjguPloSw5ZoScgB5M5TlcJK1U=' 'sha256-9+8A9uDzDAeJEu13nhMx18tXw2CyN7KUrjfdC1YOnB4=' https://app.cal.com https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; frame-src 'self' https://app.cal.com https://cal.com https://challenges.cloudflare.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; upgrade-insecure-requests"
+        }
+      ]
+    }
+  ]
+}

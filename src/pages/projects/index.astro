@@ -24,7 +24,7 @@ const categories = ['All', ...new Set(allProjects.flatMap((p) => p.data.category
       {categories.map((cat) => (
         <button
           type="button"
-          class="filter-btn rounded-md px-3 py-1.5 text-[15px] border border-rule text-ink hover:border-ink transition-colors aria-pressed:bg-ink aria-pressed:text-paper aria-pressed:border-ink"
+          class="filter-btn press rounded-md px-3 py-1.5 text-[0.9375rem] border border-control text-ink hover:border-ink transition-[color,background-color,border-color,transform] duration-100 active:scale-[0.96] aria-pressed:bg-ink aria-pressed:text-paper aria-pressed:border-ink"
           data-category={cat}
           aria-pressed={cat === 'All' ? 'true' : 'false'}
         >
