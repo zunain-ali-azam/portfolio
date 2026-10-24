@@ -192,6 +192,10 @@ The site deploys to Vercel. Every page is prerendered at build time; the only co
 
 The site address lives in one place: `site` in `astro.config.mjs`. Canonical URLs, the sitemap, `robots.txt` and structured data all read from it, so moving to a new domain is a one-line change there (plus updating this README and the Turnstile widget's hostnames).
 
+### Content Security Policy
+
+`vercel.json` sends a Content-Security-Policy header on every response. It allows scripts from the site itself, Cal.com (the booking embed on `/contact`) and Cloudflare Turnstile, and allows the three inline scripts in `BaseLayout.astro` by their SHA-256 hashes. Editing one of those scripts changes its hash, so `pnpm build` runs `scripts/check-csp.mjs`, which fails the build and prints the new hash to paste into `vercel.json`. A new third-party script, font or embed needs its origin added to the matching directive.
+
 ### Contact form setup
 
 The form posts to `/api/contact`, which validates the message (rules in `src/lib/contact.ts`, shared with the form's script), checks it with Cloudflare Turnstile and emails it through Resend with Reply-To set to the visitor. Set these in Vercel → Project → Settings → Environment Variables (see `.env.example`), then redeploy:
