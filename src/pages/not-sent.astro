@@ -4,7 +4,7 @@ import PageHeader from '@/components/PageHeader.astro';
 ---
 
 <!-- Only reached when the form is posted without JavaScript, which can't pass the Turnstile check -->
-<BaseLayout title="Message Not Sent" description="Your message didn't go through.">
+<BaseLayout title="Message Not Sent" description="Your message didn't go through." noindex>
   <div class="container">
     <PageHeader
       title="Message not sent"

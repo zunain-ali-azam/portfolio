@@ -2,24 +2,36 @@
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import Hero from '@/components/Hero.astro';
 import HowICanHelp from '@/components/HowICanHelp.astro';
+import SplitText from '@/components/SplitText.astro';
+import ServicesMarquee from '@/components/ServicesMarquee.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
-import ProjectRow from '@/components/ProjectRow.astro';
 import PostRow from '@/components/PostRow.astro';
 import ProjectFeature from '@/components/ProjectFeature.astro';
-import ExperienceTimeline from '@/components/ExperienceTimeline.astro';
+import ProjectRow from '@/components/ProjectRow.astro';
+import Faq from '@/components/Faq.astro';
+import { homeFaqs } from '@/data/faqs';
 import { getCollection } from 'astro:content';
 import { readingTime } from '@/lib/format';
+import experience from '@/data/experience.json';
 
 const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
 const atWork = projects.filter((p) => p.data.employer);
 const ownBuilds = projects.filter((p) => !p.data.employer);
 
-// Screenshots get the large treatment; logo-only or image-less projects stay as compact rows
-const hasScreenshot = (p: (typeof projects)[number]) => !!p.data.image && !p.data.image.toLowerCase().includes('logo');
+// Projects without a screenshot (or with only a logo) are listed as compact rows, not big cards
+const hasImage = (p: (typeof projects)[number]) => !!p.data.image;
+const ownWithImage = ownBuilds.filter(hasImage);
+const ownWithout = ownBuilds.filter((p) => !hasImage(p));
 
-const projectGroups = [
-  { title: 'Products I work on at IOMechs', intro: 'Live platforms with real users, where I work on dashboards, framework migrations and bilingual UI.', items: atWork },
-  { title: 'My own products', intro: "Full-stack products I've designed and built, including Calyndrs, which I co-founded.", items: ownBuilds },
+// Whole years since my first role, so the figure stays current on its own
+const firstStart = Math.min(...experience.map((job) => new Date(`1 ${job.start}`).getTime()));
+const yearsWorking = Math.floor((Date.now() - firstStart) / (365.25 * 24 * 60 * 60 * 1000));
+
+const stats = [
+  { value: `${yearsWorking}+`, label: 'years building for the web' },
+  { value: '10+', label: 'projects completed' },
+  { value: '2', label: 'framework migrations led' },
+  { value: '99', label: "Lighthouse score on Estenarh's website, up from 70" },
 ];
 
 const posts = (await getCollection('blog', ({ data }) => !data.draft))
@@ -28,52 +40,121 @@ const posts = (await getCollection('blog', ({ data }) => !data.draft))
 ---
 
 <BaseLayout
-  title="Full-Stack Software Engineer"
-  description="Zunain Ali Azam, full-stack software engineer in Karachi, open to remote work and relocation. Web apps in Next.js, Angular and Node.js, machine learning and technical SEO."
+  title="Full-Stack Developer"
+  description="Zunain Ali Azam, full-stack developer in Karachi, open to remote work and relocation. Next.js, Angular and Node.js web apps, migrations and technical SEO."
+  jsonLd={[{ '@type': 'WebSite', name: 'Zunain Ali Azam', url: Astro.site?.toString() }]}
 >
   <Hero />
+  <section class="container pb-24 sm:pb-36">
+    <div class="grid gap-10 lg:gap-16 lg:grid-cols-[minmax(0,0.7fr)_minmax(0,1fr)] lg:items-center">
+      <div class="w-full max-w-md lg:max-w-none aspect-[4/4.6] rounded-2xl overflow-hidden bg-tint" data-reveal="screen">
+        <img
+          src="/profile.webp"
+          alt="Zunain Ali Azam"
+          width="760"
+          height="727"
+          loading="lazy"
+          decoding="async"
+          class="w-full h-full object-cover object-[50%_25%]"
+        />
+      </div>
+      <div data-reveal style="--reveal-delay: 150ms">
+        <p class="type-statement">
+          Hi, I'm Zunain. <span class="text-mut">Getting an app to work is the easy part.</span>
+          I care about the rest: tests that catch problems before your users do, pages that load fast
+          and rank, and releases that don't break on a Friday.
+        </p>
+        <div class="mt-10 flex flex-wrap gap-3">
+          <a href="/about" class="btn-primary">More about me</a>
+          <a href="/experience" class="btn-secondary">Experience</a>
+          <a href="/resume" class="btn-secondary">Resume</a>
+        </div>
+      </div>
+    </div>
 
-  <div class="container pt-20 sm:pt-24 space-y-24 sm:space-y-28">
-    <section>
-      <SectionHeader title="Problems I can take off your plate" intro="Each one is something I've already solved, with a link to the work." />
+    <!-- Figures in ruled cells, read left to right -->
+    <dl class="mt-16 sm:mt-24 grid grid-cols-2 lg:grid-cols-4 gap-px bg-rule border border-rule rounded-2xl overflow-hidden">
+      {stats.map(({ value, label }) => (
+        <div class="bg-paper p-6 sm:p-8 flex flex-col-reverse justify-end gap-3" data-reveal>
+          <dt class="text-mut leading-snug">{label}</dt>
+          <dd class="text-[1.75rem] sm:text-6xl lg:text-7xl font-semibold tracking-[-0.05em] leading-none whitespace-nowrap nums" data-count>{value}</dd>
+        </div>
+      ))}
+    </dl>
+  </section>
+
+  <section class="bg-band text-on-band py-20 sm:py-28">
+    <div class="container">
+      <div class="mb-12 sm:mb-16 grid gap-6 md:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] md:items-end gap-x-12">
+        <SplitText class="type-section max-w-[14ch]" text="Problems I can take off your plate" />
+        <p class="text-band-mut max-w-[44ch]" data-reveal style="--reveal-delay: 300ms">If one of these sounds familiar, I've dealt with it before.</p>
+      </div>
+    </div>
+    <div class="mb-12 sm:mb-16" data-reveal>
+      <ServicesMarquee />
+    </div>
+    <div class="container">
       <HowICanHelp />
-    </section>
+    </div>
+  </section>
 
-    {projectGroups.map(({ title, intro, items }, i) => items.length > 0 && (
-      <section>
-        <SectionHeader title={title} intro={intro} href={i === 0 ? '/projects' : undefined} linkLabel="All projects" />
-        <div class="grid gap-x-8 gap-y-12 md:grid-cols-2">
-          {items.filter(hasScreenshot).map((project) => (
-            <ProjectFeature
+  <div class="container mt-24 sm:mt-36 space-y-24 sm:space-y-36">
+    <section>
+      <SectionHeader
+        title="Things I've built"
+        href="/projects"
+        linkLabel="All projects"
+      />
+      <div class="grid gap-x-5 gap-y-14 md:grid-cols-2">
+        {ownWithImage.map((project) => (
+          <ProjectFeature
+            title={project.data.title}
+            description={project.data.description}
+            tech={project.data.tech}
+            category={project.data.category}
+            slug={project.slug}
+            yearCompleted={project.data.yearCompleted}
+            image={project.data.image!}
+            compact
+          />
+        ))}
+      </div>
+      {ownWithout.length > 0 && (
+        <div class="mt-14 border-b border-rule">
+          {ownWithout.map((project) => (
+            <ProjectRow
               title={project.data.title}
               description={project.data.description}
               tech={project.data.tech}
+              category={project.data.category}
               slug={project.slug}
               yearCompleted={project.data.yearCompleted}
-              image={project.data.image!}
+              compact
             />
           ))}
         </div>
-        {items.some((p) => !hasScreenshot(p)) && (
-          <div class="mt-12 border-b border-rule">
-            {items.filter((p) => !hasScreenshot(p)).map((project) => (
-              <ProjectRow
-                title={project.data.title}
-                description={project.data.description}
-                tech={project.data.tech}
-                slug={project.slug}
-                yearCompleted={project.data.yearCompleted}
-                image={project.data.image}
-              />
-            ))}
-          </div>
-        )}
-      </section>
-    ))}
+      )}
+    </section>
 
     <section>
-      <SectionHeader title="Experience" href="/experience" linkLabel="Full history" />
-      <ExperienceTimeline preview />
+      <SectionHeader
+        title="At IOMechs"
+        intro="Platforms I work on with the IOMechs team. Open one to see my part."
+      />
+      <div class="grid gap-x-5 gap-y-14 md:grid-cols-2">
+        {atWork.filter(hasImage).map((project) => (
+          <ProjectFeature
+            title={project.data.title}
+            description={project.data.description}
+            tech={project.data.tech}
+            category={project.data.category}
+            slug={project.slug}
+            yearCompleted={project.data.yearCompleted}
+            image={project.data.image!}
+            compact
+          />
+        ))}
+      </div>
     </section>
 
     {posts.length > 0 && (
@@ -92,13 +173,7 @@ const posts = (await getCollection('blog', ({ data }) => !data.draft))
         </div>
       </section>
     )}
-
-    <section class="rounded-xl bg-tint px-6 py-10 sm:px-12 sm:py-14 flex flex-wrap items-end justify-between gap-8" data-reveal="pop">
-      <div>
-        <h2 class="type-section max-w-[28ch]">Hiring, or need something built?</h2>
-        <p class="mt-3 text-ink/80 max-w-[52ch]">Whether it's a full-time role or a freelance project, tell me what you're working on.</p>
-      </div>
-      <a href="/contact" class="btn-primary">Get in touch</a>
-    </section>
   </div>
+
+  <Faq section={homeFaqs} />
 </BaseLayout>

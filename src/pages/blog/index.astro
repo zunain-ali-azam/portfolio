@@ -2,6 +2,8 @@
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import PageHeader from '@/components/PageHeader.astro';
 import PostRow from '@/components/PostRow.astro';
+import Faq from '@/components/Faq.astro';
+import { writingFaqs } from '@/data/faqs';
 import { getCollection } from 'astro:content';
 import { readingTime } from '@/lib/format';
 
@@ -26,7 +28,7 @@ const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
 
     {posts.length === 0 ? (
       <p class="py-16 text-mut border-t border-rule">
-        No posts yet. The first one is in progress.
+        No posts here yet.
       </p>
     ) : (
       <div class="border-b border-rule">
@@ -42,4 +44,6 @@ const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
       </div>
     )}
   </div>
+
+  <Faq section={writingFaqs} primary={{ href: '/contact', label: 'Send a question' }} secondary={{ href: '/contact#book', label: 'Book a call' }} />
 </BaseLayout>

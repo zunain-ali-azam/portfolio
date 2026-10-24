@@ -8,9 +8,9 @@
     "end": null,
     "current": true,
     "bullets": [
-      "Co-founded Calyndrs, an event management and discovery platform, and build it as a product, from product decisions to code.",
-      "Built event creation, RSVPs, payments, marketing workflows, attendee engagement and performance analytics, with event discovery and booking for attendees.",
-      "Designed workflows connecting organizers, venues and event management companies.",
+      "Co-founded Calyndrs, an event management and discovery platform, and have been part of the team building it from the first idea to launch.",
+      "Worked on event creation, RSVPs, payments, marketing workflows, attendee engagement and performance analytics, with event discovery and booking for attendees.",
+      "Helped design the workflows connecting organizers, venues and event management companies.",
       "Set up testing: Vitest unit tests for authentication and event/calendar CRUD flows, and React Testing Library and Playwright integration and end-to-end tests with MSW-mocked APIs."
     ],
     "tech": ["Next.js", "Nest.js", "MongoDB", "TypeScript", "Tailwind CSS", "Vitest", "Playwright"]
@@ -25,15 +25,15 @@
     "current": true,
     "bullets": [
       "Contributed to Estenarh (80,000+ users) by developing and maintaining Admin dashboards and customer-facing modules using Angular, Angular Material, and Tailwind CSS.",
-      "Improved Estenarh's search visibility and frontend maintainability by resolving Technical SEO issues and leading migration efforts from Next.js v14 to v16.",
+      "Led performance and technical SEO optimization of the Estenarh website, raising Lighthouse scores from 70 to 99 on desktop and from the 50s to the 80s on mobile, and cutting bundle size by ~3x (16 MB to under 5 MB). Also led the Next.js v14 to v16 migration through to production release.",
       "Developed and maintained extensive bilingual UI experiences for English LTR and Arabic RTL, implementing i18n across customer-facing and administrative interfaces while ensuring consistent, responsive layouts and reusable components across both languages.",
       "Designed and implemented analytical dashboards tracking client acquisition, retention rates, bookings, and revenue metrics for consultants and platform-wide performance — replacing manual reporting and reducing reporting effort by ~30–40%.",
       "Led the migration of Estenarh Admin from Angular v14 to v17 through structured refactoring, improving scalability, UI consistency, and long-term maintainability.",
       "Contributed to IMS and Admin workflows for AZM using Angular, Angular Material, and reusable component architecture, streamlining internal operational processes.",
-      "Stabilized NowCut Admin and Shop portals by resolving 12+ production issues and delivering new features within a monorepo setup using Next.js, TailwindCSS, and TanStack Query.",
+      "Stabilized NowCut Admin and Shop portals by resolving 12+ production issues and delivering new features within a monorepo setup using Next.js, Tailwind CSS, and TanStack Query.",
       "Collaborated with backend and QA teams across multiple products to validate API integrations and catch regressions ahead of production releases."
     ],
-    "tech": ["Angular", "Angular Material", "Next.js", "TailwindCSS", "TanStack Query", "TypeScript"]
+    "tech": ["Angular", "Angular Material", "Next.js", "Tailwind CSS", "TanStack Query", "TypeScript"]
   },
   {
     "company": "Infinity Solutions",

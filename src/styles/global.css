@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'Readex Pro';
+  font-style: normal;
+  font-weight: 160 700;
+  font-display: swap;
+  src: url('/fonts/readex-pro-latin.woff2') format('woff2');
+}
+
 @layer base {
   /* Design tokens: RGB channels so Tailwind can apply alpha (e.g. bg-ink/10).
      Palette taken from Sindhi kashi tilework: cobalt and turquoise on white, indigo ink. */
@@ -17,8 +25,16 @@
     --on-accent: 255 255 255;
     --now: 11 122 122;
     --danger: 176 32 48;
+    /* Dark bands (problems, footer): deep indigo with a pale cobalt highlight, the tile's glaze at night */
+    --band: 27 35 64;
+    --on-band: 243 245 248;
+    --band-mut: 160 170 196;
+    --band-accent: 143 166 255;
+    --band-rule: 54 64 100;
     color-scheme: light;
     scroll-behavior: smooth;
+    /* Long, soft deceleration used by every reveal */
+    --ease-out-soft: cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .dark {
@@ -32,6 +48,11 @@
     --on-accent: 14 20 40;
     --now: 79 209 197;
     --danger: 255 140 150;
+    --band: 8 12 28;
+    --on-band: 228 233 243;
+    --band-mut: 150 160 184;
+    --band-accent: 143 166 255;
+    --band-rule: 36 46 78;
     color-scheme: dark;
   }
 
@@ -82,6 +103,11 @@
     border-radius: 4px;
   }
 
+  /* Focus rings stay visible on the dark bands */
+  .bg-band :focus-visible {
+    outline-color: rgb(var(--band-accent));
+  }
+
   time,
   .nums {
     font-variant-numeric: tabular-nums;
@@ -89,32 +115,45 @@
 }
 
 @layer components {
+  /* Wide canvas: work images and display type run nearly edge to edge */
   .container {
-    @apply max-w-6xl mx-auto px-4 sm:px-6 lg:px-8;
+    @apply max-w-[88rem] mx-auto px-4 sm:px-8 lg:px-10;
   }
 
-  /* Hero statement: Readex Pro's hyper-expansion axis widened a little for presence */
+  /* Hero statement: scales with the viewport so it always spans the page */
   .type-hero {
-    @apply text-[2.5rem] sm:text-6xl lg:text-[4.75rem];
+    font-size: clamp(2.75rem, 7.3vw, 7.75rem);
     font-weight: 600;
-    font-variation-settings: 'HEXP' 35;
-    letter-spacing: -0.04em;
-    line-height: 1.02;
+    font-variation-settings: 'HEXP' 15;
+    letter-spacing: -0.05em;
+    line-height: 0.96;
+    /* Large type carries visible side bearing; pull it back so letters line up with text below */
+    margin-inline-start: -0.055em;
   }
 
   .type-page {
-    @apply text-[2.75rem] sm:text-6xl lg:text-7xl;
+    font-size: clamp(3rem, 9vw, 8rem);
     font-weight: 600;
-    font-variation-settings: 'HEXP' 40;
+    font-variation-settings: 'HEXP' 35;
+    letter-spacing: -0.05em;
+    line-height: 0.95;
+    /* Large type carries visible side bearing; pull it back so letters line up with text below */
+    margin-inline-start: -0.055em;
+  }
+
+  /* Paragraph-sized statement set large, for "about" moments */
+  .type-statement {
+    font-size: clamp(1.25rem, 3.4vw, 3.25rem);
+    font-weight: 500;
     letter-spacing: -0.035em;
-    line-height: 1;
+    line-height: 1.12;
   }
 
   .type-section {
-    @apply text-2xl sm:text-[2rem];
+    font-size: clamp(2rem, 4.2vw, 3.5rem);
     font-weight: 600;
-    letter-spacing: -0.025em;
-    line-height: 1.15;
+    letter-spacing: -0.04em;
+    line-height: 1;
   }
 
   .type-item {
@@ -125,7 +164,7 @@
   }
 
   .btn {
-    @apply inline-flex items-center gap-2 rounded-md px-4 py-2.5 text-[0.9375rem] font-medium border transition-[color,background-color,border-color,transform] duration-150 active:scale-[0.97];
+    @apply inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-[0.9375rem] font-medium border transition-[color,background-color,border-color,transform] duration-150 active:scale-[0.97];
   }
 
   .btn-primary {
@@ -134,6 +173,11 @@
 
   .btn-secondary {
     @apply btn border-control text-ink hover:border-ink;
+  }
+
+  /* On a dark band: pale fill, inverts to outline on hover */
+  .btn-band {
+    @apply btn bg-on-band text-band border-on-band hover:bg-transparent hover:text-on-band;
   }
 
   .link {
@@ -232,17 +276,57 @@ html.dark .astro-code span {
   @apply flex items-center justify-between px-4 py-2 rounded-t-lg bg-tint border-b border-rule text-xs text-mut;
 }
 
-/* Mobile menu: grid rows animate the height open; visibility keeps closed links out of the tab order */
+/* FAQ accordions: the answer slides open where the browser can animate to auto height
+   (others just open), and the plus turns into a cross */
+.faq summary::-webkit-details-marker {
+  display: none;
+}
+.faq {
+  interpolate-size: allow-keywords;
+}
+.faq::details-content {
+  block-size: 0;
+  overflow: hidden;
+  transition: block-size 0.4s var(--ease-out-soft), content-visibility 0.4s allow-discrete;
+}
+.faq[open]::details-content {
+  block-size: auto;
+}
+.faq-icon {
+  transition: transform 0.3s var(--ease-out-soft);
+}
+.faq[open] .faq-icon {
+  transform: rotate(45deg);
+}
+/* Focus rings stay visible on the cobalt call-to-action panel */
+.faq-cta :focus-visible {
+  outline-color: rgb(var(--on-accent));
+}
+
+/* Mobile menu: a sheet that fades in over the page while its rows rise one after another;
+   visibility keeps closed links out of the tab order */
 .mobile-menu {
-  display: grid;
-  grid-template-rows: 0fr;
+  opacity: 0;
   visibility: hidden;
-  transition: grid-template-rows 0.3s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0.3s;
+  transition: opacity 0.25s ease, visibility 0s linear 0.25s;
 }
 .mobile-menu[data-open='true'] {
-  grid-template-rows: 1fr;
+  opacity: 1;
   visibility: visible;
-  transition: grid-template-rows 0.3s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s;
+  transition: opacity 0.25s ease, visibility 0s;
+}
+.mobile-menu-item {
+  transform: translateY(12px);
+  opacity: 0;
+  transition: transform 0.45s var(--ease-out-soft), opacity 0.3s ease;
+}
+.mobile-menu[data-open='true'] .mobile-menu-item {
+  transform: none;
+  opacity: 1;
+  transition-delay: calc(var(--i) * 35ms + 50ms);
+}
+html.menu-open {
+  overflow: hidden;
 }
 .menu-icon path {
   transform-box: fill-box;
@@ -276,17 +360,11 @@ html.dark .astro-code span {
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  /* Hero verbs: each one acts out its meaning, staggered, once */
-  .verb {
-    display: inline-block;
-    animation: 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
+  /* Availability dot: a slow ripple, like a live indicator */
+  .status-ping {
+    animation: status-ping 2.4s cubic-bezier(0, 0, 0.2, 1) infinite;
   }
-  .verb-ships  { animation-name: verb-ships;  animation-delay: 0.15s; }
-  .verb-scales { animation-name: verb-scales; animation-delay: 0.45s; transform-origin: 0 85%; }
-  .verb-learns { animation-name: verb-learns; animation-delay: 0.75s; animation-duration: 1s; }
-  .verb-ranks  { animation-name: verb-ranks;  animation-delay: 1.05s; }
 
-  /* Timeline draws itself as it scrolls into view, where scroll-driven animation is supported */
   @supports (animation-timeline: view()) {
     .timeline::before {
       content: '';
@@ -311,37 +389,65 @@ html.dark .astro-code span {
 
 /* Section reveals (JS adds .is-in; without JS or with reduced motion nothing is hidden) */
 @media (prefers-reduced-motion: no-preference) {
+  /* Default: content rises a little and comes out of a soft blur */
   .js [data-reveal] {
     opacity: 0;
-    transform: translateY(18px);
-    transition: opacity 0.5s ease, transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+    transform: translateY(24px);
+    filter: blur(8px);
+    transition: opacity 0.8s ease, transform 0.9s var(--ease-out-soft), filter 0.8s ease;
     transition-delay: var(--reveal-delay, 0ms);
   }
   .js [data-reveal='pop'] {
     transform: scale(0.96);
   }
-  /* Screenshots: the frame fades in and the image wipes down inside it. The clip sits on the
-     image, not the observed frame, because a clipped target never reports as intersecting. */
-  .js [data-reveal='screen'] {
-    transform: none;
-    transition: opacity 0.5s ease, border-color 0.3s, transform 0.3s;
-    transition-delay: var(--reveal-delay, 0ms), 0ms, 0ms;
-  }
-  .js [data-reveal='screen'] > img {
-    clip-path: inset(0 0 100% 0);
-    transition: clip-path 0.7s cubic-bezier(0.65, 0, 0.25, 1);
-    transition-delay: var(--reveal-delay, 0ms);
-  }
-  .js [data-reveal='screen'].is-in > img {
-    clip-path: inset(0);
-  }
   .js [data-reveal].is-in {
     opacity: 1;
     transform: none;
+    filter: none;
   }
-  /* Hover lift on screenshots must still apply after the reveal */
-  .js .group:hover [data-reveal='screen'].is-in {
-    transform: translateY(-0.25rem);
+
+  /* Split headings: each word rises out of its own line mask, one after another */
+  .js [data-reveal='split'] {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+  .split .word {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: top;
+    /* Room for descenders inside the mask, given back so line spacing doesn't change */
+    padding-bottom: 0.12em;
+    margin-bottom: -0.12em;
+  }
+  .js .split .word-inner {
+    display: inline-block;
+    transform: translateY(110%);
+    transition: transform 1s var(--ease-out-soft);
+    transition-delay: calc(var(--reveal-delay, 0ms) + var(--i) * 55ms);
+  }
+  .js .split.is-in .word-inner {
+    transform: none;
+  }
+
+  /* Images: the frame fades in while the picture settles from a slight zoom */
+  .js [data-reveal='screen'] {
+    transform: none;
+    filter: none;
+    transition: opacity 0.8s ease, outline-color 0.3s;
+    transition-delay: var(--reveal-delay, 0ms), 0ms;
+  }
+  /* The settle is an animation, not a transition, so the transition below stays free for hover.
+     The frame is invisible until it reveals, so the image needs no zoomed hidden state of its own. */
+  .js [data-reveal='screen'].is-in > img {
+    animation: image-settle 1.4s var(--ease-out-soft) var(--reveal-delay, 0ms) backwards;
+  }
+  /* A slow zoom on hover that eases back the same way, with no reveal delay in either direction */
+  .feature-img {
+    transition: transform 0.7s var(--ease-out-soft);
+  }
+  .group:hover .feature-img {
+    transform: scale(1.035);
   }
 
   /* Rule rows: a cobalt line draws across the divider, then fades back to the rule colour */
@@ -367,24 +473,30 @@ html.dark .astro-code span {
 
   .js [data-reveal].reveal-instant,
   .js [data-reveal].reveal-instant::before,
-  .js [data-reveal].reveal-instant > img {
+  .js [data-reveal].reveal-instant .word-inner {
     transition: none;
+  }
+  .js [data-reveal].reveal-instant > img {
+    animation: none;
+  }
+
+  /* Services strip: a slow, endless scroll that pauses under the pointer */
+  .marquee-track {
+    animation: marquee 45s linear infinite;
+  }
+  .marquee:hover .marquee-track {
+    animation-play-state: paused;
   }
 }
 
-@keyframes verb-ships {
-  from { opacity: 0; transform: translateX(-0.5em); }
+@keyframes image-settle {
+  from { transform: scale(1.12); }
 }
-@keyframes verb-scales {
-  from { opacity: 0; transform: scale(0.35); }
-  70% { opacity: 1; transform: scale(1.03); }
+@keyframes marquee {
+  to { transform: translateX(-50%); }
 }
-@keyframes verb-learns {
-  from { opacity: 0.15; filter: blur(12px); }
-}
-@keyframes verb-ranks {
-  from { opacity: 0; transform: translateY(0.55em); }
-  75% { opacity: 1; transform: translateY(-0.06em); }
+@keyframes status-ping {
+  75%, 100% { transform: scale(2.4); opacity: 0; }
 }
 @keyframes timeline-draw {
   from { transform: scaleY(0); }
@@ -428,6 +540,22 @@ html.theme-switching::view-transition-new(*) {
   .js [data-reveal].reveal-instant {
     transition: none;
   }
+  .js [data-reveal] {
+    transform: none !important;
+    filter: none !important;
+  }
+  .split .word-inner,
+  [data-reveal='screen'] > img {
+    transform: none !important;
+  }
+  .marquee-track {
+    animation: none;
+    flex-wrap: wrap;
+    width: auto;
+  }
+  .marquee-copy {
+    display: none;
+  }
 
   /* No movement on press, hover or menu open */
   .btn:active,
@@ -435,13 +563,12 @@ html.theme-switching::view-transition-new(*) {
   .group:hover [data-reveal='screen'] {
     transform: none !important;
   }
-  .mobile-menu {
-    opacity: 0;
-    transition: opacity 0.2s ease, visibility 0s linear 0.2s;
+  .mobile-menu-item {
+    transform: none;
   }
-  .mobile-menu[data-open='true'] {
-    opacity: 1;
-    transition: opacity 0.2s ease, visibility 0s;
+  .faq::details-content,
+  .faq-icon {
+    transition: none;
   }
 }
 

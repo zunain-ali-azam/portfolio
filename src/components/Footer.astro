@@ -9,29 +9,31 @@ const links = [
 const year = new Date().getFullYear();
 ---
 
-<footer class="mt-28 border-t border-rule">
-  <div class="container py-12 grid gap-8 md:grid-cols-[1fr_auto] md:items-end">
-    <div>
-      <a href="mailto:zunainazam456@gmail.com" class="type-section link break-all">zunainazam456@gmail.com</a>
-      <p class="mt-3 text-mut">Software engineer in Karachi, Pakistan. Usually replies within a day.</p>
-    </div>
+<footer class="mt-24 sm:mt-36 bg-band text-on-band">
+  <div class="container pt-12 sm:pt-16 pb-10">
+    <div class="grid gap-8 md:grid-cols-[1fr_auto] md:items-end">
+      <div>
+        <a href="mailto:zunainazam456@gmail.com" class="text-lg sm:text-2xl font-medium tracking-[-0.02em] hover:text-band-accent transition-colors break-all">zunainazam456@gmail.com</a>
+        <p class="mt-2 text-band-mut">Full-stack developer in Karachi, Pakistan. Usually replies within a day.</p>
+      </div>
 
-    <div class="flex flex-col gap-4 md:items-end">
-      <ul class="flex flex-wrap gap-x-6 gap-y-2">
-        {links.map(({ label, href }) => (
-          <li>
-            <a
-              href={href}
-              target={href.startsWith('http') ? '_blank' : undefined}
-              rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
-              class="text-ink hover:text-accent transition-colors"
-            >
-              {label}
-            </a>
-          </li>
-        ))}
-      </ul>
-      <p class="text-sm text-mut">&copy; {year} Zunain Ali Azam</p>
+      <div class="flex flex-col gap-4 md:items-end">
+        <ul class="flex flex-wrap gap-x-6 gap-y-2">
+          {links.map(({ label, href }) => (
+            <li>
+              <a
+                href={href}
+                target={href.startsWith('http') ? '_blank' : undefined}
+                rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
+                class="hover:text-band-accent transition-colors"
+              >
+                {label}
+              </a>
+            </li>
+          ))}
+        </ul>
+        <p class="text-sm text-band-mut">&copy; {year} Zunain Ali Azam</p>
+      </div>
     </div>
   </div>
 </footer>

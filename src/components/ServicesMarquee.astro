@@ -1,0 +1,30 @@
+---
+// The services behind the problems list, scrolling slowly across the band. The list is written
+// twice so the loop is seamless; the copy is hidden from screen readers and, with reduced motion, from view.
+const services = [
+  'Full-stack web apps',
+  'Prototype to production',
+  'App audits',
+  'Framework migrations',
+  'Performance and technical SEO',
+  'Dashboards and reporting',
+  'English and Arabic (RTL) interfaces',
+  'Production bug fixing',
+  'Machine learning and NLP',
+];
+---
+
+<div class="marquee overflow-hidden py-6 sm:py-8 border-y border-band-rule [mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]">
+  <div class="marquee-track flex w-max">
+    {[false, true].map((copy) => (
+      <ul class:list={['flex shrink-0 items-center', copy && 'marquee-copy']} aria-hidden={copy ? 'true' : undefined} aria-label={copy ? undefined : 'Services'}>
+        {services.map((service) => (
+          <li class="flex items-center text-xl sm:text-4xl font-medium tracking-[-0.03em] whitespace-nowrap">
+            <span class="px-6 sm:px-10">{service}</span>
+            <span class="w-2 h-2 rounded-full bg-band-accent" aria-hidden="true"></span>
+          </li>
+        ))}
+      </ul>
+    ))}
+  </div>
+</div>

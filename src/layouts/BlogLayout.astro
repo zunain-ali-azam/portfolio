@@ -28,9 +28,22 @@ interface Props {
 
 const { title, description, date, slug, minutes, tags = [], image, headings = [], prev, next } = Astro.props;
 const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
+
+const jsonLd = [
+  {
+    '@type': 'BlogPosting',
+    headline: title,
+    description,
+    datePublished: date.toISOString(),
+    url: new URL(`/blog/${slug}`, Astro.site).toString(),
+    ...(image && { image: new URL(image, Astro.site).toString() }),
+    keywords: tags.join(', '),
+    author: { '@id': new URL('/#person', Astro.site).toString() },
+  },
+];
 ---
 
-<BaseLayout title={title} description={description} image={image} type="article">
+<BaseLayout title={title} description={description} image={image} type="article" jsonLd={jsonLd}>
   <article class="container">
     <header class="pt-10 sm:pt-16 pb-10 border-b border-rule">
       <a href="/blog" class="link text-[0.9375rem]">All writing</a>
@@ -122,11 +135,12 @@ const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
     const a = document.createElement('a');
     a.href = `#${h.id}`;
     a.setAttribute('aria-label', `Link to “${h.textContent}”`);
-    a.className = 'ms-2 no-underline font-normal text-[0.7em] text-mut opacity-0 hover:text-accent transition-opacity';
+    // Shown on hover, and on keyboard focus so tabbing onto it doesn't land on an invisible link
+    a.className = 'heading-anchor ms-2 no-underline font-normal text-[0.7em] text-mut opacity-0 hover:text-accent focus-visible:opacity-100 transition-opacity';
     a.textContent = '#';
+    h.classList.add('group/heading');
+    a.classList.add('group-hover/heading:opacity-100');
     h.append(a);
-    h.addEventListener('mouseenter', () => (a.style.opacity = '1'));
-    h.addEventListener('mouseleave', () => (a.style.opacity = '0'));
   });
 
   // Highlight the section currently in view in the table of contents

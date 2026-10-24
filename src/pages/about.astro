@@ -2,23 +2,25 @@
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import PageHeader from '@/components/PageHeader.astro';
 import Stack from '@/components/Stack.astro';
+import Faq from '@/components/Faq.astro';
+import { aboutFaqs } from '@/data/faqs';
 
 const certifications = [
   {
     name: 'AI for Everyone',
-    issuer: 'Deeplearning.AI',
+    issuer: 'DeepLearning.AI',
     year: '2024',
     url: 'https://www.coursera.org/account/accomplishments/certificate/3DS2L97WJQKU',
   },
   {
     name: 'JavaScript Algorithms and Data Structures',
-    issuer: 'FreeCodeCamp',
+    issuer: 'freeCodeCamp',
     year: '2023',
     url: 'https://www.freecodecamp.org/certification/zunain_azam/javascript-algorithms-and-data-structures',
   },
   {
     name: 'Python Fundamentals',
-    issuer: 'Datacamp',
+    issuer: 'DataCamp',
     year: '2023',
     url: null,
   },
@@ -48,49 +50,60 @@ const activities = [
 
 <BaseLayout
   title="About"
-  description="Learn more about Zunain Ali Azam — a Software Engineer building scalable web applications across the frontend and backend with Next.js, Angular, Node.js, Nest.js, and TypeScript."
+  description="About Zunain Ali Azam: full-stack developer in Karachi, co-founder of Calyndrs and software engineer at IOMechs. Stack, education and certifications."
 >
   <div class="container">
     <PageHeader title="About" />
 
-    <div class="grid gap-12 lg:grid-cols-[minmax(0,1fr)_18rem] lg:gap-20">
-      <div class="prose-site max-w-[64ch]">
-        <p class="!text-xl sm:!text-2xl !leading-snug !text-ink">
-          I'm Zunain Ali Azam, a Software Engineer based in Karachi, Pakistan, with nearly two years
-          of experience in frontend and full-stack web development.
-        </p>
-        <p>
-          I work across Next.js, Angular, Node.js, and Nest.js — building reusable UI architectures and
-          backend services, and backing them with unit, integration, and end-to-end tests, performance
-          work, technical SEO, and CI/CD-driven deployments.
-        </p>
-        <p>
-          Currently at <a href="https://iomechs.com" target="_blank" rel="noopener">IOMechs</a>,
-          I work across multiple live products: maintaining and evolving Admin dashboards on
-          Estenarh (80,000+ users), building inventory and POS workflows on AZM, and stabilizing
-          the NowCut platform. I've led Angular v14→v17 and Next.js v14→v16 migrations,
-          resolved technical SEO issues, delivered bilingual English/Arabic (LTR/RTL) interfaces, and
-          built analytical dashboards that replaced manual reporting for client teams — cutting
-          reporting effort by ~30–40%.
-        </p>
-      </div>
+    <div class="grid gap-10 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1fr)] lg:gap-16">
+      <img
+        src="/profile.webp"
+        alt="Zunain Ali Azam"
+        width="760"
+        height="727"
+        fetchpriority="high"
+        class="w-full max-w-xl aspect-[4/4.4] object-cover object-[50%_25%] rounded-2xl bg-tint lg:sticky lg:top-24 self-start"
+      />
 
-      <aside class="self-start rounded-xl bg-tint p-6">
-        <dl class="space-y-4">
-          <div><dt class="text-sm text-mut">Based in</dt><dd>Karachi, Pakistan (UTC+5)</dd></div>
-          <div><dt class="text-sm text-mut">Working at</dt><dd>IOMechs</dd></div>
-          <div><dt class="text-sm text-mut">Availability</dt><dd class="flex items-start gap-2"><span class="mt-[0.55em] w-2 h-2 shrink-0 rounded-full bg-now" aria-hidden="true"></span><span>Open to remote work and relocation</span></dd></div>
+      <div>
+        <p class="text-[1.25rem] sm:text-4xl font-medium tracking-[-0.035em] leading-[1.12]">
+          I'm Zunain Ali Azam, a full-stack developer based in Karachi, Pakistan, with over two years
+          of experience building for the web.
+        </p>
+        <div class="prose-site max-w-[60ch] mt-8">
+          <p>
+            I work across Next.js, Angular, Node.js and Nest.js: reusable UI architecture and backend
+            services, backed by unit, integration and end-to-end tests, performance work, technical SEO
+            and CI/CD-driven deployments.
+          </p>
+          <p>
+            In 2026 I co-founded <a href="/projects/calyndrs">Calyndrs</a>, an event management and
+            discovery platform, and I've been part of the team building it from the first idea to launch.
+          </p>
+          <p>
+            I'm also a software engineer at <a href="https://iomechs.com" target="_blank" rel="noopener">IOMechs</a>,
+            where I work with the team on Estenarh, AZM and NowCut. There I led Estenarh's Angular 14 to 17
+            and Next.js 14 to 16 migrations and the performance and SEO work that took its website's
+            Lighthouse score from 70 to 99. I've also built bilingual English/Arabic (LTR/RTL) interfaces,
+            and dashboards that replaced manual reporting and cut the effort by about 30–40%.
+          </p>
+        </div>
+
+        <dl class="mt-10 grid sm:grid-cols-3 gap-px bg-rule border border-rule rounded-2xl overflow-hidden">
+          <div class="bg-paper p-5"><dt class="text-sm text-mut">Based in</dt><dd class="mt-1">Karachi, Pakistan (UTC+5)</dd></div>
+          <div class="bg-paper p-5"><dt class="text-sm text-mut">Working on</dt><dd class="mt-1">Calyndrs, as co-founder, and IOMechs</dd></div>
+          <div class="bg-paper p-5"><dt class="text-sm text-mut">Availability</dt><dd class="mt-1 flex items-start gap-2"><span class="mt-[0.55em] w-2 h-2 shrink-0 rounded-full bg-now" aria-hidden="true"></span><span>Open to remote work and relocation</span></dd></div>
         </dl>
-      </aside>
+      </div>
     </div>
 
-    <section class="mt-24">
-      <h2 class="type-section mb-6">What I work with</h2>
+    <section class="mt-24 sm:mt-36">
+      <h2 class="type-section mb-10">What I work with</h2>
       <Stack />
     </section>
 
-    <section class="mt-20">
-      <h2 class="type-section mb-6">Education</h2>
+    <section class="mt-24 sm:mt-32">
+      <h2 class="type-section mb-10">Education</h2>
       <div class="border-t border-rule py-6 grid sm:grid-cols-[9rem_minmax(0,1fr)] gap-x-8 gap-y-1">
         <p class="text-sm text-mut sm:pt-1"><time>2021</time> to <time>2024</time></p>
         <div>
@@ -100,8 +113,8 @@ const activities = [
       </div>
     </section>
 
-    <section class="mt-20">
-      <h2 class="type-section mb-6">Certifications</h2>
+    <section class="mt-24 sm:mt-32">
+      <h2 class="type-section mb-10">Certifications</h2>
       <ul class="border-b border-rule">
         {certifications.map((cert) => (
           <li data-reveal="rule" class="border-t border-rule py-5 grid grid-cols-[minmax(0,1fr)_auto] sm:grid-cols-[9rem_minmax(0,1fr)_auto] gap-x-8 gap-y-1 items-baseline">
@@ -120,8 +133,8 @@ const activities = [
       </ul>
     </section>
 
-    <section class="mt-20">
-      <h2 class="type-section mb-6">Community</h2>
+    <section class="mt-24 sm:mt-32">
+      <h2 class="type-section mb-10">Community</h2>
       <ul class="border-b border-rule">
         {activities.map((a) => (
           <li data-reveal="rule" class="border-t border-rule py-6 grid sm:grid-cols-[9rem_minmax(0,1fr)] gap-x-8 gap-y-1">
@@ -135,4 +148,6 @@ const activities = [
       </ul>
     </section>
   </div>
+
+  <Faq section={aboutFaqs} />
 </BaseLayout>

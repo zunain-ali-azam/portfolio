@@ -1,4 +1,6 @@
 ---
+import SplitText from './SplitText.astro';
+
 interface Props {
   title: string;
   intro?: string;
@@ -7,8 +9,11 @@ interface Props {
 const { title, intro } = Astro.props;
 ---
 
-<header class="pt-12 sm:pt-20 pb-12 sm:pb-16">
-  <h1 class="type-page">{title}</h1>
-  {intro && <p class="mt-6 max-w-[56ch] text-lg sm:text-xl text-ink/80 leading-relaxed">{intro}</p>}
-  <slot />
+<!-- Oversized title with the intro directly beneath it, on the same left edge -->
+<header class="pt-12 sm:pt-20 pb-14 sm:pb-20">
+  <SplitText as="h1" class="type-page" text={title} delay={100} />
+  <div class="mt-6 sm:mt-8 max-w-[54ch]" data-reveal style="--reveal-delay: 450ms">
+    {intro && <p class="text-xl sm:text-2xl leading-snug tracking-[-0.015em] text-ink/85">{intro}</p>}
+    <slot />
+  </div>
 </header>

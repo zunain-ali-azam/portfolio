@@ -6,6 +6,8 @@ import vercel from '@astrojs/vercel/serverless';
 
 export default defineConfig({
   site: 'https://zunainaliazam.vercel.app',
+  // Links, canonicals and the sitemap all use /about, never /about/, so each page has one URL
+  trailingSlash: 'never',
   // Pages stay prerendered; only routes with `prerender = false` (the contact endpoint) run as functions
   output: 'hybrid',
   adapter: vercel(),

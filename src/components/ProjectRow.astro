@@ -6,12 +6,25 @@ interface Props {
   slug: string;
   yearCompleted: string | number;
   image?: string;
+  /** Index style: title, category and year on one line */
+  category?: string[];
+  compact?: boolean;
 }
 
-const { title, description, tech, slug, yearCompleted, image } = Astro.props;
+const { title, description, tech, slug, yearCompleted, image, category = [], compact = false } = Astro.props;
 const isLogo = image?.toLowerCase().includes('logo');
 ---
 
+{compact ? (
+  <a
+    href={`/projects/${slug}`}
+    class="group flex flex-wrap items-baseline justify-between gap-x-8 gap-y-1 py-6 sm:py-8 border-t border-rule"
+    data-reveal="rule"
+  >
+    <h3 class="text-xl sm:text-[2.5rem] font-semibold tracking-[-0.04em] leading-tight group-hover:text-accent transition-colors duration-300" style={`view-transition-name: project-title-${slug}`}>{title}</h3>
+    <p class="text-mut">{category.join(', ')}, <time>{yearCompleted}</time></p>
+  </a>
+) : (
 <a
   href={`/projects/${slug}`}
   class="group grid gap-x-8 gap-y-4 py-7 border-t border-rule sm:grid-cols-[minmax(0,1fr)_13rem]"
@@ -46,3 +59,4 @@ const isLogo = image?.toLowerCase().includes('logo');
     </div>
   )}
 </a>
+)}
