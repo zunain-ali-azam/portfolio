@@ -1,11 +1,13 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import PageHeader from '@/components/PageHeader.astro';
+import Faq from '@/components/Faq.astro';
+import { resumeFaqs } from '@/data/faqs';
 ---
 
 <BaseLayout
   title="Resume"
-  description="Resume of Zunain Ali Azam — Software Engineer working across frontend and full-stack web development with Next.js, Angular, Node.js, Nest.js, and TypeScript."
+  description="Resume of Zunain Ali Azam, full-stack developer working with Next.js, Angular, Node.js, Nest.js and TypeScript. View it here or download the PDF."
 >
   <div class="container">
     <PageHeader title="Resume">
@@ -15,11 +17,14 @@ import PageHeader from '@/components/PageHeader.astro';
       </div>
     </PageHeader>
 
+    <!-- Phones show only the first page of an embedded PDF, so they get the buttons above instead -->
     <iframe
       src="/resume.pdf"
       title="Zunain Ali Azam, resume"
-      class="w-full block rounded-xl border border-rule bg-white"
+      class="w-full hidden sm:block rounded-xl border border-rule bg-white"
       style="height: 85vh; min-height: 600px;"
     ></iframe>
   </div>
+
+  <Faq section={resumeFaqs} />
 </BaseLayout>

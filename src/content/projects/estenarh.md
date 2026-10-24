@@ -1,10 +1,13 @@
 ---
 title: "Estenarh"
 description: "A telemedicine platform for the Middle East with 80,000+ users, connecting people with licensed mental health professionals and medical specialists. I work on its customer-facing app, Admin platform and marketing website."
+metaTitle: "Estenarh: telemedicine platform, migrations and SEO"
+metaDescription: "On the Estenarh telemedicine platform I led the Next.js 14→16 and Angular 14→17 migrations, the SEO work (Lighthouse 70→99) and reporting dashboards."
 tech: ["Next.js", "Angular", "TypeScript", "Angular Material", "Tailwind CSS"]
 category: ["Healthcare", "SaaS"]
 live: "https://estenarh.com"
-image: "/estenarh/estenarh.png"
+image: "/estenarh/estenarh.webp"
+ogImage: "/og/estenarh.jpg"
 featured: false
 order: 4
 employer: "IOMechs"

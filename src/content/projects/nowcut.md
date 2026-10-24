@@ -1,10 +1,12 @@
 ---
 title: "NowCut"
 description: "A multi-portal SaaS platform for managing barbershop businesses across the UAE, from bookings and barber scheduling to financials. I built features end to end in its Admin and Shop portals."
+metaTitle: "NowCut: barbershop management SaaS (Next.js monorepo)"
+metaDescription: "NowCut barbershop SaaS at IOMechs: I built promo codes, commission tiers, role-based access and bulk service assignment in a Next.js Turborepo."
 tech: ["Next.js", "TypeScript", "Tailwind CSS", "Turborepo", "React Query", "nuqs"]
 category: ["SaaS", "Marketplace"]
 live: "https://nowcut.app"
-image: "/now-cutz-logo.svg"
+image: "/nowcut-logo.webp"
 featured: false
 order: 6
 employer: "IOMechs"

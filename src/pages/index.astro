@@ -8,6 +8,8 @@ import SectionHeader from '@/components/SectionHeader.astro';
 import PostRow from '@/components/PostRow.astro';
 import ProjectFeature from '@/components/ProjectFeature.astro';
 import ProjectRow from '@/components/ProjectRow.astro';
+import Faq from '@/components/Faq.astro';
+import { homeFaqs } from '@/data/faqs';
 import { getCollection } from 'astro:content';
 import { readingTime } from '@/lib/format';
 import experience from '@/data/experience.json';
@@ -38,11 +40,12 @@ const posts = (await getCollection('blog', ({ data }) => !data.draft))
 ---
 
 <BaseLayout
-  title="Full-Stack Software Engineer"
-  description="Zunain Ali Azam, full-stack software engineer in Karachi, open to remote work and relocation. Web apps in Next.js, Angular and Node.js, machine learning and technical SEO."
+  title="Full-Stack Developer"
+  description="Zunain Ali Azam, full-stack developer in Karachi, open to remote work and relocation. Next.js, Angular and Node.js web apps, migrations and technical SEO."
+  jsonLd={[{ '@type': 'WebSite', name: 'Zunain Ali Azam', url: Astro.site?.toString() }]}
 >
   <Hero />
-<section class="container pb-24 sm:pb-36">
+  <section class="container pb-24 sm:pb-36">
     <div class="grid gap-10 lg:gap-16 lg:grid-cols-[minmax(0,0.7fr)_minmax(0,1fr)] lg:items-center">
       <div class="w-full max-w-md lg:max-w-none aspect-[4/4.6] rounded-2xl overflow-hidden bg-tint" data-reveal="screen">
         <img
@@ -74,7 +77,7 @@ const posts = (await getCollection('blog', ({ data }) => !data.draft))
       {stats.map(({ value, label }) => (
         <div class="bg-paper p-6 sm:p-8 flex flex-col-reverse justify-end gap-3" data-reveal>
           <dt class="text-mut leading-snug">{label}</dt>
-          <dd class="text-[2.5rem] sm:text-6xl lg:text-7xl font-semibold tracking-[-0.05em] leading-none whitespace-nowrap nums" data-count>{value}</dd>
+          <dd class="text-[1.75rem] sm:text-6xl lg:text-7xl font-semibold tracking-[-0.05em] leading-none whitespace-nowrap nums" data-count>{value}</dd>
         </div>
       ))}
     </dl>
@@ -171,4 +174,6 @@ const posts = (await getCollection('blog', ({ data }) => !data.draft))
       </section>
     )}
   </div>
+
+  <Faq section={homeFaqs} />
 </BaseLayout>

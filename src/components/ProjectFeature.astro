@@ -8,10 +8,6 @@ interface Props {
   slug: string;
   yearCompleted: string | number;
   image: string;
-  /** Spans both grid columns with a wider frame */
-  wide?: boolean;
-  /** Square frame, for three-up rows */
-  square?: boolean;
   /** Set for team projects at an employer: the card then leads with my part, not the product */
   employer?: string;
   myPart?: string;
@@ -19,14 +15,14 @@ interface Props {
   compact?: boolean;
 }
 
-const { title, description, tech, category = [], slug, yearCompleted, image, wide = false, square = false, employer, myPart, compact = false } = Astro.props;
+const { title, description, tech, category = [], slug, yearCompleted, image, employer, myPart, compact = false } = Astro.props;
 const isLogo = image.toLowerCase().includes('logo');
 ---
 
-<a href={`/projects/${slug}`} class:list={['group block', wide && 'md:col-span-2']}>
+<a href={`/projects/${slug}`} class="group block">
   <div
     class:list={[
-      square ? 'aspect-square' : wide ? 'aspect-[4/3] md:aspect-[2/1]' : 'aspect-[4/3]',
+      'aspect-[4/3]',
       'rounded-2xl overflow-hidden transition-[outline-color] duration-300 outline outline-1 -outline-offset-1 outline-rule group-hover:outline-accent',
       isLogo ? 'bg-white' : 'bg-tint',
     ]}
@@ -38,12 +34,12 @@ const isLogo = image.toLowerCase().includes('logo');
       alt={isLogo ? '' : `${title} screenshot`}
       loading="lazy"
       decoding="async"
-      class:list={['feature-img w-full h-full', isLogo ? 'object-contain p-[18%]' : square ? 'object-cover object-left-top' : 'object-cover object-top']}
+      class:list={['feature-img w-full h-full', isLogo ? 'object-contain p-[18%]' : 'object-cover object-center']}
     />
   </div>
   <div data-reveal>
     <div class="mt-5 flex items-baseline justify-between gap-4">
-      <h3 class:list={[square ? 'text-2xl' : 'text-2xl sm:text-[2rem]', 'font-semibold tracking-[-0.035em] leading-tight group-hover:text-accent transition-colors']} style={`view-transition-name: project-title-${slug}`}>{title}</h3>
+      <h3 class="text-xl sm:text-[2rem] font-semibold tracking-[-0.035em] leading-tight group-hover:text-accent transition-colors duration-300" style={`view-transition-name: project-title-${slug}`}>{title}</h3>
       <time class="text-mut">{yearCompleted}</time>
     </div>
     <p class="mt-1 text-mut">{employer ? `Team project at ${employer}` : category.join(', ')}</p>

@@ -9,13 +9,19 @@ interface Props {
   description?: string;
   image?: string;
   type?: 'website' | 'article';
+  /** Keep the page out of search results (confirmation pages) */
+  noindex?: boolean;
+  /** Page-specific structured data, added beside the site-wide Person */
+  jsonLd?: Record<string, unknown>[];
 }
 
 const {
   title,
-  description = 'Zunain Ali Azam — Software Engineer working across frontend and full-stack web development with Next.js, Angular, Node.js, Nest.js, and TypeScript.',
+  description = 'Zunain Ali Azam, full-stack developer in Karachi. Web apps in Next.js, Angular, Node.js and Nest.js, framework migrations and technical SEO.',
   image = '/og-image.png',
   type = 'website',
+  noindex = false,
+  jsonLd = [],
 } = Astro.props;
 
 const siteTitle = title === 'Zunain Ali Azam' ? title : `${title} | Zunain Ali Azam`;
@@ -25,11 +31,12 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const person = {
   '@context': 'https://schema.org',
   '@type': 'Person',
+  '@id': new URL('/#person', Astro.site).toString(),
   name: 'Zunain Ali Azam',
-  jobTitle: 'Software Engineer',
-  description: 'Full-stack software engineer and co-founder of Calyndrs, based in Karachi, open to remote work and relocation. Works across web apps (Next.js, Angular, Node.js, Nest.js, TypeScript), machine learning and technical SEO.',
+  jobTitle: 'Full-Stack Developer',
+  description: 'Full-stack developer and co-founder of Calyndrs, based in Karachi, open to remote work and relocation. Works across web apps (Next.js, Angular, Node.js, Nest.js, TypeScript), machine learning and technical SEO.',
   url: Astro.site?.toString(),
-  image: new URL('/og-image.png', Astro.site).toString(),
+  image: new URL('/profile.webp', Astro.site).toString(),
   email: 'mailto:zunainazam456@gmail.com',
   address: { '@type': 'PostalAddress', addressLocality: 'Karachi', addressCountry: 'PK' },
   worksFor: { '@type': 'Organization', name: 'IOMechs', url: 'https://iomechs.com' },
@@ -59,6 +66,7 @@ const person = {
     <title>{siteTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonicalURL} />
+    {noindex && <meta name="robots" content="noindex" />}
 
     <!-- Open Graph -->
     <meta property="og:type" content={type} />
@@ -75,17 +83,13 @@ const person = {
     <meta name="twitter:image" content={new URL(image, Astro.site)} />
 
     <script type="application/ld+json" set:html={JSON.stringify(person)} />
+    {jsonLd.map((data) => <script type="application/ld+json" set:html={JSON.stringify({ '@context': 'https://schema.org', ...data })} />)}
 
     <!-- Vercel Web Analytics: cookieless page views, only reports on Vercel deployments -->
     <Analytics />
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Readex+Pro:HEXP,wght@0..100,160..700&display=swap"
-      rel="stylesheet"
-    />
+    <!-- Readex Pro, self-hosted (latin subset with the weight and HEXP axes); @font-face is in global.css -->
+    <link rel="preload" href="/fonts/readex-pro-latin.woff2" as="font" type="font/woff2" crossorigin />
 
     <!-- Prevent flash of wrong theme -->
     <script is:inline>

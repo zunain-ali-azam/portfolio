@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'Readex Pro';
+  font-style: normal;
+  font-weight: 160 700;
+  font-display: swap;
+  src: url('/fonts/readex-pro-latin.woff2') format('woff2');
+}
+
 @layer base {
   /* Design tokens: RGB channels so Tailwind can apply alpha (e.g. bg-ink/10).
      Palette taken from Sindhi kashi tilework: cobalt and turquoise on white, indigo ink. */
@@ -135,7 +143,7 @@
 
   /* Paragraph-sized statement set large, for "about" moments */
   .type-statement {
-    font-size: clamp(1.625rem, 3.4vw, 3.25rem);
+    font-size: clamp(1.25rem, 3.4vw, 3.25rem);
     font-weight: 500;
     letter-spacing: -0.035em;
     line-height: 1.12;
@@ -268,17 +276,57 @@ html.dark .astro-code span {
   @apply flex items-center justify-between px-4 py-2 rounded-t-lg bg-tint border-b border-rule text-xs text-mut;
 }
 
-/* Mobile menu: grid rows animate the height open; visibility keeps closed links out of the tab order */
+/* FAQ accordions: the answer slides open where the browser can animate to auto height
+   (others just open), and the plus turns into a cross */
+.faq summary::-webkit-details-marker {
+  display: none;
+}
+.faq {
+  interpolate-size: allow-keywords;
+}
+.faq::details-content {
+  block-size: 0;
+  overflow: hidden;
+  transition: block-size 0.4s var(--ease-out-soft), content-visibility 0.4s allow-discrete;
+}
+.faq[open]::details-content {
+  block-size: auto;
+}
+.faq-icon {
+  transition: transform 0.3s var(--ease-out-soft);
+}
+.faq[open] .faq-icon {
+  transform: rotate(45deg);
+}
+/* Focus rings stay visible on the cobalt call-to-action panel */
+.faq-cta :focus-visible {
+  outline-color: rgb(var(--on-accent));
+}
+
+/* Mobile menu: a sheet that fades in over the page while its rows rise one after another;
+   visibility keeps closed links out of the tab order */
 .mobile-menu {
-  display: grid;
-  grid-template-rows: 0fr;
+  opacity: 0;
   visibility: hidden;
-  transition: grid-template-rows 0.3s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0.3s;
+  transition: opacity 0.25s ease, visibility 0s linear 0.25s;
 }
 .mobile-menu[data-open='true'] {
-  grid-template-rows: 1fr;
+  opacity: 1;
   visibility: visible;
-  transition: grid-template-rows 0.3s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s;
+  transition: opacity 0.25s ease, visibility 0s;
+}
+.mobile-menu-item {
+  transform: translateY(12px);
+  opacity: 0;
+  transition: transform 0.45s var(--ease-out-soft), opacity 0.3s ease;
+}
+.mobile-menu[data-open='true'] .mobile-menu-item {
+  transform: none;
+  opacity: 1;
+  transition-delay: calc(var(--i) * 35ms + 50ms);
+}
+html.menu-open {
+  overflow: hidden;
 }
 .menu-icon path {
   transform-box: fill-box;
@@ -389,20 +437,17 @@ html.dark .astro-code span {
     transition: opacity 0.8s ease, outline-color 0.3s;
     transition-delay: var(--reveal-delay, 0ms), 0ms;
   }
-  .js [data-reveal='screen'] > img {
-    transform: scale(1.12);
-    transition: transform 1.4s var(--ease-out-soft);
-    transition-delay: var(--reveal-delay, 0ms);
-  }
+  /* The settle is an animation, not a transition, so the transition below stays free for hover.
+     The frame is invisible until it reveals, so the image needs no zoomed hidden state of its own. */
   .js [data-reveal='screen'].is-in > img {
-    transform: none;
+    animation: image-settle 1.4s var(--ease-out-soft) var(--reveal-delay, 0ms) backwards;
   }
-  /* Then a slow zoom on hover, once the reveal has finished */
-  .js .group:hover [data-reveal='screen'].is-in > img,
+  /* A slow zoom on hover that eases back the same way, with no reveal delay in either direction */
+  .feature-img {
+    transition: transform 0.7s var(--ease-out-soft);
+  }
   .group:hover .feature-img {
     transform: scale(1.035);
-    transition-duration: 0.8s;
-    transition-delay: 0ms;
   }
 
   /* Rule rows: a cobalt line draws across the divider, then fades back to the rule colour */
@@ -428,9 +473,11 @@ html.dark .astro-code span {
 
   .js [data-reveal].reveal-instant,
   .js [data-reveal].reveal-instant::before,
-  .js [data-reveal].reveal-instant > img,
   .js [data-reveal].reveal-instant .word-inner {
     transition: none;
+  }
+  .js [data-reveal].reveal-instant > img {
+    animation: none;
   }
 
   /* Services strip: a slow, endless scroll that pauses under the pointer */
@@ -442,6 +489,9 @@ html.dark .astro-code span {
   }
 }
 
+@keyframes image-settle {
+  from { transform: scale(1.12); }
+}
 @keyframes marquee {
   to { transform: translateX(-50%); }
 }
@@ -513,13 +563,12 @@ html.theme-switching::view-transition-new(*) {
   .group:hover [data-reveal='screen'] {
     transform: none !important;
   }
-  .mobile-menu {
-    opacity: 0;
-    transition: opacity 0.2s ease, visibility 0s linear 0.2s;
+  .mobile-menu-item {
+    transform: none;
   }
-  .mobile-menu[data-open='true'] {
-    opacity: 1;
-    transition: opacity 0.2s ease, visibility 0s;
+  .faq::details-content,
+  .faq-icon {
+    transition: none;
   }
 }
 

@@ -1,6 +1,8 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import PageHeader from '@/components/PageHeader.astro';
+import Faq from '@/components/Faq.astro';
+import { contactFaqs } from '@/data/faqs';
 import { TOPICS } from '@/lib/contact';
 
 const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
@@ -19,7 +21,7 @@ const contactLinks = [
 
 <BaseLayout
   title="Contact"
-  description="Get in touch with Zunain Ali Azam — open to new projects, collaboration, and opportunities."
+  description="Contact Zunain Ali Azam about a full-time role or a freelance project. Send a message or book a 30-minute intro call."
 >
   <div class="container">
     <PageHeader
@@ -28,7 +30,7 @@ const contactLinks = [
     />
 
     <div class="grid gap-14 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-20">
-      <div id="contact-area" class="max-w-2xl">
+      <div id="contact-area" class="max-w-2xl scroll-mt-24">
         <form id="contact-form" action="/api/contact" method="POST" class="flex flex-col gap-6">
           <!-- Honeypot: hidden from people, filled in by bots -->
           <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off" aria-hidden="true" />
@@ -99,7 +101,7 @@ const contactLinks = [
       </aside>
     </div>
 
-    <section class="mt-20" aria-labelledby="book-heading">
+    <section id="book" class="mt-20 scroll-mt-24" aria-labelledby="book-heading">
       <h2 id="book-heading" class="type-section">Book a call</h2>
       <p class="mt-3 text-ink/80 max-w-[52ch]">Prefer to talk it through? Pick a time that suits you.</p>
       <div id="cal-inline" data-cal-link={calLink} class="mt-6 w-full min-h-[640px]">
@@ -107,7 +109,21 @@ const contactLinks = [
       </div>
     </section>
   </div>
+
+  <Faq section={contactFaqs} primary={{ href: '#book', label: 'Pick a time' }} secondary={{ href: '#contact-form', label: 'Write a message' }} />
 </BaseLayout>
+
+<script>
+  // Links like /contact#book from other pages: the cross-page view transition leaves the page at the top
+  // (the browser's own jump to the anchor gets lost), so jump to the section ourselves, and again once
+  // the page has loaded in case late layout moved it
+  const target = location.hash && document.getElementById(location.hash.slice(1));
+  if (target) {
+    const jump = () => target.scrollIntoView({ block: 'start', behavior: 'instant' });
+    jump();
+    addEventListener('load', jump, { once: true });
+  }
+</script>
 
 <script>
   // Cal.com's embed loader, from their inline embed snippet

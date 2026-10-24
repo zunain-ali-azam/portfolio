@@ -67,17 +67,24 @@ const isActive = (href: string) => currentPath.startsWith(href);
     </div>
   </div>
 
-  <nav id="mobile-menu" class="mobile-menu md:hidden" aria-label="Primary" data-open="false">
-    <div class="overflow-hidden">
-      <ul class="container pb-4 border-t border-rule">
-        {navLinks.map(({ href, label }) => (
-          <li class="border-b border-rule last:border-b-0">
+  <!-- Below md: a full-screen sheet over the page, under the header bar, ending in a call to action.
+       Absolute, not fixed: the header's backdrop blur would make it the containing block anyway. -->
+  <nav
+    id="mobile-menu"
+    class="mobile-menu md:hidden absolute inset-x-0 top-full h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain bg-paper"
+    aria-label="Primary"
+    data-open="false"
+  >
+    <div class="container flex flex-col min-h-full pb-8">
+      <ul class="border-t border-rule">
+        {navLinks.map(({ href, label }, i) => (
+          <li class="mobile-menu-item border-b border-rule" style={`--i: ${i}`}>
             <a
               href={href}
               aria-current={isActive(href) ? 'page' : undefined}
               class:list={[
-                'flex items-center justify-between py-3.5 text-lg',
-                isActive(href) ? 'text-accent font-medium' : 'text-ink',
+                'flex items-center justify-between py-4 text-[1.75rem] font-semibold tracking-[-0.03em]',
+                isActive(href) ? 'text-accent' : 'text-ink',
               ]}
             >
               {label}
@@ -86,6 +93,15 @@ const isActive = (href: string) => currentPath.startsWith(href);
           </li>
         ))}
       </ul>
+
+      <div class="mobile-menu-item mt-auto pt-10" style={`--i: ${navLinks.length}`}>
+        <p class="flex items-center gap-2 text-mut">
+          <span class="w-2 h-2 rounded-full bg-now" aria-hidden="true"></span>
+          Open to work, based in Karachi
+        </p>
+        <a href="/contact" class="btn-primary mt-4 w-full justify-center py-3.5 text-base">Get in touch</a>
+        <a href="mailto:zunainazam456@gmail.com" class="mt-4 block text-center text-mut hover:text-ink transition-colors">zunainazam456@gmail.com</a>
+      </div>
     </div>
   </nav>
 </header>
@@ -106,6 +122,8 @@ const isActive = (href: string) => currentPath.startsWith(href);
   const setOpen = (open: boolean) => {
     if (!toggle || !menu) return;
     menu.dataset.open = String(open);
+    // The sheet covers the page, so the page behind it shouldn't scroll
+    document.documentElement.classList.toggle('menu-open', open);
     toggle.setAttribute('aria-expanded', String(open));
     toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
   };
@@ -120,9 +138,9 @@ const isActive = (href: string) => currentPath.startsWith(href);
     }
   });
 
-  // Close when tapping anywhere outside the header
-  document.addEventListener('click', (e) => {
-    if (isOpen() && !(e.target as Element).closest('header')) setOpen(false);
+  // Close when following a link in the sheet, e.g. to a section of the page already open
+  menu?.addEventListener('click', (e) => {
+    if ((e.target as Element).closest('a')) setOpen(false);
   });
 
   // Close if the viewport widens past the breakpoint where the inline nav returns

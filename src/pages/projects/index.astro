@@ -3,6 +3,8 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
 import PageHeader from '@/components/PageHeader.astro';
 import ProjectFeature from '@/components/ProjectFeature.astro';
 import ProjectRow from '@/components/ProjectRow.astro';
+import Faq from '@/components/Faq.astro';
+import { workFaqs } from '@/data/faqs';
 import { getCollection } from 'astro:content';
 
 const allProjects = await getCollection('projects');
@@ -12,17 +14,17 @@ const sorted = allProjects.sort((a, b) => a.data.order - b.data.order);
 const withImage = sorted.filter((p) => p.data.image);
 const withoutImage = sorted.filter((p) => !p.data.image);
 
-const categories = ['All', ...new Set(allProjects.flatMap((p) => p.data.category))];
+const categories = ['All', ...new Set(sorted.flatMap((p) => p.data.category))];
 ---
 
 <BaseLayout
-  title="Projects"
-  description="A collection of full-stack and frontend projects by Zunain Ali Azam — across SaaS platforms, telemedicine, EdTech, real estate, and on-demand services."
+  title="Work"
+  description="Work by Zunain Ali Azam: Calyndrs (co-founder), InsightEdu, solo projects like Propertease, and platforms built with the IOMechs team."
 >
   <div class="container">
     <PageHeader
       title="Work"
-      intro="Products I've built myself, and platforms I've worked on as part of the IOMechs team."
+      intro="Products I helped take from the first idea to launch, projects I built solo, and platforms I work on with the IOMechs team."
     />
 
     <div class="flex flex-wrap items-center gap-2" id="filter-bar" role="group" aria-label="Filter projects by type">
@@ -38,9 +40,10 @@ const categories = ['All', ...new Set(allProjects.flatMap((p) => p.data.category
       ))}
     </div>
 
+    <!-- Every card is the same size: no project gets top billing -->
     <div class="mt-10 grid gap-x-5 gap-y-14 md:grid-cols-2" id="projects-list">
-      {withImage.map((project, i) => (
-        <div data-categories={project.data.category.join(',')} class:list={['grid', i === 0 && 'md:col-span-2']}>
+      {withImage.map((project) => (
+        <div data-categories={project.data.category.join(',')} class="grid">
           <ProjectFeature
             title={project.data.title}
             description={project.data.description}
@@ -51,7 +54,6 @@ const categories = ['All', ...new Set(allProjects.flatMap((p) => p.data.category
             image={project.data.image!}
             employer={project.data.employer}
             myPart={project.data.myPart}
-            wide={i === 0}
           />
         </div>
       ))}
@@ -73,19 +75,26 @@ const categories = ['All', ...new Set(allProjects.flatMap((p) => p.data.category
       </div>
     )}
   </div>
+
+  <Faq section={workFaqs} />
 </BaseLayout>
 
 <script>
   const buttons = document.querySelectorAll<HTMLButtonElement>('#filter-bar .filter-btn');
-  const rows = document.querySelectorAll<HTMLElement>('#projects-list [data-categories], #projects-rows [data-categories]');
+  const items = document.querySelectorAll<HTMLElement>('[data-categories]');
+  const lists = [document.getElementById('projects-list'), document.getElementById('projects-rows')];
 
   buttons.forEach((btn) => {
     btn.addEventListener('click', () => {
       const active = btn.dataset.category ?? 'All';
       buttons.forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
-      rows.forEach((row) => {
-        const cats = row.dataset.categories?.split(',') ?? [];
-        row.hidden = !(active === 'All' || cats.includes(active));
+      items.forEach((item) => {
+        const cats = item.dataset.categories?.split(',') ?? [];
+        item.hidden = !(active === 'All' || cats.includes(active));
+      });
+      // Hide a list left empty by the filter, so its spacing and rules don't hang around
+      lists.forEach((list) => {
+        if (list) list.hidden = ![...list.querySelectorAll<HTMLElement>('[data-categories]')].some((i) => !i.hidden);
       });
     });
   });

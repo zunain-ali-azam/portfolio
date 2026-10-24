@@ -2,18 +2,23 @@
 // Each problem is answered with something already shipped, so a visitor can match their issue to proof
 const problems = [
   {
+    problem: 'You need a product built from scratch',
+    proof: "I've done exactly that with Calyndrs, the events platform I co-founded: I was part of the team from the first idea to launch.",
+    links: [{ href: '/projects/calyndrs', label: 'See Calyndrs' }],
+  },
+  {
+    problem: 'Every release breaks something',
+    proof: 'On Calyndrs I set up Vitest unit tests, plus React Testing Library and Playwright end-to-end tests against MSW-mocked APIs.',
+    links: [{ href: '/projects/calyndrs', label: 'See Calyndrs' }],
+  },
+  {
     problem: 'Your app is stuck on an old framework version',
-    proof: "I've done it: I led Estenarh's move from Next.js 14 to 16 and Angular 14 to 17.",
+    proof: "I led Estenarh's move from Next.js 14 to 16 and Angular 14 to 17, through to production.",
     links: [{ href: '/projects/estenarh', label: 'See Estenarh' }],
   },
   {
-    problem: "Your site isn't showing up in search",
-    proof: "I led the performance and SEO work on Estenarh's website: Lighthouse went from 70 to 99 on desktop, and the bundle shrank from 16 MB to under 5 MB.",
-    links: [{ href: '/projects/estenarh', label: 'See Estenarh' }],
-  },
-  {
-    problem: 'Your team still builds reports by hand',
-    proof: 'My dashboards replaced manual reporting on Estenarh and cut the effort by 30–40%.',
+    problem: 'Your site is slow and hard to find',
+    proof: "I led the technical SEO and performance work on Estenarh's website for the Saudi market: Lighthouse went from 70 to 99 on desktop, and the bundle shrank from 16 MB to under 5 MB.",
     links: [{ href: '/projects/estenarh', label: 'See Estenarh' }],
   },
   {
@@ -22,19 +27,14 @@ const problems = [
     links: [{ href: '/projects/azm', label: 'See AZM' }],
   },
   {
-    problem: 'Your product keeps breaking in production',
-    proof: "I tracked down the pricing, VAT and order-reporting bugs that were throwing off AZM's numbers.",
-    links: [{ href: '/projects/azm', label: 'See AZM' }],
+    problem: 'Your users need to talk to each other in real time',
+    proof: 'I built live buyer-to-seller chat over WebSockets for Propertease, my real estate marketplace.',
+    links: [{ href: '/projects/propertease', label: 'See Propertease' }],
   },
   {
     problem: 'You want to turn unstructured text into data',
     proof: 'I fine-tuned a BERT model that turns clinical notes into structured JSON, with a 96% F1 score.',
     links: [{ href: '/projects/medical-ner', label: 'See Medical NER' }],
-  },
-  {
-    problem: 'You need a product built from scratch',
-    proof: "I'm doing exactly that with Calyndrs, the events platform I co-founded.",
-    links: [{ href: '/projects/calyndrs', label: 'See Calyndrs' }],
   },
 ];
 ---
@@ -43,7 +43,7 @@ const problems = [
 <ul class="border-b border-band-rule">
   {problems.map(({ problem, proof, links }) => (
     <li class="group border-t border-band-rule py-8 sm:py-10 grid gap-x-12 gap-y-4 md:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]" data-reveal>
-      <h3 class="text-[1.625rem] sm:text-[2.25rem] font-medium tracking-[-0.035em] leading-[1.08] transition-colors group-hover:text-band-accent">{problem}</h3>
+      <h3 class="text-xl sm:text-[2.25rem] font-medium tracking-[-0.035em] leading-[1.08] transition-colors group-hover:text-band-accent">{problem}</h3>
       <div class="md:pt-1.5">
         <p class="text-on-band/80 max-w-[52ch]">{proof}</p>
         <p class="mt-3 flex flex-wrap gap-x-5 text-[0.9375rem]">

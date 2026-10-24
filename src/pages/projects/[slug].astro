@@ -1,5 +1,7 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
+import Faq from '@/components/Faq.astro';
+import type { FaqSection } from '@/data/faqs';
 import { getCollection } from 'astro:content';
 
 export async function getStaticPaths() {
@@ -13,19 +15,93 @@ export async function getStaticPaths() {
 const { project, next } = Astro.props;
 const { Content } = await project.render();
 
-const { title, description, tech, category, github, live, yearCompleted, highlights, image, employer, role } = project.data;
+const { title, description, metaTitle, metaDescription, tech, category, github, live, yearCompleted, highlights, image, ogImage, employer, role, myPart, team } = project.data;
 const isLogo = image?.toLowerCase().includes('logo');
+
+// Questions drawn from this project's own details, so each page asks and answers something different
+const faq: FaqSection = {
+  title: `Questions about ${title}`,
+  faqs: [
+    employer
+      ? {
+          q: `Did you build ${title} on your own?`,
+          a: `No. ${title} is an ${employer} product built by a team. My part: ${myPart ?? 'the contributions listed above'}`,
+        }
+      : team
+        ? {
+            q: `Did you build ${title} on your own?`,
+            a: `No, it was a team effort${role ? `, and I'm one of its ${role.toLowerCase()}s` : ''}. I was part of it from the first idea to launch; the highlights above are my contributions.`,
+          }
+        : {
+            q: `Did you build ${title} yourself?`,
+            a: 'Yes, it’s a solo project, built from start to finish by me.',
+          },
+    {
+      q: `What is ${title} built with?`,
+      a: `${tech.join(', ')}.`,
+    },
+    live || github
+      ? {
+          q: `Can I try ${title} or see the code?`,
+          a: [
+            live && `It’s live at <a class="link" href="${live}" target="_blank" rel="noopener noreferrer">${new URL(live).host}</a>.`,
+            github && `The code is on <a class="link" href="${github}" target="_blank" rel="noopener noreferrer">GitHub</a>.`,
+            employer && !github && `The code belongs to ${employer}, so I can’t share it, but I can walk you through my part on a call.`,
+          ].filter(Boolean).join(' '),
+        }
+      : null,
+    {
+      q: `Could you build something like ${title} for us?`,
+      a: employer
+        ? `The product belongs to ${employer}, but the experience comes with me. Tell me what you’re building and where it’s stuck, and I’ll tell you honestly how close it is to my work on ${title}.`
+        : `Yes. Tell me what you need and how it differs from ${title}, and we can work out the scope together.`,
+    },
+  ].filter((f): f is { q: string; a: string } => f !== null),
+  cta: employer
+    ? { title: `Need work like my part on ${title}?`, text: 'Tell me about your product and what it needs next. A 30-minute call is enough to see if I can help.' }
+    : { title: `Want something like ${title}?`, text: `Book a call and tell me what you have in mind. We can see what of ${title} carries over to yours.` },
+};
+
+const pageUrl = new URL(`/projects/${project.slug}`, Astro.site).toString();
+const jsonLd = [
+  {
+    '@type': 'CreativeWork',
+    name: title,
+    description,
+    url: pageUrl,
+    ...(image && { image: new URL(image, Astro.site).toString() }),
+    keywords: tech.join(', '),
+    // Team projects credit me as a contributor, solo ones as the creator
+    [employer || team ? 'contributor' : 'creator']: { '@id': new URL('/#person', Astro.site).toString() },
+    ...(employer && { producer: { '@type': 'Organization', name: employer } }),
+    ...((live || github) && { sameAs: live ?? github }),
+  },
+  {
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Work', item: new URL('/projects', Astro.site).toString() },
+      { '@type': 'ListItem', position: 2, name: title, item: pageUrl },
+    ],
+  },
+];
 ---
 
-<BaseLayout title={title} description={description} image={image && !image.endsWith('.svg') ? image : undefined}>
+<BaseLayout
+  title={metaTitle ?? title}
+  description={metaDescription ?? description}
+  image={ogImage}
+  jsonLd={jsonLd}
+>
   <article class="container">
     <header class="pt-10 sm:pt-16 pb-12">
       <a href="/projects" class="link text-[0.9375rem]">All work</a>
       <h1 class="type-page mt-8" style={`view-transition-name: project-title-${project.slug}`}>{title}</h1>
       <p class="mt-6 max-w-[60ch] text-lg sm:text-xl text-ink/80 leading-relaxed">{description}</p>
-      {employer && (
+      {(employer || team) && (
         <p class="mt-4 max-w-[60ch] text-mut">
-          Built at {employer} as part of a team. The highlights below are my own contributions.
+          {employer
+            ? `Built at ${employer} as part of a team. The highlights below are my own contributions.`
+            : 'Built by a team, and I was part of it from the first idea to launch. The highlights below are my own contributions.'}
         </p>
       )}
       {(live || github) && (
@@ -46,9 +122,12 @@ const isLogo = image?.toLowerCase().includes('logo');
       >
         <img
           src={image}
-          alt={`${title} screenshot`}
+          alt={isLogo ? `${title} logo` : `${title} screenshot`}
+          width="1600"
+          height="800"
           class:list={['w-full h-full', isLogo ? 'object-contain p-12' : 'object-cover object-top']}
           loading="eager"
+          fetchpriority="high"
         />
       </figure>
     )}
@@ -86,4 +165,6 @@ const isLogo = image?.toLowerCase().includes('logo');
       </a>
     )}
   </article>
+
+  <Faq section={faq} />
 </BaseLayout>

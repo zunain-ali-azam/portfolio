@@ -2,16 +2,18 @@
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import PageHeader from '@/components/PageHeader.astro';
 import ExperienceTimeline from '@/components/ExperienceTimeline.astro';
+import Faq from '@/components/Faq.astro';
+import { experienceFaqs } from '@/data/faqs';
 ---
 
 <BaseLayout
   title="Experience"
-  description="Work history for Zunain Ali Azam — Software Engineer working across frontend and full-stack web development with Next.js, Angular, Node.js, Nest.js, and TypeScript."
+  description="Work history of Zunain Ali Azam, full-stack developer: co-founder of Calyndrs, software engineer at IOMechs, and frontend roles before that."
 >
   <div class="container">
     <PageHeader
       title="Experience"
-      intro="From an internship building hiring flows to dashboards, framework migrations and bilingual platforms used by 80,000+ people."
+      intro="From an internship building hiring flows to leading framework migrations, building bilingual platforms and co-founding a product."
     />
 
     <ExperienceTimeline />
@@ -21,8 +23,9 @@ import ExperienceTimeline from '@/components/ExperienceTimeline.astro';
     </p>
 
     <div class="mt-8 flex flex-wrap gap-3">
-      <a href="/contact" class="btn-primary">Get in touch</a>
       <a href="/resume" class="btn-secondary">Resume (PDF)</a>
     </div>
   </div>
+
+  <Faq section={experienceFaqs} />
 </BaseLayout>

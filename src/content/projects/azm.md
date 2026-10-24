@@ -1,10 +1,13 @@
 ---
 title: "AZM"
 description: "A multi-store retail management platform for handling inventory, orders, finances and staff operations. I built invoicing, shift reporting and bilingual English/Arabic UI, and fixed pricing and VAT bugs in production."
+metaTitle: "AZM: multi-store retail and POS platform (Angular)"
+metaDescription: "AZM retail platform at IOMechs: I built invoicing, shift reporting and the English/Arabic RTL interface in Angular 17, and fixed pricing and VAT bugs."
 tech: ["Angular 17", "TypeScript", "RxJS", "Angular Material", "Tailwind CSS", "ngx-translate"]
 category: ["SaaS", "Enterprise"]
 live: "https://azm.csolit.com"
-image: "/azm/hero_new.svg"
+image: "/azm/azm.webp"
+ogImage: "/og/azm.jpg"
 featured: false
 order: 5
 employer: "IOMechs"
