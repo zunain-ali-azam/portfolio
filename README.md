@@ -194,7 +194,7 @@ The site address lives in one place: `site` in `astro.config.mjs`. Canonical URL
 
 ### Content Security Policy
 
-`vercel.json` sends a Content-Security-Policy header on every response. It allows scripts from the site itself, Cal.com (the booking embed on `/contact`) and Cloudflare Turnstile, and allows the three inline scripts in `BaseLayout.astro` by their SHA-256 hashes. Editing one of those scripts changes its hash, so `pnpm build` runs `scripts/check-csp.mjs`, which fails the build and prints the new hash to paste into `vercel.json`. A new third-party script, font or embed needs its origin added to the matching directive.
+`vercel.json` sends a Content-Security-Policy header on every response except PDFs (Chrome blocks a framed PDF, like the one on `/resume`, when it carries the policy). It allows scripts from the site itself, Cal.com (the booking embed on `/contact`) and Cloudflare Turnstile, and allows the three inline scripts in `BaseLayout.astro` by their SHA-256 hashes. Editing one of those scripts changes its hash, so `pnpm build` runs `scripts/check-csp.mjs`, which fails the build and prints the new hash to paste into `vercel.json`. A new third-party script, font or embed needs its origin added to the matching directive.
 
 ### Contact form setup
 
