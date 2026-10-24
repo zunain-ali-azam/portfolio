@@ -1,11 +1,16 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import PageHeader from '@/components/PageHeader.astro';
+import ProjectFeature from '@/components/ProjectFeature.astro';
 import ProjectRow from '@/components/ProjectRow.astro';
 import { getCollection } from 'astro:content';
 
 const allProjects = await getCollection('projects');
 const sorted = allProjects.sort((a, b) => a.data.order - b.data.order);
+
+// Projects with an image get a card; the rest are listed as compact rows underneath
+const withImage = sorted.filter((p) => p.data.image);
+const withoutImage = sorted.filter((p) => !p.data.image);
 
 const categories = ['All', ...new Set(allProjects.flatMap((p) => p.data.category))];
 ---
@@ -17,14 +22,14 @@ const categories = ['All', ...new Set(allProjects.flatMap((p) => p.data.category
   <div class="container">
     <PageHeader
       title="Work"
-      intro="Production platforms I work on at IOMechs, and my own products, from event management and telemedicine to EdTech and real estate."
+      intro="Products I've built myself, and platforms I've worked on as part of the IOMechs team."
     />
 
     <div class="flex flex-wrap items-center gap-2" id="filter-bar" role="group" aria-label="Filter projects by type">
       {categories.map((cat) => (
         <button
           type="button"
-          class="filter-btn press rounded-md px-3 py-1.5 text-[0.9375rem] border border-control text-ink hover:border-ink transition-[color,background-color,border-color,transform] duration-100 active:scale-[0.96] aria-pressed:bg-ink aria-pressed:text-paper aria-pressed:border-ink"
+          class="filter-btn press rounded-full px-4 py-1.5 text-[0.9375rem] border border-control text-ink hover:border-ink transition-[color,background-color,border-color,transform] duration-100 active:scale-[0.96] aria-pressed:bg-ink aria-pressed:text-paper aria-pressed:border-ink"
           data-category={cat}
           aria-pressed={cat === 'All' ? 'true' : 'false'}
         >
@@ -33,26 +38,46 @@ const categories = ['All', ...new Set(allProjects.flatMap((p) => p.data.category
       ))}
     </div>
 
-    <div class="mt-8 border-b border-rule" id="projects-list">
-      {sorted.map((project) => (
-        <div data-categories={project.data.category.join(',')}>
-          <ProjectRow
+    <div class="mt-10 grid gap-x-5 gap-y-14 md:grid-cols-2" id="projects-list">
+      {withImage.map((project, i) => (
+        <div data-categories={project.data.category.join(',')} class:list={['grid', i === 0 && 'md:col-span-2']}>
+          <ProjectFeature
             title={project.data.title}
             description={project.data.description}
             tech={project.data.tech}
+            category={project.data.category}
             slug={project.slug}
             yearCompleted={project.data.yearCompleted}
-            image={project.data.image}
+            image={project.data.image!}
+            employer={project.data.employer}
+            myPart={project.data.myPart}
+            wide={i === 0}
           />
         </div>
       ))}
     </div>
+
+    {withoutImage.length > 0 && (
+      <div class="mt-14 border-b border-rule" id="projects-rows">
+        {withoutImage.map((project) => (
+          <div data-categories={project.data.category.join(',')}>
+            <ProjectRow
+              title={project.data.title}
+              description={project.data.description}
+              tech={project.data.tech}
+              slug={project.slug}
+              yearCompleted={project.data.yearCompleted}
+            />
+          </div>
+        ))}
+      </div>
+    )}
   </div>
 </BaseLayout>
 
 <script>
   const buttons = document.querySelectorAll<HTMLButtonElement>('#filter-bar .filter-btn');
-  const rows = document.querySelectorAll<HTMLElement>('#projects-list [data-categories]');
+  const rows = document.querySelectorAll<HTMLElement>('#projects-list [data-categories], #projects-rows [data-categories]');
 
   buttons.forEach((btn) => {
     btn.addEventListener('click', () => {

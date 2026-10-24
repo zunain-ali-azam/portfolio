@@ -114,9 +114,8 @@ const person = {
     </script>
 
     <script is:inline>
-      // Scroll reveals. Content already on screen shows at once (so page transitions stay clean).
-      // Reveals start once content is a little way into the viewport, so they're seen; when the visitor is scrolling
-      // fast, content appears instantly instead of making them wait for an animation.
+      // Scroll reveals. What's on screen at load animates in order; the rest waits until it's a little way
+      // into the viewport. When the visitor is scrolling fast, content appears instantly instead.
       (function () {
         const els = document.querySelectorAll('[data-reveal]');
         // Reduced motion still gets a plain fade (handled in CSS), so only bail out without IntersectionObserver
@@ -124,6 +123,7 @@ const person = {
           els.forEach((el) => el.classList.add('is-in'));
           return;
         }
+        const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
         // Scroll speed in px/ms, measured over the last 100ms of scrolling. A window is steadier than
         // per-event deltas, which spike when two scroll events land in the same millisecond.
@@ -144,13 +144,27 @@ const person = {
         };
         const FAST = 1.2; // ~1200px/s: faster than reading, so skip the animation
 
-        const vh = window.innerHeight;
+        // Stats count up from zero, keeping any suffix ("10+", "99")
+        const countUp = (el) => {
+          const [, num, rest] = el.textContent.trim().match(/^(\d+)(.*)$/) || [];
+          if (!num) return;
+          const target = +num, start = performance.now(), duration = 1400;
+          const step = (now) => {
+            const t = Math.min((now - start) / duration, 1);
+            el.textContent = Math.round(target * (1 - Math.pow(2, -10 * t))) + rest;
+            if (t < 1) requestAnimationFrame(step);
+            else el.textContent = target + rest;
+          };
+          requestAnimationFrame(step);
+        };
+
         const pending = new Set();
         const reveal = (el, i, fast) => {
           if (fast) el.classList.add('reveal-instant');
-          // Cap the stagger so nothing waits long when several items arrive at once
-          else el.style.setProperty('--reveal-delay', `${Math.min(i, 3) * 80}ms`);
+          // Elements can set their own delay (hero, headings); others get a short, capped stagger
+          else if (!el.style.getPropertyValue('--reveal-delay')) el.style.setProperty('--reveal-delay', `${Math.min(i, 3) * 80}ms`);
           el.classList.add('is-in');
+          if (!fast && !still) el.querySelectorAll('[data-count]').forEach(countUp);
           io.unobserve(el);
           pending.delete(el);
         };
@@ -163,10 +177,13 @@ const person = {
         function settle() {
           [...pending].filter((el) => el.getBoundingClientRect().top < innerHeight).forEach((el, i) => reveal(el, i, false));
         }
+        const onScreen = [];
         els.forEach((el) => {
-          if (el.getBoundingClientRect().top < vh) el.classList.add('is-in', 'reveal-instant');
+          if (el.getBoundingClientRect().top < innerHeight) onScreen.push(el);
           else { pending.add(el); io.observe(el); }
         });
+        // Two frames so the hidden state paints first and the transition actually runs
+        requestAnimationFrame(() => requestAnimationFrame(() => onScreen.forEach((el, i) => reveal(el, i, false))));
       })();
     </script>
   </body>

@@ -13,12 +13,24 @@ const currentPath = Astro.url.pathname;
 const isActive = (href: string) => currentPath.startsWith(href);
 ---
 
-<header class="site-header sticky top-0 z-50 bg-paper/90 backdrop-blur-md border-b border-rule" style="view-transition-name: site-header">
+<header class="site-header sticky top-0 z-50 bg-paper/85 backdrop-blur-md" style="view-transition-name: site-header">
   <div class="container">
     <div class="flex items-center justify-between h-16 gap-6">
       <a href="/" class="font-semibold tracking-[-0.02em] text-ink hover:text-accent transition-colors">
         Zunain Ali Azam
       </a>
+
+      <!-- Where and when I am: helps a visitor in another time zone judge when I'll reply -->
+      <p class="hidden lg:flex items-center gap-6 text-[0.9375rem]">
+        <span class="flex items-center gap-2">
+          <span class="relative flex w-2 h-2" aria-hidden="true">
+            <span class="status-ping absolute inset-0 rounded-full bg-now"></span>
+            <span class="relative w-2 h-2 rounded-full bg-now"></span>
+          </span>
+          Open to work
+        </span>
+        <span class="text-mut">Karachi <time id="local-time" class="ms-1 text-ink/70"></time></span>
+      </p>
 
       <div class="flex items-center gap-3 md:gap-7">
         <nav class="hidden md:flex items-center gap-6 text-[0.9375rem]" aria-label="Primary">
@@ -79,6 +91,15 @@ const isActive = (href: string) => currentPath.startsWith(href);
 </header>
 
 <script>
+  // Karachi local time, refreshed each minute
+  const clock = document.getElementById('local-time');
+  if (clock) {
+    const fmt = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Karachi', hour: '2-digit', minute: '2-digit' });
+    const tick = () => (clock.textContent = fmt.format(new Date()));
+    tick();
+    setInterval(tick, 30_000);
+  }
+
   const toggle = document.getElementById('menu-toggle');
   const menu = document.getElementById('mobile-menu');
 

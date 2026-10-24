@@ -1,40 +1,61 @@
 ---
+import SplitText from './SplitText.astro';
+
+const email = 'zunainazam456@gmail.com';
 ---
 
-<section class="border-b border-rule">
-  <div class="container grid items-start gap-x-12 md:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] lg:grid-cols-[minmax(0,1fr)_minmax(0,27rem)]">
-    <div class="pt-12 sm:pt-20 pb-12 md:pb-20">
-      <p class="flex items-start gap-2 text-[0.9375rem] text-mut">
-        <span class="mt-[0.55em] w-2 h-2 shrink-0 rounded-full bg-now" aria-hidden="true"></span>
-        <span>Zunain Ali Azam. Based in Karachi, open to remote work and relocation.</span>
-      </p>
+<section class="container pt-14 sm:pt-24 pb-20 sm:pb-28">
+  <SplitText as="h1" class="type-hero max-w-[17ch]" text="I build, upgrade and fix the web apps teams rely on." delay={100} />
 
-      <!-- Each verb acts out its meaning once on load: ships slides out, scales grows, learns sharpens, ranks climbs -->
-      <h1 class="type-hero mt-8 max-w-[15ch]">
-        Code that <span class="verb verb-ships">ships</span>, <span class="verb verb-scales">scales</span>,
-        <span class="verb verb-learns">learns</span> and <span class="verb verb-ranks">ranks</span>.
-      </h1>
-
-      <p class="mt-8 max-w-[56ch] text-lg sm:text-xl leading-relaxed text-ink/80">
-        I'm a full-stack software engineer. I ship web apps end to end, deploy them to the cloud, train models
-        that learn from messy data, and make sure the result ranks in search. Right now that's Estenarh,
-        a healthcare platform with 80,000+ users, and Calyndrs, the events platform I co-founded.
-      </p>
-
-      <div class="mt-10 flex flex-wrap gap-3">
+  <div class="mt-12 sm:mt-20 grid gap-10 md:grid-cols-2 md:items-end">
+    <div class="order-2 md:order-1" data-reveal style="--reveal-delay: 750ms">
+      <div class="flex items-center gap-3">
+        <a href={`mailto:${email}`} class="text-lg sm:text-xl font-medium hover:text-accent transition-colors break-all">{email}</a>
+        <button
+          id="copy-email"
+          type="button"
+          data-email={email}
+          class="press shrink-0 inline-flex items-center justify-center w-9 h-9 rounded-full border border-control text-ink hover:border-ink transition-[border-color,transform] duration-100 active:scale-[0.94]"
+          aria-label="Copy email address"
+          title="Copy email address"
+        >
+          <svg class="copy-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="9" y="9" width="12" height="12" rx="2" /><path d="M5 15V5a2 2 0 0 1 2-2h10" />
+          </svg>
+          <svg class="done-icon hidden" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 12.5l4.5 4.5L19 7.5" />
+          </svg>
+        </button>
+        <span id="copy-status" class="text-sm text-now" role="status"></span>
+      </div>
+      <div class="mt-6 flex flex-wrap gap-3">
         <a href="/contact" class="btn-primary">Get in touch</a>
         <a href="/projects" class="btn-secondary">See my work</a>
       </div>
     </div>
 
-    <!-- Cut-out portrait, top-aligned with the copy; only its flat-cut bottom edge fades -->
-    <img
-      src="/portrait.webp"
-      alt="Zunain Ali Azam"
-      width="760"
-      height="695"
-      fetchpriority="high"
-      class="block w-full max-w-[18rem] md:max-w-none justify-self-center md:justify-self-end mb-12 md:mb-16 md:mt-20 select-none [mask-image:linear-gradient(to_bottom,black_92%,transparent)]"
-    />
+    <p data-reveal style="--reveal-delay: 600ms" class="order-1 md:order-2 text-xl sm:text-2xl leading-snug tracking-[-0.015em] text-ink/85 max-w-[34ch] md:justify-self-end">
+      Full-stack engineer in Karachi. Open to remote roles, relocation and freelance projects.
+    </p>
   </div>
 </section>
+
+<script>
+  const btn = document.getElementById('copy-email');
+  const status = document.getElementById('copy-status');
+  btn?.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(btn.dataset.email ?? '');
+    } catch {
+      return; // Clipboard blocked: the address is still a mailto link right beside it
+    }
+    btn.querySelector('.copy-icon')?.classList.add('hidden');
+    btn.querySelector('.done-icon')?.classList.remove('hidden');
+    if (status) status.textContent = 'Copied';
+    setTimeout(() => {
+      btn.querySelector('.copy-icon')?.classList.remove('hidden');
+      btn.querySelector('.done-icon')?.classList.add('hidden');
+      if (status) status.textContent = '';
+    }, 1800);
+  });
+</script>

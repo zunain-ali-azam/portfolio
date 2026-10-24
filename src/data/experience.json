@@ -25,7 +25,7 @@
     "current": true,
     "bullets": [
       "Contributed to Estenarh (80,000+ users) by developing and maintaining Admin dashboards and customer-facing modules using Angular, Angular Material, and Tailwind CSS.",
-      "Improved Estenarh's search visibility and frontend maintainability by resolving Technical SEO issues and leading migration efforts from Next.js v14 to v16.",
+      "Led performance and technical SEO optimization of the Estenarh website, raising Lighthouse scores from 70 to 99 on desktop and from the 50s to the 80s on mobile, and cutting bundle size by ~3x (16 MB to under 5 MB). Also led the Next.js v14 to v16 migration through to production release.",
       "Developed and maintained extensive bilingual UI experiences for English LTR and Arabic RTL, implementing i18n across customer-facing and administrative interfaces while ensuring consistent, responsive layouts and reusable components across both languages.",
       "Designed and implemented analytical dashboards tracking client acquisition, retention rates, bookings, and revenue metrics for consultants and platform-wide performance — replacing manual reporting and reducing reporting effort by ~30–40%.",
       "Led the migration of Estenarh Admin from Angular v14 to v17 through structured refactoring, improving scalability, UI consistency, and long-term maintainability.",

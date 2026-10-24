@@ -8,6 +8,7 @@ image: "/azm/hero_new.svg"
 featured: false
 order: 5
 employer: "IOMechs"
+myPart: "I built the invoice system, shift reporting and the English/Arabic UI, and fixed pricing and VAT bugs in production."
 yearCompleted: 2025
 highlights:
   - "Built and redesigned the invoice system with print support, QR codes and correct handling of refunded and cancelled orders"

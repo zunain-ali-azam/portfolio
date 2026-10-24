@@ -23,6 +23,11 @@ const isLogo = image?.toLowerCase().includes('logo');
       <a href="/projects" class="link text-[0.9375rem]">All work</a>
       <h1 class="type-page mt-8" style={`view-transition-name: project-title-${project.slug}`}>{title}</h1>
       <p class="mt-6 max-w-[60ch] text-lg sm:text-xl text-ink/80 leading-relaxed">{description}</p>
+      {employer && (
+        <p class="mt-4 max-w-[60ch] text-mut">
+          Built at {employer} as part of a team. The highlights below are my own contributions.
+        </p>
+      )}
       {(live || github) && (
         <div class="mt-8 flex flex-wrap gap-3">
           {live && <a href={live} target="_blank" rel="noopener noreferrer" class="btn-primary">Visit live site</a>}
@@ -34,7 +39,7 @@ const isLogo = image?.toLowerCase().includes('logo');
     {image && (
       <figure
         class:list={[
-          'aspect-[16/8] rounded-xl overflow-hidden border border-rule flex items-center justify-center',
+          'aspect-[16/8] rounded-2xl overflow-hidden border border-rule flex items-center justify-center',
           isLogo ? 'bg-white' : 'bg-tint',
         ]}
         style={`view-transition-name: project-image-${project.slug}`}
@@ -63,7 +68,7 @@ const isLogo = image?.toLowerCase().includes('logo');
         </div>
       </div>
 
-      <aside class="lg:sticky lg:top-24 self-start rounded-xl bg-tint p-6">
+      <aside class="lg:sticky lg:top-24 self-start rounded-2xl bg-tint p-6">
         <dl class="space-y-4">
           <div><dt class="text-sm text-mut">Year</dt><dd>{yearCompleted}</dd></div>
           {role && <div><dt class="text-sm text-mut">Role</dt><dd>{role}</dd></div>}

@@ -1,4 +1,6 @@
 ---
+import SplitText from './SplitText.astro';
+
 interface Props {
   title: string;
   intro?: string;
@@ -9,10 +11,10 @@ interface Props {
 const { title, intro, href, linkLabel = 'View all' } = Astro.props;
 ---
 
-<div class="mb-8 flex flex-wrap items-end justify-between gap-x-6 gap-y-3" data-reveal>
+<div class="mb-10 sm:mb-14 flex flex-wrap items-end justify-between gap-x-6 gap-y-5">
   <div>
-    <h2 class="type-section">{title}</h2>
-    {intro && <p class="mt-2 text-mut max-w-[60ch]">{intro}</p>}
+    <SplitText class="type-section max-w-[18ch]" text={title} />
+    {intro && <p class="mt-4 text-mut max-w-[56ch]" data-reveal style="--reveal-delay: 250ms">{intro}</p>}
   </div>
-  {href && <a href={href} class="link shrink-0">{linkLabel}</a>}
+  {href && <a href={href} class="btn-primary shrink-0" data-reveal style="--reveal-delay: 300ms">{linkLabel}</a>}
 </div>

@@ -19,6 +19,11 @@ export default {
         'on-accent': token('on-accent'),
         now: token('now'),
         danger: token('danger'),
+        band: token('band'),
+        'on-band': token('on-band'),
+        'band-mut': token('band-mut'),
+        'band-accent': token('band-accent'),
+        'band-rule': token('band-rule'),
       },
       fontFamily: {
         sans: ['"Readex Pro"', 'system-ui', '-apple-system', 'sans-serif'],

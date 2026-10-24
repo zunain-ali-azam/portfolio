@@ -1,0 +1,20 @@
+---
+// A heading whose words rise in one after another when it scrolls into view (styles in global.css).
+// The words stay plain text in the markup, so it reads normally without JS or to a screen reader.
+interface Props {
+  text: string;
+  as?: 'h1' | 'h2' | 'h3' | 'p' | 'span';
+  class?: string;
+  /** Extra wait before the first word, in ms */
+  delay?: number;
+}
+
+const { text, as: Tag = 'h2', class: className, delay } = Astro.props;
+const words: string[] = text.split(' ');
+---
+
+<Tag class:list={['split', className]} data-reveal="split" style={delay ? `--reveal-delay: ${delay}ms` : undefined}>
+  {words.map((word: string, i: number) => (
+    <Fragment><span class="word"><span class="word-inner" style={`--i: ${i}`}>{word}</span></span>{i < words.length - 1 && ' '}</Fragment>
+  ))}
+</Tag>

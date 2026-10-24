@@ -8,6 +8,7 @@ image: "/now-cutz-logo.svg"
 featured: false
 order: 6
 employer: "IOMechs"
+myPart: "I built promo codes, commission tiers, role-based access and bulk service assignment across the Admin and Shop portals."
 yearCompleted: 2025
 highlights:
   - "Built Promo Codes, Commission Tiers and per-shop Settings end to end, using React Query cache invalidation so the UI stays consistent after every change"
