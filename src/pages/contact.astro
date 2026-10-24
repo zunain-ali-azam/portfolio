@@ -5,10 +5,15 @@ import { TOPICS } from '@/lib/contact';
 
 const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 
+// Cal.com event people can book; the sidebar links to it and the section below embeds it
+const calLink = 'zunain-ali-azam-gtyskl/30min';
+const bookingUrl = `https://cal.com/${calLink}`;
+
 const contactLinks = [
   { label: 'Email',    value: 'zunainazam456@gmail.com',    href: 'mailto:zunainazam456@gmail.com' },
   { label: 'LinkedIn', value: 'linkedin.com/in/zunain-azam', href: 'https://linkedin.com/in/zunain-azam' },
   { label: 'GitHub',   value: 'github.com/zunain-ali-azam',    href: 'https://github.com/zunain-ali-azam' },
+  { label: 'Book a call', value: '30-minute intro call',      href: bookingUrl },
 ];
 ---
 
@@ -93,8 +98,67 @@ const contactLinks = [
         </ul>
       </aside>
     </div>
+
+    <section class="mt-20" aria-labelledby="book-heading">
+      <h2 id="book-heading" class="type-section">Book a call</h2>
+      <p class="mt-3 text-ink/80 max-w-[52ch]">Prefer to talk it through? Pick a time that suits you.</p>
+      <div id="cal-inline" data-cal-link={calLink} class="mt-6 w-full min-h-[640px]">
+        <p class="text-mut">Loading the calendar… If it doesn't appear, <a href={bookingUrl} target="_blank" rel="noopener noreferrer" class="link">book on Cal.com</a>.</p>
+      </div>
+    </section>
   </div>
 </BaseLayout>
+
+<script>
+  // Cal.com's embed loader, from their inline embed snippet
+  (function (C: any, A: string, L: string) { let p = function (a: any, ar: any) { a.q.push(ar); }; let d = C.document; C.Cal = C.Cal || function () { let cal = C.Cal; let ar = arguments; if (!cal.loaded) { cal.ns = {}; cal.q = cal.q || []; d.head.appendChild(d.createElement('script')).src = A; cal.loaded = true; } if (ar[0] === L) { const api: any = function () { p(api, arguments); }; const namespace = ar[1]; api.q = api.q || []; if (typeof namespace === 'string') { cal.ns[namespace] = cal.ns[namespace] || api; p(cal.ns[namespace], ar); p(cal, ['initNamespace', namespace]); } else p(cal, ar); return; } p(cal, ar); }; })(window, 'https://app.cal.com/embed/embed.js', 'init');
+
+  // The site's design tokens (global.css) as hex, so the calendar sits on the page's own surfaces
+  const CAL_COLORS = {
+    light: {
+      'cal-brand': '#1F3FBF', 'cal-brand-text': '#FFFFFF',
+      'cal-bg': '#F3F5F8', 'cal-bg-muted': '#E8ECF3', 'cal-bg-subtle': '#E8ECF3', 'cal-bg-emphasis': '#D6DCE8',
+      'cal-border': '#D6DCE8', 'cal-border-subtle': '#D6DCE8',
+      'cal-text': '#1B2340', 'cal-text-emphasis': '#1B2340', 'cal-text-subtle': '#566078', 'cal-text-muted': '#566078',
+    },
+    dark: {
+      'cal-brand': '#8FA6FF', 'cal-brand-text': '#0E1428',
+      'cal-bg': '#0E1428', 'cal-bg-muted': '#161E3A', 'cal-bg-subtle': '#161E3A', 'cal-bg-emphasis': '#283252',
+      'cal-border': '#283252', 'cal-border-subtle': '#283252',
+      'cal-text': '#E4E9F3', 'cal-text-emphasis': '#E4E9F3', 'cal-text-subtle': '#96A0B8', 'cal-text-muted': '#96A0B8',
+    },
+  };
+
+  const calEl = document.getElementById('cal-inline');
+  if (calEl) {
+    const Cal = (window as any).Cal;
+    const root = document.documentElement;
+    const fallback = calEl.innerHTML;
+    const theme = () => (root.classList.contains('dark') ? 'dark' : 'light');
+    let mounted: string | undefined;
+    let count = 0;
+
+    // The embed ignores theme changes once loaded, so each theme gets a fresh embed in its own namespace
+    const mount = () => {
+      if (mounted === theme()) return;
+      mounted = theme();
+      const ns = `book${++count}`;
+      calEl.innerHTML = fallback;
+      Cal('init', ns, { origin: 'https://cal.com' });
+      Cal.ns[ns]('inline', {
+        elementOrSelector: calEl,
+        calLink: calEl.dataset.calLink,
+        config: { layout: 'month_view', theme: mounted },
+      });
+      Cal.ns[ns]('ui', { theme: mounted, cssVarsPerTheme: CAL_COLORS, hideEventTypeDetails: false, layout: 'month_view' });
+      // Drop the loading note once the calendar is showing
+      Cal.ns[ns]('on', { action: 'linkReady', callback: () => calEl.querySelector(':scope > p')?.remove() });
+    };
+
+    mount();
+    new MutationObserver(mount).observe(root, { attributeFilter: ['class'] });
+  }
+</script>
 
 <script>
   import { readContact, validateContact, type ContactErrors } from '@/lib/contact';
