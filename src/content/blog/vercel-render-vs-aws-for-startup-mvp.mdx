@@ -1,0 +1,107 @@
+---
+title: "Vercel and Render vs AWS for a Startup MVP: What the Free Tiers Really Cost"
+description: "Why Vercel and Render's free tiers don't hold up for a startup testing the market, what their paid plans cost once you need an always-on API and a dev environment, and why AWS Amplify and Lightsail give you more for less."
+date: 2026-11-09
+tags: ["Startups", "AWS", "Vercel", "Deployment"]
+draft: false
+related: ["deploy-mvp-on-aws-amplify-and-lightsail"]
+---
+
+The usual advice for an MVP is "put the frontend on Vercel, the API on Render, and worry about infrastructure later." It sounds cheap and simple. For a startup that's actually testing the market, it's usually neither.
+
+The free tiers aren't made for a product people use, so you end up on the paid plans. Once you're paying, an AWS setup with **Amplify** for the frontend and **Lightsail** for the API costs less and gives you more: an API that never sleeps, a dev environment on its own subdomain, file storage and a CDN, all in one account.
+
+This post covers the trade-offs and the numbers. If you've already decided, the step-by-step guide is here: [How to Deploy an MVP on AWS Amplify and Lightsail](/blog/deploy-mvp-on-aws-amplify-and-lightsail).
+
+## Render's free API goes to sleep
+
+Render's free web services spin down after about 15 minutes without traffic. The next request waits while the service starts again, which can take close to a minute.
+
+For an MVP that's the worst possible time to be slow. Early users arrive one at a time, often after a quiet stretch, so the first person to try your product is the one who waits. Many of them won't. You lose signups you'll never hear about, and your market test measures your cold start instead of your product.
+
+Keeping the API always on means a paid instance. Render charges per service, so a dev API and a prod API are two paid instances, and you still need a database, storage and email on top.
+
+## Vercel's free plan isn't for a business
+
+Vercel's free Hobby plan is for **non-commercial use**. Once your startup charges money, or is simply a business, you're expected to be on Pro, which is priced **per team member per month**. Add your co-founder and a contractor, and the frontend bill grows with your headcount, not your traffic.
+
+A dev environment on its own subdomain is behind the same paywall. When we tried to set up `dev.example.com` as a separate dev environment, Vercel asked us to upgrade to Pro: environments beyond the built-in Preview and Production are a paid feature. Without one, your team tests on random preview URLs instead of a stable dev site that the dev API, OAuth settings and API keys can trust.
+
+On top of that, bandwidth, function calls and build minutes are metered, so a traffic spike can still produce a bill you didn't plan for.
+
+## You still need everything else
+
+Neither platform stores your users' uploads. Profile photos, documents and images need a storage bucket somewhere, usually S3 or Cloudinary, which is a third account, a third bill and a third set of keys. If you want those files cached close to users, you need a CDN as well.
+
+So a "free" Vercel and Render setup that's ready for real users ends up as:
+
+- Vercel Pro, per member
+- One or two always-on Render instances
+- A storage service
+- Two or three dashboards, bills and sets of secrets
+
+## Two repos that drift apart
+
+These setups usually start as two repos: frontend on Vercel, backend on Render. Every feature that touches both becomes two pull requests, two deploys and a window where one is live and the other isn't. That isn't Vercel or Render's fault, but their split setup makes it the default.
+
+## What you get on AWS instead
+
+| You need | Vercel + Render | AWS |
+| --- | --- | --- |
+| Frontend with CDN and HTTPS | Vercel (Pro for a business) | **Amplify**, served through CloudFront, certificates included |
+| A dev environment on its own subdomain | Vercel Pro | Amplify maps any branch to any subdomain: `develop` to `dev.example.com` |
+| An API that never sleeps | Paid Render instance per environment | **Lightsail**, a fixed-price server that's always on |
+| A static IP for allowlists | Not on the free tier | Included with Lightsail |
+| File uploads | Separate service | **S3** in the same account |
+| Caching files close to users | Separate service | **CloudFront**, with an always-free allowance |
+| Backups of the server | n/a | Lightsail snapshots |
+| Bills | Two or more | One |
+
+## What it costs
+
+Rough monthly cost at MVP traffic, at the time of writing. Check each provider's pricing page before you plan around these numbers.
+
+| | Vercel Pro + Render | Amplify + Lightsail |
+| --- | --- | --- |
+| Frontend | About $20 per team member | Amplify bills per build minute, data served and request; a few dollars at MVP traffic |
+| API, dev and prod | About $7 or more per always-on instance, times two | Lightsail: about $5 for a small dev box, $12 for a 2 GB prod box |
+| Storage and CDN | Another provider | S3 is cents per GB; CloudFront's free allowance covers 1 TB out a month |
+| **Two founders, dev and prod** | **About $55 and up** | **About $20 to $30** |
+
+The gap gets bigger with every person you add, because nothing on the AWS side is priced per seat. New AWS accounts also get free tier credits, which can cover the first months.
+
+Keep the **database managed** either way. MongoDB Atlas, Neon and Supabase all have free tiers that hold up for an MVP. Running your own database means doing your own backups, upgrades and failover, and that work rarely pays off at this stage.
+
+## What AWS costs you instead
+
+The trade-off isn't money, it's a few hours of setup and a little ownership:
+
+- **Setup takes hours, not minutes.** A server setup script, a deploy workflow, DNS records and an Amplify app. You do it once, and it's the same for every environment after that.
+- **You own the server.** Security updates install themselves, but someone reboots the box now and then and keeps an eye on memory.
+- **No automatic previews for every pull request on the API.** Amplify can preview frontend pull requests; the API has dev and prod.
+
+For a startup with at least one developer, that's a good trade. Those hours buy an always-on product, a real dev environment and a bill that doesn't grow with the team.
+
+## When Vercel and Render are fine
+
+They're the right choice when:
+
+- It's a **demo, a hackathon project or a weekend prototype** with no real users yet
+- It's a **personal or non-commercial project**, so Vercel Hobby's terms fit
+- Nobody on the team wants to touch a server, and the paid plans fit the budget
+- The app is **frontend only**: a static or mostly static site on Vercel's free plan can run for years without problems
+
+Once you're a business, you have users to impress and a dev environment to run, and the numbers above start to apply.
+
+## Already launched on Vercel and Render?
+
+You don't have to stay there. Build the AWS setup next to the old one, test it on its own addresses, then switch DNS with lowered TTLs and a written-down rollback. Users never notice. The [setup guide](/blog/deploy-mvp-on-aws-amplify-and-lightsail) covers this in its "Moving from Vercel and Render" section.
+
+## The short version
+
+- Render's free API sleeps, and your first users pay for it with a long wait.
+- Vercel's free plan is non-commercial, and a dev environment on its own subdomain needs Pro, priced per member.
+- Storage and a CDN are extra services either way.
+- Amplify and Lightsail give you an always-on API, branch subdomains, S3 and CloudFront in one account for roughly half the monthly cost of the paid plans, and the price doesn't grow with your team.
+
+The goal of an MVP is to learn whether people want what you're building. That's hard to learn if your API is asleep when they arrive, or if half your budget goes to per-seat plans. When you're ready, follow the [step-by-step guide to Amplify and Lightsail](/blog/deploy-mvp-on-aws-amplify-and-lightsail).

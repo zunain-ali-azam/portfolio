@@ -1,0 +1,210 @@
+---
+title: "How to Set Up the Google Maps API in Your Web Application"
+description: "A step-by-step guide to adding Google Maps to a web app: creating and locking down an API key, loading the Maps JavaScript API the modern way, adding markers, and keeping your bill at zero."
+date: 2026-11-06
+tags: ["Google Maps", "JavaScript", "Web Dev"]
+draft: false
+---
+
+Adding a map to a web app looks like a five-minute job. Then you hit a grey box that says *"This page can't load Google Maps correctly"*, a console full of `RefererNotAllowedMapError`, and a worry that someone will copy your API key and run up your bill.
+
+This guide covers the whole setup in order: the Google Cloud project, a locked-down API key, loading the Maps JavaScript API the way Google now recommends, and a working map with a marker. It works the same in plain JavaScript, React, Vue, Astro or any other frontend.
+
+## What you need
+
+- A Google account
+- A billing account on Google Cloud. Google asks for a card even if you stay within the free usage. More on cost below.
+- A web app you can run locally
+
+## Step 1: Create a Google Cloud project
+
+1. Open the [Google Cloud Console](https://console.cloud.google.com/).
+2. Click the project picker in the top bar, then **New Project**. Give it a name such as `my-app-maps`.
+3. When it asks, link a billing account to the project. Without billing, maps load darkened with a *"For development purposes only"* watermark.
+
+Use a separate project for each app. Keys, quotas and bills stay apart, and you can shut one down without breaking the others.
+
+## Step 2: Enable the APIs you need
+
+Go to **APIs & Services → Library** and enable only what you'll use:
+
+| You want to... | Enable |
+| --- | --- |
+| Show an interactive map | **Maps JavaScript API** |
+| Search places / address autocomplete | **Places API (New)** |
+| Turn addresses into coordinates | **Geocoding API** |
+| Get directions or travel times | **Routes API** |
+
+For a basic map you only need the **Maps JavaScript API**. Every API you enable is one more thing that can be billed if your key leaks.
+
+## Step 3: Create an API key
+
+1. Go to **APIs & Services → Credentials** (or **Google Maps Platform → Keys & Credentials**).
+2. Click **Create credentials → API key**.
+3. Copy the key. Don't close the dialog yet. Click **Edit API key** and restrict it, as covered in the next step.
+
+## Step 4: Restrict the key (don't skip this)
+
+A Maps JavaScript API key **always ends up in the browser**. Anyone can open DevTools and read it. You can't hide it, so you limit what it can do.
+
+On the key's edit page:
+
+**Application restrictions → Websites (HTTP referrers).** Add each origin that is allowed to use the key:
+
+```text
+https://yourdomain.com/*
+https://www.yourdomain.com/*
+http://localhost:5173/*
+```
+
+Use whatever port your dev server runs on: `5173` for Vite, `4321` for Astro, `3000` for Next.js. Keep a separate key for development and remove `localhost` from the production key.
+
+**API restrictions → Restrict key.** Tick only the APIs from Step 2, such as **Maps JavaScript API**. If someone copies the key, they can't call Geocoding or Places with it from their own site.
+
+Restrictions can take a few minutes to apply. If you get errors right after saving, wait a moment before you start debugging.
+
+## Step 5: Create a Map ID
+
+Google's current marker, `AdvancedMarkerElement`, needs a **Map ID**. The older `google.maps.Marker` is deprecated, so new code should use Advanced Markers from the start.
+
+1. Go to **Google Maps Platform → Map Management**.
+2. Click **Create Map ID**, give it a name, and set the map type to **JavaScript**. Choose **Vector** if you want tilt and rotation.
+3. Copy the Map ID.
+
+The Map ID is also where you attach cloud-based map styles later, so you can restyle the map without a code change.
+
+## Step 6: Store the key in an environment variable
+
+Keep the key out of your source code so you can use different keys for development and production. Each framework has its own prefix for variables that are exposed to the browser:
+
+```bash
+# .env
+# Vite / Vue / React (Vite)
+VITE_GOOGLE_MAPS_API_KEY=your-key
+VITE_GOOGLE_MAPS_MAP_ID=your-map-id
+
+# Astro: PUBLIC_GOOGLE_MAPS_API_KEY
+# Next.js: NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+```
+
+Make sure `.env` is in your `.gitignore`. To be clear: this does **not** make the key secret, because the bundle still contains it. The restrictions from Step 4 are what protect you. The environment variable only keeps the key out of your repo and makes it easy to swap per environment.
+
+## Step 7: Load the Maps JavaScript API
+
+There are two good options.
+
+### Option A: the official npm loader (recommended for apps with a bundler)
+
+```bash
+npm install @googlemaps/js-api-loader
+npm install -D @types/google.maps   # if you use TypeScript
+```
+
+Version 2 of the loader exports two functions, `setOptions` and `importLibrary`:
+
+```ts
+// src/lib/maps.ts
+import { setOptions, importLibrary } from '@googlemaps/js-api-loader';
+
+setOptions({
+  key: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
+  v: 'weekly',
+});
+
+export { importLibrary };
+```
+
+Call `setOptions` once, before you load any library. The first `importLibrary` call loads the API script. Later calls reuse it.
+
+If you're upgrading from v1: the `Loader` class and `loader.load()` are gone, and `apiKey` / `version` are now `key` / `v`.
+
+### Option B: a script tag (no build step)
+
+```html
+<script
+  async
+  src="https://maps.googleapis.com/maps/api/js?key=YOUR_KEY&loading=async&callback=initMap"
+></script>
+```
+
+`loading=async` tells Google you're loading the script asynchronously, which is the recommended way. Inside `initMap` you can call `google.maps.importLibrary()` in the same way as below. Google's documentation also has a short inline "bootstrap loader" snippet that you can paste instead.
+
+## Step 8: Render a map with a marker
+
+Give the map a container **with a height**. A map with zero height is the most common reason for "it loads but I see nothing".
+
+```html
+<div id="map" style="height: 400px; width: 100%;"></div>
+```
+
+Then load the libraries you need and create the map:
+
+```ts
+import { importLibrary } from './lib/maps';
+
+async function initMap() {
+  const { Map } = await importLibrary('maps');
+  const { AdvancedMarkerElement } = await importLibrary('marker');
+
+  const position = { lat: 31.5204, lng: 74.3587 }; // Lahore
+
+  const map = new Map(document.getElementById('map') as HTMLElement, {
+    center: position,
+    zoom: 13,
+    mapId: import.meta.env.VITE_GOOGLE_MAPS_MAP_ID,
+  });
+
+  new AdvancedMarkerElement({
+    map,
+    position,
+    title: 'Our office',
+  });
+}
+
+initMap();
+```
+
+That gives you a working, interactive map. Each library (`maps`, `marker`, `places`, `geocoding`, `routes`) loads only when you ask for it, so you don't download code you don't use.
+
+### Using it in React
+
+The same code works in a `useEffect` with a `ref` in place of `getElementById`. If you'd rather use components, [`@vis.gl/react-google-maps`](https://visgl.github.io/react-google-maps/) is maintained with Google and wraps all of this in `<APIProvider>`, `<Map>` and `<AdvancedMarker>`.
+
+## Step 9: Keep the bill at zero (or close to it)
+
+Since March 2025, Google Maps Platform gives each API (each "SKU") its **own free monthly allowance**. This replaced the old shared $200 credit. Most core SKUs, including Dynamic Maps (one load of a JavaScript map), are in the **Essentials** tier, which includes **10,000 free calls per month**. Pro and Enterprise SKUs have smaller free allowances. Prices change, so check the official [pricing page](https://developers.google.com/maps/billing-and-pricing/pricing) before you plan for a large number of users.
+
+Two settings will protect you from a surprise bill:
+
+1. **Budget alert.** Go to **Billing → Budgets & alerts** and create a budget, for example $5, with email alerts. Note that a budget only warns you. It does not stop usage.
+2. **Quota caps.** Go to **APIs & Services → [the API] → Quotas** and lower the requests-per-day limit. When you reach a quota, Google returns an error and doesn't bill you. This is the setting that actually stops spending.
+
+If all you need is a pin on your contact page, look at the **Maps Embed API**. It's a plain `<iframe>`, needs no JavaScript, and has no usage cost.
+
+## Common errors and what they mean
+
+Open the browser console. Google's error names point straight to the cause:
+
+| Error | Cause | Fix |
+| --- | --- | --- |
+| `RefererNotAllowedMapError` | The current URL isn't in the key's allowed referrers | Add the exact origin, including port and `/*` |
+| `ApiNotActivatedMapError` | The Maps JavaScript API isn't enabled | Enable it in the API Library (Step 2) |
+| `InvalidKeyMapError` | The key is wrong or was deleted | Check the environment variable is set and your dev server was restarted |
+| `BillingNotEnabledMapError` | No billing account linked | Link billing to the project |
+| `ApiTargetBlockedMapError` | The key's API restrictions don't include this API | Add the API under API restrictions |
+| Map is blank, no error | The container has zero height | Give `#map` an explicit height |
+| Warning that Advanced Markers need a Map ID | `mapId` is missing | Pass the Map ID from Step 5 |
+
+If your site sets a **Content Security Policy**, allow `https://maps.googleapis.com` in `script-src` and `connect-src`, and `https://maps.gstatic.com` in `img-src` and `font-src`, or the map will fail without an obvious error.
+
+## Checklist
+
+- [ ] Google Cloud project with billing linked
+- [ ] Only the APIs you need enabled
+- [ ] API key restricted by HTTP referrer **and** by API
+- [ ] Separate keys for development and production
+- [ ] Map ID created and passed to the map
+- [ ] Key loaded from an environment variable, `.env` git-ignored
+- [ ] Budget alert and daily quota caps set
+
+Follow these steps and Google Maps should work in any web app on the first try, with little risk of a leaked key turning into a large bill.

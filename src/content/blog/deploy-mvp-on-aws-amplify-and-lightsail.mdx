@@ -1,0 +1,365 @@
+---
+title: "How to Deploy an MVP on AWS Amplify and Lightsail: Monorepo, CI, S3 and a Dev/Prod Split"
+description: "A step-by-step guide to running a startup MVP on AWS: a pnpm monorepo, CI with GitHub Actions, the API on Lightsail with Caddy and pm2, the frontend on Amplify, uploads in S3 behind CloudFront, and separate dev and prod environments."
+date: 2026-11-09
+tags: ["AWS", "DevOps", "Startups", "Deployment"]
+draft: false
+related: ["vercel-render-vs-aws-for-startup-mvp"]
+---
+
+This guide sets up a startup MVP on AWS from scratch: the frontend on **Amplify**, the API on **Lightsail**, uploads in **S3** behind **CloudFront**, and separate dev and prod environments, deployed from one monorepo by GitHub Actions.
+
+It comes from moving a real product off Vercel and Render, so it also covers how to move without downtime if you've already launched there. If you're still deciding where to host, read the comparison first: [Vercel and Render vs AWS for a Startup MVP](/blog/vercel-render-vs-aws-for-startup-mvp). The short version: Render's free API sleeps, a dev environment on its own subdomain needs Vercel Pro, and the paid plans together cost more than this setup.
+
+Expect a few hours for the first environment, and much less for the second, because the same scripts work for both.
+
+## What we're building
+
+- **One GitHub organization** with one private **monorepo**: `apps/web` and `apps/api`
+- **Two environments:** the `develop` branch deploys to dev, `main` deploys to prod
+- **Frontend** on Amplify at `dev.example.com` and `example.com`
+- **API** on one Lightsail box per environment, at `api.dev.example.com` and `api.example.com`
+- **Uploads** in S3, served through CloudFront
+- **Database** on a managed provider, one database and user per environment
+- **DNS** at your domain registrar
+
+Two environments are enough. A separate staging environment is one more thing to keep in sync, and at this size dev does the same job.
+
+## Step 1: decisions that cost nothing
+
+1. **Buy your domain at a registrar** and keep DNS there. Moving hosts later is then a record change, not a domain transfer.
+2. **Create a GitHub organization**, even if you're one person, and require two-factor authentication before you add anyone.
+3. **Read every URL from environment variables:** the API URL, the site URL and the allowed CORS origins. Adding an environment then means changing config, not code.
+4. **Write a health endpoint:** a `GET /health` that returns 200 when the app can reach its database. Deploys and monitors use it.
+
+## Step 2: one monorepo
+
+Put the frontend and backend in one repo. If they already live in two, import them **with their history** so `git blame` still works:
+
+```bash
+mkdir my-app && cd my-app && git init
+git commit --allow-empty -m "Start monorepo"
+
+git remote add web https://github.com/you/my-app-frontend.git
+git fetch web
+git merge web/main --allow-unrelated-histories   # then move its files into apps/web
+```
+
+Do the same for the backend into `apps/api`. `git filter-repo --to-subdirectory-filter apps/web` does the move in one step if you'd rather rewrite the imported history.
+
+Then add pnpm workspaces and Turborepo, so one install and one command cover both apps:
+
+```yaml
+# pnpm-workspace.yaml
+packages:
+  - "apps/*"
+  - "packages/*"
+```
+
+```json
+// turbo.json
+{
+  "tasks": {
+    "build": { "dependsOn": ["^build"], "outputs": [".next/**", "dist/**"] },
+    "lint": {},
+    "typecheck": {},
+    "test": {}
+  }
+}
+```
+
+`pnpm exec turbo run lint typecheck test` now checks everything, and Turborepo skips what didn't change.
+
+Branch protection on private repos needs a paid GitHub plan. On the free plan, the rule is discipline: work lands on `develop`, and `main` only changes through a pull request.
+
+## Step 3: CI that runs before anything deploys
+
+One workflow runs lint, typecheck and tests on every push to `develop` and `main`, and on pull requests. Deploys run only after it passes.
+
+**Pin the runner image.** Use `runs-on: ubuntu-24.04`, not `ubuntu-latest`. When GitHub moves `ubuntu-latest` to a new Ubuntu release, tools that don't support it yet break. We lost a green CI overnight because Playwright couldn't install Chromium on the new image. A pinned version only changes when you change it.
+
+## Step 4: a Lightsail server for the API
+
+Lightsail is AWS's fixed-price VPS. Each plan includes a static IP, a firewall and a set amount of data transfer, so the bill doesn't move with traffic.
+
+1. Create an **Ubuntu LTS** instance in the region closest to your users.
+2. Attach a **static IP**.
+3. In the firewall, open only ports **22, 80 and 443**.
+4. For prod, turn on **automatic snapshots**.
+
+Choose the size honestly. The smallest plan (512 MB of RAM) runs a NestJS API for dev, leaning on swap. Start prod at **2 GB**. A Node API that runs out of memory gets killed, and that shows up as random 502 errors, which are hard to track down.
+
+Write the server setup as a script once and run it on every new box:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Swap, so a memory spike slows the box down instead of killing the app
+sudo fallocate -l 2G /swapfile && sudo chmod 600 /swapfile
+sudo mkswap /swapfile && sudo swapon /swapfile
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+
+# Security updates install themselves
+sudo apt-get update && sudo apt-get install -y unattended-upgrades
+
+# Node, pnpm and pm2
+curl -fsSL https://deb.nodesource.com/setup_24.x | sudo -E bash -
+sudo apt-get install -y nodejs
+sudo corepack enable
+sudo npm install -g pm2
+
+# A user that only deploys, logged in with a key that only deploys
+sudo adduser --disabled-password --gecos "" deploy
+sudo mkdir -p /home/deploy/.ssh
+echo "$1" | sudo tee /home/deploy/.ssh/authorized_keys   # the deploy key's public half
+sudo chown -R deploy:deploy /home/deploy/.ssh && sudo chmod 600 /home/deploy/.ssh/authorized_keys
+
+# pm2 restarts the app after a reboot
+sudo env PATH="$PATH" pm2 startup systemd -u deploy --hp /home/deploy
+```
+
+Then install **Caddy** as the reverse proxy. It gets and renews Let's Encrypt certificates by itself, which removes the most common way a small server setup breaks:
+
+```text
+# /etc/caddy/sites/api-prod.caddy
+api.example.com {
+	encode zstd gzip
+	reverse_proxy 127.0.0.1:8080
+	log {
+		output file /var/log/caddy/api-prod.log
+	}
+}
+```
+
+Make the app listen on `127.0.0.1`, not on all interfaces, so it stays unreachable even if a firewall rule slips. Check that SSH password login is off (`PasswordAuthentication no`).
+
+Give dev and prod **separate boxes**. It costs a few dollars more than sharing one, and a runaway dev process can't take prod down. Each environment gets its own folder, port and pm2 name, read from one small config file, so the same scripts work for both:
+
+| | Dev | Prod |
+| --- | --- | --- |
+| Folder | `/srv/my-app/api-dev` | `/srv/my-app/api-prod` |
+| Port | 8081 | 8080 |
+| pm2 name | `my-app-api-dev` | `my-app-api-prod` |
+| Domain | `api.dev.example.com` | `api.example.com` |
+
+## Step 5: deploys with releases and rollback
+
+Don't `git pull` on the server. Build and test in CI, package the result, upload it, and only switch to it once it's healthy. The layout on the server:
+
+```text
+/srv/my-app/api-prod/
+  releases/
+    3f9c2a1/     # one folder per commit
+    8e58e85/
+  current -> releases/8e58e85
+  shared/.env    # secrets live here, never in the release
+```
+
+The deploy script:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+APP=/srv/my-app/api-prod
+SHA="$1"
+REL="$APP/releases/$SHA"
+
+mkdir -p "$REL"
+tar -xzf /tmp/release.tgz -C "$REL"
+ln -sfn "$APP/shared/.env" "$REL/.env"
+(cd "$REL" && pnpm install --prod --frozen-lockfile)
+
+PREV="$(readlink -f "$APP/current" || true)"
+ln -sfn "$REL" "$APP/current"
+pm2 startOrRestart "$APP/current/ecosystem.config.cjs" --update-env
+
+if ! curl -fsS --retry 10 --retry-delay 3 --retry-all-errors http://127.0.0.1:8080/health; then
+  echo "Health check failed, rolling back to $PREV"
+  ln -sfn "$PREV" "$APP/current"
+  pm2 startOrRestart "$APP/current/ecosystem.config.cjs" --update-env
+  exit 1
+fi
+
+pm2 save
+# Keep the five newest releases
+ls -1dt "$APP"/releases/*/ | tail -n +6 | xargs -r rm -rf
+```
+
+A bad release never stays live, and a manual rollback is one symlink and one restart.
+
+In GitHub Actions, the branch picks the environment, and prod deploys stay switched off until prod exists:
+
+```yaml
+# .github/workflows/deploy-api.yml
+on:
+  push:
+    branches: [develop, main]
+    paths: ["apps/api/**", "infra/api/**", "pnpm-lock.yaml"]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    if: github.ref_name == 'develop' || vars.PROD_DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-24.04
+    environment: ${{ github.ref_name == 'main' && 'production' || 'development' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter api build && pnpm --filter api test
+      - run: bash infra/api/package.sh   # writes release.tgz
+      - name: Upload and deploy
+        env:
+          HOST: ${{ secrets.LIGHTSAIL_HOST }}
+        run: |
+          install -m 600 /dev/null ~/.ssh/key
+          echo "${{ secrets.LIGHTSAIL_SSH_KEY }}" > ~/.ssh/key
+          echo "${{ secrets.LIGHTSAIL_KNOWN_HOSTS }}" >> ~/.ssh/known_hosts
+          scp -i ~/.ssh/key release.tgz "deploy@$HOST:/tmp/release.tgz"
+          ssh -i ~/.ssh/key "deploy@$HOST" "bash -s" -- "$GITHUB_SHA" < infra/api/deploy.sh
+```
+
+Store the host, key and known hosts as **environment secrets** (`development` and `production`), not repository secrets, so each branch can only reach its own box. Set them from the terminal so nothing extra ends up in the value:
+
+```bash
+gh secret set LIGHTSAIL_HOST --env production --body 203.0.113.10
+gh secret set LIGHTSAIL_SSH_KEY --env production < ~/.ssh/my-app-deploy-prod
+ssh-keyscan -t ed25519 203.0.113.10 2>/dev/null | gh secret set LIGHTSAIL_KNOWN_HOSTS --env production
+```
+
+Use a **separate deploy key per environment**, so a leaked dev key can't reach prod.
+
+## Step 6: the frontend on Amplify
+
+Amplify builds the frontend on every push and serves it through CloudFront, with managed certificates. It handles static sites and server-rendered Next.js.
+
+1. Create an Amplify app and connect the monorepo. Add both branches, `develop` and `main`.
+2. Set `AMPLIFY_MONOREPO_APP_ROOT=apps/web`.
+3. Set the Node version in `amplify.yml` to match your local one.
+4. Under **Custom domains**, add your domain and map branches to subdomains: `develop` to `dev`, `main` to the root and `www`. Amplify issues the certificate.
+5. Set environment variables per branch. Variables that reach the browser (`NEXT_PUBLIC_*`, `VITE_*`) are **baked in at build time**, so redeploy the branch after changing one.
+
+For Next.js server rendering with pnpm, Amplify needs a **hoisted** `node_modules` layout to package `next`. Set `node-linker=hoisted` in `.npmrc`, or `nodeLinker: hoisted` in `pnpm-workspace.yaml` on newer pnpm.
+
+Keep dev out of search results:
+
+1. Let an environment variable such as `NEXT_PUBLIC_APP_ENV` decide whether the site is production. Anywhere else, serve a `robots.txt` that disallows everything, add `noindex`, and skip analytics.
+2. Set canonical URLs from `NEXT_PUBLIC_SITE_URL`, because Amplify's own `*.amplifyapp.com` addresses stay public.
+
+Get the order right: set the variable to `production` on `main` **before** the code that reads it reaches `main`. Otherwise your live site tells Google not to index it.
+
+## Step 7: uploads in S3, cached by CloudFront
+
+This is the part Vercel and Render don't include at all, and the main reason to have everything in one AWS account.
+
+1. Create **one private S3 bucket per environment**, such as `my-app-uploads-dev` and `my-app-uploads-prod`. Leave **Block all public access** on.
+2. Create a **CloudFront distribution** with the bucket as its origin, using **Origin Access Control** so only CloudFront can read the bucket. Users get files from the edge location nearest to them, and repeat requests never reach S3.
+3. Optionally give it a subdomain, such as `files.example.com`, with a free certificate from AWS Certificate Manager. CloudFront certificates must be created in `us-east-1`.
+4. Create an **IAM user for the API** with a policy that only allows reading and writing objects in that one bucket. Lightsail instances can't take an IAM role the way EC2 instances can, so the API uses this user's access keys from its `.env`.
+5. Upload with **presigned URLs**. The API checks who the user is and returns a short-lived URL, and the browser sends the file straight to S3, so large files never pass through your small server.
+
+```ts
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+
+const s3 = new S3Client({ region: process.env.AWS_REGION });
+
+export async function createUploadUrl(userId: string, fileName: string, contentType: string) {
+  const key = `users/${userId}/${crypto.randomUUID()}-${fileName}`;
+  const url = await getSignedUrl(
+    s3,
+    new PutObjectCommand({ Bucket: process.env.AWS_BUCKET_NAME, Key: key, ContentType: contentType }),
+    { expiresIn: 300 },
+  );
+  return { url, fileUrl: `https://files.example.com/${key}` };
+}
+```
+
+Add a CORS rule to the bucket that allows `PUT` from your site's origins, or the browser upload fails.
+
+If you want it even simpler, **Lightsail object storage** is a bucket with a flat monthly price and an optional Lightsail CDN distribution in front of it. S3 and CloudFront give you more control and scale further; either is fine for an MVP.
+
+## Step 8: DNS and email
+
+Keep DNS at your registrar and add records per environment:
+
+| Record | Type | Points to |
+| --- | --- | --- |
+| `api.dev` | A | Dev box's static IP |
+| `api` | A | Prod box's static IP |
+| `dev` | CNAME | The address Amplify gives you |
+| `example.com` | ALIAS / ANAME | The address Amplify gives you |
+| `www` | CNAME | Same, redirected to the root |
+| `files` | CNAME | Your CloudFront distribution |
+
+A root domain can't be a CNAME, so use your registrar's ALIAS or ANAME record if it has one. Also add the certificate validation CNAMEs Amplify and Certificate Manager ask for, and **never delete them**: the certificates renew through them.
+
+Many registrars add your domain to the host field for you, so type `api.dev`, not `api.dev.example.com`. Typing the full name creates `api.dev.example.com.example.com`, and you'll spend twenty minutes wondering why it doesn't resolve.
+
+If the app sends email, set three TXT records before launch:
+
+- **SPF**, listing the services allowed to send for your domain
+- **DKIM**, from your email provider (Amazon SES, Resend, Postmark)
+- **DMARC**, at `_dmarc`. Start with `v=DMARC1; p=none; rua=mailto:you@example.com`. Gmail and Yahoo expect it from bulk senders, and without it more of your password-reset emails land in spam.
+
+## Step 9: everything that differs per environment
+
+Before you call dev done, check everything that must be different in dev and prod. Each one we missed later showed up as a strange bug:
+
+- Database **and** database user
+- JWT and OTP secrets: never copy dev's to prod
+- Upload bucket: otherwise dev uploads land next to real users' files
+- CORS origins on the API and on the bucket
+- OAuth redirect URIs and the allowed origins on API keys (Google Maps, Google sign-in)
+- The `.env.example` file: keep it listing every variable the code actually reads, because you'll build the prod `.env` from it
+
+## Moving from Vercel and Render without downtime
+
+Build the AWS setup **next to** the old one, test it on its own addresses, and only then move the domain. If nothing goes wrong, users never notice the move.
+
+1. **A day before**, lower the TTL on the records you'll change to 300 seconds, so the switch spreads in minutes.
+2. **Test prod** on its own URLs: sign-up, sign-in, email links, payments, uploads, maps, everything a user touches.
+3. **Switch the records** for the root domain, `www` and `api`. Leave every other record alone, especially **MX, SPF, DKIM and certificate validation**. Deleting the MX record breaks inbound email.
+4. **Watch** the logs and run the user checks again.
+5. **Rollback** means putting the old records back, so write the old values down before you change them.
+
+After a few quiet days, retire the old setup:
+
+1. Remove the domain from the Vercel project, then delete the project.
+2. Check nothing still calls the old Render URL, export anything you need, suspend the service, then delete it.
+3. Archive the old repos, with a README line pointing to the monorepo.
+4. Delete leftover secrets.
+
+Until you do, you're paying for two setups and keeping both running.
+
+## Mistakes we made, so you don't have to
+
+- **`ubuntu-latest` in CI.** The image moved and broke the end-to-end tests overnight. Pin the version.
+- **Extra characters in a secret.** A deploy failed with "hostname contains invalid characters" because the pasted IP had extra characters in it. Set secrets with `gh secret set --body`, not by pasting into a web form.
+- **A root-owned log file.** Running `sudo caddy validate` created the site's log file as root, so Caddy, which runs as its own user, couldn't open it and wouldn't start. Validate as the `caddy` user, and make the setup script stop if Caddy fails to restart.
+- **A branch push that deployed nothing.** The deploy workflow filters on changed paths. Pushing a brand-new `develop` branch with the same content as `main` changed no paths, so nothing ran. Keep a `workflow_dispatch` trigger and start the first deploy by hand.
+- **A 512 MB box.** Fine for dev, not for prod. Size prod for the memory your app uses at peak, plus headroom.
+- **A shared upload bucket.** Dev and prod pointed at the same bucket. Split them before real users upload anything.
+- **A pending kernel update.** Unattended upgrades install security fixes but don't reboot. Check for `/var/run/reboot-required` and reboot from the Lightsail console when it's quiet. pm2 brings the app back.
+
+## Checklist
+
+- [ ] Domain at a registrar you control
+- [ ] GitHub organization with two-factor authentication required
+- [ ] Monorepo with one command for lint, typecheck and tests
+- [ ] CI pinned to a fixed runner image
+- [ ] `develop` deploys to dev, `main` to prod, prod deploys behind a switch
+- [ ] Lightsail box per environment: static IP, firewall on 22/80/443 only, app on `127.0.0.1`
+- [ ] Caddy with automatic HTTPS
+- [ ] Release folders, health check and automatic rollback
+- [ ] Amplify with `develop` on `dev.` and `main` on the root domain
+- [ ] Dev kept out of search engines and analytics
+- [ ] Private S3 bucket per environment, behind CloudFront, with presigned uploads
+- [ ] Separate database, secrets, deploy key and bucket per environment
+- [ ] SPF, DKIM and DMARC records
+- [ ] Snapshots on for prod
+
+That's the whole setup: an always-on API, a real dev environment, storage and a CDN, in one account and on one bill. It's also the setup you can keep after you find product-market fit. When one box isn't enough, add a second behind a load balancer; the release layout above already supports it.
