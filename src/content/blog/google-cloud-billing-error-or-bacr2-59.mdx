@@ -9,7 +9,7 @@ related: ["setup-google-maps-api-web-app"]
 
 import PostLink from '@/components/PostLink.astro';
 
-I needed Google Maps for a product I was working on. Setting up the API itself is quick, and I've written that up in <PostLink slug="setup-google-maps-api-web-app">How to Set Up the Google Maps API in Your Web Application</PostLink>. The part that cost me more than a day was the step before it: getting Google to accept my payment details.
+I needed Google Maps for [Calyndrs](/projects/calyndrs), the event management and discovery platform I co-founded. Setting up the API itself is quick, and I've written that up in <PostLink slug="setup-google-maps-api-web-app">How to Set Up the Google Maps API in Your Web Application</PostLink>. The part that cost me more than a day was the step before it: getting Google to accept my payment details.
 
 Every time I tried to create a Google Cloud billing account, it failed with the code **OR_BACR2_59**. No explanation, no hint about what to change. Without a billing account the Maps JavaScript API won't work properly, so I was stuck.
 
@@ -30,7 +30,7 @@ If one of these fixes it for you, great. If you're still seeing OR_BACR2_59 afte
 1. **I created a new Google account** to use for Google Cloud.
 2. **I bought the cheapest Google One plan with my debit card** on that account. That payment went through without a problem.
 3. **I created the Google Cloud billing account** with the same debit card. This time there was no error.
-4. **Google asked for a $30 prepayment** when I signed up. It went into the billing account as credit I can spend later, so it isn't lost money. With it I got the **$300 Free Trial credit**, which lasts 90 days, until February in my case.
+4. **Google asked for a $30 prepayment** when I signed up. Once it went through, I got the **$300 Free Trial credit**, which shows up under credits in my billing account and lasts 90 days, until February in my case.
 5. **I linked the billing account to my Maps project,** enabled the APIs and created the key, and everything worked.
 
 ### Why I think it worked
