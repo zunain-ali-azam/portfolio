@@ -92,7 +92,7 @@ const jsonLd = [
 
       {toc.length > 0 && (
         <aside class="hidden lg:block">
-          <nav class="sticky top-24" aria-label="On this page">
+          <nav class="toc-desktop sticky top-24 max-h-[calc(100dvh-8rem)] overflow-y-auto overscroll-contain pe-2" aria-label="On this page">
             <p class="font-medium mb-3">On this page</p>
             <ol class="space-y-2 text-[0.9375rem] border-s border-rule">
               {toc.map((h) => (
@@ -205,11 +205,25 @@ const jsonLd = [
   // Highlight the section currently in view in the table of contents
   const tocLinks = document.querySelectorAll<HTMLAnchorElement>('[data-toc]');
   if (tocLinks.length) {
+    // The desktop list scrolls on its own when it's taller than the screen; keep the current
+    // section's link visible in it as the reader moves down the article
+    const tocNav = document.querySelector<HTMLElement>('.toc-desktop');
+    const keepInView = (id: string) => {
+      const link = tocNav?.querySelector<HTMLElement>(`[data-toc="${CSS.escape(id)}"]`);
+      if (!tocNav || !link || tocNav.scrollHeight <= tocNav.clientHeight) return;
+      const nav = tocNav.getBoundingClientRect();
+      const r = link.getBoundingClientRect();
+      const margin = 48;
+      if (r.top < nav.top + margin || r.bottom > nav.bottom - margin) {
+        tocNav.scrollTo({ top: tocNav.scrollTop + r.top - nav.top - nav.height / 3 });
+      }
+    };
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (!entry.isIntersecting) return;
           tocLinks.forEach((l) => l.toggleAttribute('data-active', l.dataset.toc === entry.target.id));
+          keepInView(entry.target.id);
         });
       },
       { rootMargin: '0px 0px -70% 0px' }

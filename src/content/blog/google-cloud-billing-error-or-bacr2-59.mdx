@@ -1,0 +1,94 @@
+---
+title: "Google Cloud Billing Error OR_BACR2_59: How I Got Google Maps Billing Working With a Debit Card"
+description: "I was stuck for more than a day on OR_BACR2_59 while creating a Google Cloud billing account for the Maps API. Here's what didn't work, what finally did, and what to do before your free trial credit runs out."
+date: 2026-11-12T12:00:00+05:00
+tags: ["Google Maps", "Google Cloud", "Billing"]
+draft: false
+related: ["setup-google-maps-api-web-app"]
+---
+
+import PostLink from '@/components/PostLink.astro';
+
+I needed Google Maps for a product I was working on. Setting up the API itself is quick, and I've written that up in <PostLink slug="setup-google-maps-api-web-app">How to Set Up the Google Maps API in Your Web Application</PostLink>. The part that cost me more than a day was the step before it: getting Google to accept my payment details.
+
+Every time I tried to create a Google Cloud billing account, it failed with the code **OR_BACR2_59**. No explanation, no hint about what to change. Without a billing account the Maps JavaScript API won't work properly, so I was stuck.
+
+This post is what I tried, what finally worked, and what I learned about Google Maps billing along the way.
+
+## What didn't work
+
+These are the usual fixes for card errors. None of them helped me, but they're cheap to try, so start here:
+
+1. **Turning on online and international payments** for the debit card in my banking app. Many cards ship with these switched off, and Google's charge counts as an international online payment.
+2. **Another browser and incognito mode**, in case an extension or cached session was getting in the way.
+3. **A different card.** Same error.
+
+If one of these fixes it for you, great. If you're still seeing OR_BACR2_59 after all three, read on.
+
+## What finally worked
+
+1. **I created a new Google account** to use for Google Cloud.
+2. **I bought the cheapest Google One plan with my debit card** on that account. That payment went through without a problem.
+3. **I created the Google Cloud billing account** with the same debit card. This time there was no error.
+4. **Google asked for a $30 prepayment** when I signed up. It went into the billing account as credit I can spend later, so it isn't lost money. With it I got the **$300 Free Trial credit**, which lasts 90 days, until February in my case.
+5. **I linked the billing account to my Maps project,** enabled the APIs and created the key, and everything worked.
+
+### Why I think it worked
+
+Google doesn't explain what OR_BACR2_59 means, so this part is my guess, not anything Google confirmed.
+
+A brand-new card with no history, signing up for $300 of free credit, looks a lot like someone trying to abuse the free trial. Paying for Google One first meant my card was already in Google's payment system as a card that had paid for something. When I then asked for a billing account, I was a paying customer, not just someone after free credit.
+
+### Before you copy this
+
+- **Try buying Google One on your existing account first.** I made a new account, but buying on your current one may be enough, and it's simpler. I haven't tested it.
+- **Only have one billing account for Google Maps.** Google's billing docs say that *"creating multiple Google Maps-related Cloud Billing accounts is a violation of the Google Maps Platform Terms of Service."* My first attempts never created a billing account, so I only ever had one. If yours did create one, use or fix that account rather than making another.
+- **The Free Trial is for new customers.** It's only available if you've never been a paying Google Cloud, Google Maps Platform or Firebase customer and haven't had the trial before. This workaround is for getting a billing account at all, not for getting the trial twice.
+- **Depending on your country,** Google may also ask you to verify your bank account during sign-up.
+
+## Before the 90 days run out
+
+The free trial doesn't quietly roll over into a paid account. It ends when you use up the $300 or when 90 days pass, whichever comes first. Then billing is disabled on your projects and your Maps stop working.
+
+Google's Maps billing docs are clear about it: *"you must upgrade your first Cloud Billing account to a paid account to avoid any disruptions to your Google Maps Platform usage."*
+
+To upgrade, open the Google Cloud Console, click **Activate** on the free trial banner or the Welcome page, and confirm. You need to be a Billing Account Administrator. Any trial credit you haven't spent stays until its 90 days are up.
+
+Put a reminder in your calendar a week before the trial ends. A map that breaks on a live site because a trial expired is an avoidable embarrassment.
+
+## The $300 lasts longer than you think
+
+On Google Maps Platform, your usage is first counted against the **free monthly usage for each API**. Only usage above that comes out of your trial credit, and later out of your card.
+
+| Category | Free each month, per API | Examples |
+| --- | --- | --- |
+| Essentials | 10,000 calls | Dynamic Maps (a JavaScript map load), Geocoding, Autocomplete requests, Place Details Essentials |
+| Pro | 5,000 calls | Place Details Pro |
+| Enterprise | 1,000 calls | Place Details Enterprise |
+
+The free usage resets on the first of every month, and it **still applies after you upgrade** to a paid account. A small app that loads a map a few hundred times a day may never pay anything.
+
+## How not to burn through it
+
+**Budgets warn you, they don't stop you.** Google says an alerts-only budget *"doesn't automatically cap Google Cloud or Google Maps Platform usage or spending."* Set one anyway, at around $5 with email alerts, so you hear about a spike early.
+
+**Quotas actually stop spending.** In **APIs & Services → [the API] → Quotas**, lower the daily request limit. When you hit it, requests fail for the rest of the day instead of costing money. A simple starting point is the monthly free amount divided by 31: about 320 a day for an Essentials API.
+
+**Use session tokens with Places Autocomplete.** Without a session token, every Autocomplete request is billed separately, and a user typing an address sends one per keystroke. Pass a session token and end the session with a Place Details call, and Google groups the requests. Depending on which Place Details fields you ask for, the autocomplete requests become partly or entirely free. Google's session pricing page has the exact rules.
+
+**Load the map once.** In React and similar frameworks, make sure a re-render doesn't create a new map. Each new map is another billable map load.
+
+**Billing data lags.** The billing dashboard can be up to 48 hours behind, so don't assume a quiet dashboard means quiet usage. Check the API's metrics page too.
+
+## Quick reference
+
+| Problem | Fix |
+| --- | --- |
+| `OR_BACR2_59` (or a similar `OR_` code) when creating a billing account | Turn on online and international payments for the card, try another browser and card. If it still fails, make a small paid Google purchase such as Google One with the same card first, then create the billing account |
+| Card declined | Same checks. Some debit cards block international payments by default |
+| Map darkened with "For development purposes only" | No billing account linked to the project, or billing is disabled |
+| `BillingNotEnabledMapError` in the console | Link the project to your billing account in the Cloud Console's **Billing** section |
+| Maps stopped working after about 3 months | The free trial ended. Activate the full account, and its free monthly usage carries on |
+| Unexpected charges | Set daily quotas, use Autocomplete session tokens, and check the map isn't reloading on every render |
+
+It's an annoying problem because Google gives you a code and nothing else. If you're stuck on OR_BACR2_59, I hope this saves you the day it cost me. Once billing works, the <PostLink slug="setup-google-maps-api-web-app">setup guide</PostLink> takes you from an empty project to a map with a marker.

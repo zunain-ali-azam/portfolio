@@ -4,7 +4,10 @@ description: "A step-by-step guide to adding Google Maps to a web app: creating 
 date: 2026-11-10T12:00:00+05:00
 tags: ["Google Maps", "JavaScript", "Web Dev"]
 draft: false
+related: ["google-cloud-billing-error-or-bacr2-59"]
 ---
+
+import PostLink from '@/components/PostLink.astro';
 
 Adding a map to a web app looks like a five-minute job. Then you hit a grey box that says *"This page can't load Google Maps correctly"*, a console full of `RefererNotAllowedMapError`, and a worry that someone will copy your API key and run up your bill.
 
@@ -20,7 +23,7 @@ This guide covers the whole setup in order: the Google Cloud project, a locked-d
 
 1. Open the [Google Cloud Console](https://console.cloud.google.com/).
 2. Click the project picker in the top bar, then **New Project**. Give it a name such as `my-app-maps`.
-3. When it asks, link a billing account to the project. Without billing, maps load darkened with a *"For development purposes only"* watermark.
+3. When it asks, link a billing account to the project. Without billing, maps load darkened with a *"For development purposes only"* watermark. If Google rejects your card with a code like `OR_BACR2_59`, see <PostLink slug="google-cloud-billing-error-or-bacr2-59">how I got past Google Cloud billing error OR_BACR2_59</PostLink>.
 
 Use a separate project for each app. Keys, quotas and bills stay apart, and you can shut one down without breaking the others.
 
@@ -194,7 +197,7 @@ A map that loads **darkened with a "For development purposes only" watermark** i
 | `RefererNotAllowedMapError` | The page's URL isn't in the key's allowed websites | Add the exact origin under **Application restrictions**, with the port and `/*`: `http://localhost:5173/*`. Add `www` and non-`www` separately, or use `https://*.example.com/*` for subdomains |
 | `ApiNotActivatedMapError` | The Maps JavaScript API isn't enabled in this project | Enable it in **APIs & Services → Library** (Step 2). Check you're in the same project the key belongs to |
 | `ApiTargetBlockedMapError` | The key's API restrictions don't include the API you're calling | Tick the API under **API restrictions**. Using Places or Geocoding from the map? Each needs its own tick |
-| `BillingNotEnabledMapError` | The project has no billing account | Link one under **Billing**. You still get the free monthly usage |
+| `BillingNotEnabledMapError` | The project has no billing account, or the free trial ended | Link one under **Billing**, or activate the full account after the trial. You still get the free monthly usage |
 | `InvalidKeyMapError` | Google can't find the key you sent | The key is mistyped, deleted or empty. Log the environment variable, and restart the dev server after editing `.env` |
 | `MissingKeyMapError` | The request had no key at all | The environment variable is undefined at build time. Check its prefix (`VITE_`, `PUBLIC_`, `NEXT_PUBLIC_`) and that it's set on your host too, not only locally |
 | `ExpiredKeyMapError` | The key expired, or it's so new Google doesn't recognise it yet | For a new key, wait a few minutes and reload. Otherwise create a new key |

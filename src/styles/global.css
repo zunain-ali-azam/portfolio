@@ -642,3 +642,9 @@ html.theme-switching::view-transition-new(*) {
     backdrop-filter: none;
   }
 }
+
+/* Desktop table of contents: a thin scrollbar for when it's taller than the screen */
+.toc-desktop {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(var(--rule)) transparent;
+}
