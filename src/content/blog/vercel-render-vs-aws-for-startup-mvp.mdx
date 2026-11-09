@@ -13,7 +13,7 @@ The usual advice for an MVP is "put the frontend on Vercel, the API on Render, a
 
 The free tiers aren't made for a product people use, so you end up on the paid plans. Once you're paying, an AWS setup with **Amplify** for the frontend and **Lightsail** for the API costs less and gives you more: an API that never sleeps, a dev environment on its own subdomain, file storage and a CDN, all in one account.
 
-This post covers the trade-offs and the numbers. If you've already decided, read the step-by-step guide: <PostLink slug="deploy-mvp-on-aws-amplify-and-lightsail">How to Deploy an MVP on AWS Amplify and Lightsail</PostLink>.
+We learned this with [Calyndrs](/projects/calyndrs), the event management and discovery platform I co-founded. It started on Vercel and Render, and we moved it to Amplify and Lightsail once the free tiers ran out. This post covers the trade-offs and the numbers. If you've already decided, read the step-by-step guide: <PostLink slug="deploy-mvp-on-aws-amplify-and-lightsail">How to Deploy an MVP on AWS Amplify and Lightsail</PostLink>.
 
 ## Render's free API goes to sleep
 
@@ -27,7 +27,7 @@ Keeping the API always on means a paid instance. Render charges per service, so 
 
 Vercel's free Hobby plan is for **non-commercial use**. Once your startup charges money, or is simply a business, you're expected to be on Pro, which is priced **per team member per month**. Add your co-founder and a contractor, and the frontend bill grows with your headcount, not your traffic.
 
-A dev environment on its own subdomain is behind the same paywall. When we tried to set up `dev.example.com` as a separate dev environment, Vercel asked us to upgrade to Pro: environments beyond the built-in Preview and Production are a paid feature. Without one, your team tests on random preview URLs instead of a stable dev site that the dev API, OAuth settings and API keys can trust.
+A dev environment on its own subdomain is behind the same paywall. When we tried to set up a dev subdomain for Calyndrs as a separate dev environment, Vercel asked us to upgrade to Pro: environments beyond the built-in Preview and Production are a paid feature. Without one, your team tests on random preview URLs instead of a stable dev site that the dev API, OAuth settings and API keys can trust.
 
 On top of that, bandwidth, function calls and build minutes are metered, so a traffic spike can still produce a bill you didn't plan for.
 
