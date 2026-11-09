@@ -1,6 +1,6 @@
 ---
 title: "How to Set Up the Google Maps API in Your Web Application"
-description: "A step-by-step guide to adding Google Maps to a web app: creating and locking down an API key, loading the Maps JavaScript API the modern way, adding markers, and keeping your bill at zero."
+description: "A step-by-step guide to adding Google Maps to a web app: creating and locking down an API key, loading the Maps JavaScript API the modern way, adding markers, keeping your bill at zero, and fixing every common error."
 date: 2026-11-10T12:00:00+05:00
 tags: ["Google Maps", "JavaScript", "Web Dev"]
 draft: false
@@ -181,21 +181,61 @@ Two settings will protect you from a surprise bill:
 
 If all you need is a pin on your contact page, look at the **Maps Embed API**. It's a plain `<iframe>`, needs no JavaScript, and has no usage cost.
 
-## Common errors and what they mean
+## Common errors and how to fix them
 
-Open the browser console. Google's error names point straight to the cause:
+When something goes wrong, the Maps JavaScript API writes the reason to the **browser console**, in the form `Google Maps API error: [ErrorCode]` (or `warning`). Open DevTools before you start guessing. An **error** means the map can't load; a **warning** means it loads, but something in your setup is off.
 
-| Error | Cause | Fix |
+A map that loads **darkened with a "For development purposes only" watermark** is almost always a key or billing problem. The console tells you which.
+
+### Key and project errors
+
+| Error | What it means | How to fix it |
 | --- | --- | --- |
-| `RefererNotAllowedMapError` | The current URL isn't in the key's allowed referrers | Add the exact origin, including port and `/*` |
-| `ApiNotActivatedMapError` | The Maps JavaScript API isn't enabled | Enable it in the API Library (Step 2) |
-| `InvalidKeyMapError` | The key is wrong or was deleted | Check the environment variable is set and your dev server was restarted |
-| `BillingNotEnabledMapError` | No billing account linked | Link billing to the project |
-| `ApiTargetBlockedMapError` | The key's API restrictions don't include this API | Add the API under API restrictions |
-| Map is blank, no error | The container has zero height | Give `#map` an explicit height |
-| Warning that Advanced Markers need a Map ID | `mapId` is missing | Pass the Map ID from Step 5 |
+| `RefererNotAllowedMapError` | The page's URL isn't in the key's allowed websites | Add the exact origin under **Application restrictions**, with the port and `/*`: `http://localhost:5173/*`. Add `www` and non-`www` separately, or use `https://*.example.com/*` for subdomains |
+| `ApiNotActivatedMapError` | The Maps JavaScript API isn't enabled in this project | Enable it in **APIs & Services → Library** (Step 2). Check you're in the same project the key belongs to |
+| `ApiTargetBlockedMapError` | The key's API restrictions don't include the API you're calling | Tick the API under **API restrictions**. Using Places or Geocoding from the map? Each needs its own tick |
+| `BillingNotEnabledMapError` | The project has no billing account | Link one under **Billing**. You still get the free monthly usage |
+| `InvalidKeyMapError` | Google can't find the key you sent | The key is mistyped, deleted or empty. Log the environment variable, and restart the dev server after editing `.env` |
+| `MissingKeyMapError` | The request had no key at all | The environment variable is undefined at build time. Check its prefix (`VITE_`, `PUBLIC_`, `NEXT_PUBLIC_`) and that it's set on your host too, not only locally |
+| `ExpiredKeyMapError` | The key expired, or it's so new Google doesn't recognise it yet | For a new key, wait a few minutes and reload. Otherwise create a new key |
+| `OverQuotaMapError` | You've hit a usage limit | If it's the daily cap from Step 9, the cap is doing its job: raise it or wait for the daily reset. Then find out where the traffic came from |
+| `DeletedApiProjectMapError` | The key's Google Cloud project was deleted | Create a new project and key, or restore the project within its 30-day recovery period |
+| `ApiProjectMapError` | Google couldn't resolve the key or its project, sometimes temporarily | Reload after a minute. If it persists, create a new key |
+| `ProjectDeniedMapError` | The project can't make the request | Check the project's status and notices in the Cloud Console |
+| `NotLoadingAPIFromGoogleMapsError` | The script isn't loaded straight from `maps.googleapis.com` | Load it from Google, as in Step 7, not from a copy or a proxy |
+| `InvalidClientIdMapError` | The page uses the old Premium Plan `client=` ID | Client IDs stopped working on 31 May 2026. Switch to an API key |
+| `RefererDeniedMapError` or `TOSViolationMapError` | Google blocked the site for breaking the Terms of Service | Fix the issue Google emailed you about, then use the appeal form linked from the error |
 
-If your site sets a **Content Security Policy**, allow `https://maps.googleapis.com` in `script-src` and `connect-src`, and `https://maps.gstatic.com` in `img-src` and `font-src`, or the map will fail without an obvious error.
+### Warnings
+
+These don't stop the map, but they point at a mistake you should fix:
+
+- **`NoApiKeys`** or **`InvalidKey`**: the key is missing or doesn't look like a key. Same fixes as `MissingKeyMapError` and `InvalidKeyMapError`.
+- **`KeyLooksLikeProjectNumber`**: you pasted the project number instead of an API key. Copy the key from **Credentials**.
+- **`InvalidVersion`** or **`RetiredVersion`**: the `v` value is wrong or too old. Use `weekly`, `quarterly` or `beta`.
+- **`SensorNotRequired`**, **`SignatureNotRequired`** and **`SignedInNotSupported`**: leftovers from old tutorials. Remove those parameters from the script URL.
+
+### Problems with no error code
+
+| Symptom | Likely cause | How to fix it |
+| --- | --- | --- |
+| Blank space where the map should be, console clean | The container has no height (a `div` defaults to 0) | Give the map element an explicit height, e.g. `height: 400px` |
+| Map loads, but in the wrong place or zoomed out to the whole world | `center` or `zoom` is missing | Pass both when creating the map |
+| `google is not defined` | Your code runs before the API has loaded | Wait for `await importLibrary('maps')` before touching `google.maps` |
+| Console says you included the API multiple times | The script loads twice, for example a script tag plus the loader, or a component that mounts twice | Load it in one place. With the npm loader, call `setOptions` once at app start |
+| Advanced Markers don't appear, or a warning about a Map ID | `mapId` isn't set on the map | Pass the Map ID from Step 5. Without one, `AdvancedMarkerElement` can't render |
+| Map fails with no clear error on your live site only | Your Content Security Policy blocks Google's scripts or tiles | Allow `https://maps.googleapis.com` in `script-src` and `connect-src`, and `https://maps.gstatic.com` in `img-src` and `font-src` |
+| Places API (legacy) can't be enabled, or the old `Autocomplete` widget fails in a new project | Since March 2025, new projects only get Places API (New) | Enable **Places API (New)** and use the `PlaceAutocompleteElement` from `importLibrary('places')` |
+| Geocoding or Places called from your server returns `REQUEST_DENIED` | The key is restricted to websites (HTTP referrers), which only works in the browser | Use a separate server key restricted by IP address, and keep it out of the frontend |
+
+### When you're stuck: check in this order
+
+1. **Is the key sent?** In DevTools' **Network** tab, find the request to `maps.googleapis.com/maps/api/js` and check it has a `key=` parameter with your key.
+2. **Is billing linked** to the project the key belongs to?
+3. **Is the API enabled**, and ticked under the key's API restrictions?
+4. **Does the page's exact origin match** an allowed referrer, including protocol and port?
+5. **Have you hit a quota cap** you set yourself?
+6. **Did you just change the key?** Wait a few minutes and reload before you change anything else.
 
 ## Checklist
 
