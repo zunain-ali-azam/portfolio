@@ -229,13 +229,21 @@
     line-height: 1.7;
   }
 
+  /* Blog posts use a wider column on large screens; slightly larger text keeps lines readable */
+  @media (min-width: 1280px) {
+    html #article-body.prose-site {
+      font-size: 1.125rem;
+    }
+  }
+
   .prose-site :where(h2, h3, h4) {
     font-weight: 600;
     letter-spacing: -0.02em;
     scroll-margin-top: 5rem;
   }
 
-  .prose-site a {
+  /* Not inside not-prose blocks such as the "Read next" cards, which style their own links */
+  .prose-site a:not(:where(.not-prose, .not-prose *)) {
     @apply link font-medium;
   }
 
@@ -274,6 +282,61 @@ html.dark .astro-code span {
 }
 .code-frame-bar {
   @apply flex items-center justify-between px-4 py-2 rounded-t-lg bg-tint border-b border-rule text-xs text-mut;
+}
+
+/* Tables in posts: scroll sideways inside the box on narrow screens */
+.table-wrap {
+  @apply my-8 overflow-x-auto outline-none focus-visible:ring-2 focus-visible:ring-accent rounded;
+}
+.table-wrap > table {
+  @apply my-0;
+}
+
+/* Checklists: no bullet, a real checkbox in the palette, struck through when done */
+.prose-site ul:has(> li.task-list-item) {
+  @apply ps-0 list-none;
+}
+/* Not a flex row: inline code would become separate columns and stop the text wrapping */
+.prose-site li.task-list-item {
+  @apply relative ps-8;
+}
+.prose-site li.task-list-item::marker {
+  content: none;
+}
+.prose-site li.task-list-item input[type='checkbox'] {
+  @apply appearance-none absolute start-0 top-[0.3em] m-0 size-[1.1rem] rounded border border-control bg-paper cursor-pointer transition-colors grid place-content-center;
+}
+.prose-site li.task-list-item input[type='checkbox']::after {
+  content: '';
+  @apply size-[0.55rem] scale-0 transition-transform;
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+  background: rgb(var(--on-accent));
+}
+.prose-site li.task-list-item input[type='checkbox']:checked {
+  @apply bg-accent border-accent;
+}
+.prose-site li.task-list-item input[type='checkbox']:checked::after {
+  @apply scale-100;
+}
+.prose-site li.task-list-item input[type='checkbox']:focus-visible {
+  @apply outline-none ring-2 ring-accent ring-offset-2 ring-offset-paper;
+}
+.prose-site li.task-list-item:has(input:checked) {
+  @apply text-mut line-through decoration-mut/60;
+}
+
+/* Mobile "On this page": the plus turns into a cross when open */
+.toc-mobile summary::-webkit-details-marker {
+  display: none;
+}
+.toc-mobile summary {
+  list-style: none;
+}
+.toc-mobile-icon {
+  transition: transform 0.3s var(--ease-out-soft);
+}
+.toc-mobile[open] .toc-mobile-icon {
+  transform: rotate(45deg);
 }
 
 /* FAQ accordions: the answer slides open where the browser can animate to auto height

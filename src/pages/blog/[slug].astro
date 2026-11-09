@@ -2,19 +2,31 @@
 import BlogLayout from '@/layouts/BlogLayout.astro';
 import { getCollection } from 'astro:content';
 import { readingTime } from '@/lib/format';
+import { getPublishedPosts } from '@/lib/posts';
 
 export async function getStaticPaths() {
-  const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
-    (a, b) => b.data.date.getTime() - a.data.date.getTime()
-  );
+  const posts = await getPublishedPosts();
+  const allSlugs = new Set<string>((await getCollection('blog')).map((p) => p.slug));
   const neighbour = (p?: (typeof posts)[number]) => (p ? { slug: p.slug, title: p.data.title } : undefined);
+  const bySlug = new Map<string, (typeof posts)[number]>(posts.map((p) => [p.slug, p]));
   return posts.map((post, i) => ({
     params: { slug: post.slug },
-    props: { post, next: neighbour(posts[i - 1]), prev: neighbour(posts[i + 1]) },
+    props: {
+      post,
+      next: neighbour(posts[i - 1]),
+      prev: neighbour(posts[i + 1]),
+      readNext: post.data.related.flatMap((slug) => {
+        if (!allSlugs.has(slug)) throw new Error(`${post.slug}: related post "${slug}" not found`);
+        // A related post that is still scheduled or a draft is left out until it goes live
+        const r = bySlug.get(slug);
+        if (!r) return [];
+        return [{ slug: r.slug, title: r.data.title, description: r.data.description }];
+      }),
+    },
   }));
 }
 
-const { post, prev, next } = Astro.props;
+const { post, prev, next, readNext } = Astro.props;
 const { Content, headings } = await post.render();
 ---
 
@@ -29,6 +41,7 @@ const { Content, headings } = await post.render();
   headings={headings}
   prev={prev}
   next={next}
+  readNext={readNext}
 >
   <Content />
 </BlogLayout>

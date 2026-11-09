@@ -1,14 +1,12 @@
 import type { APIRoute } from 'astro';
-import { getCollection } from 'astro:content';
+import { getPublishedPosts } from '@/lib/posts';
 
 const escape = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 // Read by the GitHub profile README's blog-post workflow, and by feed readers
 export const GET: APIRoute = async ({ site }) => {
-  const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
-    (a, b) => b.data.date.getTime() - a.data.date.getTime()
-  );
+  const posts = await getPublishedPosts();
 
   const items = posts
     .map((post) => {

@@ -12,6 +12,7 @@ import Faq from '@/components/Faq.astro';
 import { homeFaqs } from '@/data/faqs';
 import { getCollection } from 'astro:content';
 import { readingTime } from '@/lib/format';
+import { getPublishedPosts } from '@/lib/posts';
 import experience from '@/data/experience.json';
 
 const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
@@ -34,9 +35,7 @@ const stats = [
   { value: '99', label: "Lighthouse score on Estenarh's website, up from 70" },
 ];
 
-const posts = (await getCollection('blog', ({ data }) => !data.draft))
-  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
-  .slice(0, 3);
+const posts = (await getPublishedPosts()).slice(0, 3);
 ---
 
 <BaseLayout
