@@ -5,7 +5,9 @@ name: Publish scheduled posts
 # Vercel production build through a deploy hook. Run it by hand to publish one immediately.
 on:
   schedule:
-    - cron: "5 4 * * *" # 09:05 in Karachi (04:05 UTC)
+    # 12:17 in Karachi (07:17 UTC), for posts dated 12:00. Off the hour because GitHub delays
+    # scheduled runs most at the top of the hour. Runs usually start within minutes of this.
+    - cron: "17 7 * * *"
   workflow_dispatch:
 
 jobs:
