@@ -11,7 +11,7 @@ import PostLink from '@/components/PostLink.astro';
 
 This guide sets up a startup MVP on AWS from scratch: the frontend on **Amplify**, the API on **Lightsail**, uploads in **S3** behind **CloudFront**, and separate dev and prod environments, deployed from one monorepo by GitHub Actions.
 
-It comes from moving [Calyndrs](/projects/calyndrs), the event management and discovery platform I co-founded, off Vercel and Render, so it also covers how to move without downtime if you've already launched there. If you're still deciding where to host, read the comparison first: <PostLink slug="vercel-render-vs-aws-for-startup-mvp">Vercel and Render vs AWS for a Startup MVP</PostLink>. The short version: Render's free API sleeps, a dev environment on its own subdomain needs Vercel Pro, and the paid plans together cost more than this setup.
+It comes from moving [Calyndrs](/projects/calyndrs), our event management and discovery platform, off Vercel and Render, so it also covers how to move without downtime if you've already launched there. If you're still deciding where to host, read the comparison first: <PostLink slug="vercel-render-vs-aws-for-startup-mvp">Vercel and Render vs AWS for a Startup MVP</PostLink>. The short version: Render's free API sleeps, a dev environment on its own subdomain needs Vercel Pro, and the paid plans together cost more than this setup.
 
 Expect a few hours for the first environment, and much less for the second, because the same scripts work for both.
 
@@ -340,11 +340,9 @@ Until you do, you're paying for two setups and keeping both running.
 ## Mistakes we made, so you don't have to
 
 - **`ubuntu-latest` in CI.** The image moved and broke the end-to-end tests overnight. Pin the version.
-- **Extra characters in a secret.** A deploy failed with "hostname contains invalid characters" because the pasted IP had extra characters in it. Set secrets with `gh secret set --body`, not by pasting into a web form.
 - **A root-owned log file.** Running `sudo caddy validate` created the site's log file as root, so Caddy, which runs as its own user, couldn't open it and wouldn't start. Validate as the `caddy` user, and make the setup script stop if Caddy fails to restart.
 - **A branch push that deployed nothing.** The deploy workflow filters on changed paths. Pushing a brand-new `develop` branch with the same content as `main` changed no paths, so nothing ran. Keep a `workflow_dispatch` trigger and start the first deploy by hand.
 - **A 512 MB box.** Fine for dev, not for prod. Size prod for the memory your app uses at peak, plus headroom.
-- **A shared upload bucket.** Dev and prod pointed at the same bucket. Split them before real users upload anything.
 - **A pending kernel update.** Unattended upgrades install security fixes but don't reboot. Check for `/var/run/reboot-required` and reboot from the Lightsail console when it's quiet. pm2 brings the app back.
 
 ## Checklist
