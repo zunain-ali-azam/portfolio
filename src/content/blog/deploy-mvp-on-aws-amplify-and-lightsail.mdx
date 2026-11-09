@@ -1,15 +1,17 @@
 ---
 title: "How to Deploy an MVP on AWS Amplify and Lightsail: Monorepo, CI, S3 and a Dev/Prod Split"
 description: "A step-by-step guide to running a startup MVP on AWS: a pnpm monorepo, CI with GitHub Actions, the API on Lightsail with Caddy and pm2, the frontend on Amplify, uploads in S3 behind CloudFront, and separate dev and prod environments."
-date: 2026-11-09
+date: 2026-11-16T09:00:00+05:00
 tags: ["AWS", "DevOps", "Startups", "Deployment"]
 draft: false
 related: ["vercel-render-vs-aws-for-startup-mvp"]
 ---
 
+import PostLink from '@/components/PostLink.astro';
+
 This guide sets up a startup MVP on AWS from scratch: the frontend on **Amplify**, the API on **Lightsail**, uploads in **S3** behind **CloudFront**, and separate dev and prod environments, deployed from one monorepo by GitHub Actions.
 
-It comes from moving a real product off Vercel and Render, so it also covers how to move without downtime if you've already launched there. If you're still deciding where to host, read the comparison first: [Vercel and Render vs AWS for a Startup MVP](/blog/vercel-render-vs-aws-for-startup-mvp). The short version: Render's free API sleeps, a dev environment on its own subdomain needs Vercel Pro, and the paid plans together cost more than this setup.
+It comes from moving a real product off Vercel and Render, so it also covers how to move without downtime if you've already launched there. If you're still deciding where to host, read the comparison first: <PostLink slug="vercel-render-vs-aws-for-startup-mvp">Vercel and Render vs AWS for a Startup MVP</PostLink>. The short version: Render's free API sleeps, a dev environment on its own subdomain needs Vercel Pro, and the paid plans together cost more than this setup.
 
 Expect a few hours for the first environment, and much less for the second, because the same scripts work for both.
 

@@ -1,17 +1,19 @@
 ---
 title: "Vercel and Render vs AWS for a Startup MVP: What the Free Tiers Really Cost"
 description: "Why Vercel and Render's free tiers don't hold up for a startup testing the market, what their paid plans cost once you need an always-on API and a dev environment, and why AWS Amplify and Lightsail give you more for less."
-date: 2026-11-09
+date: 2026-11-13T09:00:00+05:00
 tags: ["Startups", "AWS", "Vercel", "Deployment"]
 draft: false
 related: ["deploy-mvp-on-aws-amplify-and-lightsail"]
 ---
 
+import PostLink from '@/components/PostLink.astro';
+
 The usual advice for an MVP is "put the frontend on Vercel, the API on Render, and worry about infrastructure later." It sounds cheap and simple. For a startup that's actually testing the market, it's usually neither.
 
 The free tiers aren't made for a product people use, so you end up on the paid plans. Once you're paying, an AWS setup with **Amplify** for the frontend and **Lightsail** for the API costs less and gives you more: an API that never sleeps, a dev environment on its own subdomain, file storage and a CDN, all in one account.
 
-This post covers the trade-offs and the numbers. If you've already decided, the step-by-step guide is here: [How to Deploy an MVP on AWS Amplify and Lightsail](/blog/deploy-mvp-on-aws-amplify-and-lightsail).
+This post covers the trade-offs and the numbers. If you've already decided, read the step-by-step guide: <PostLink slug="deploy-mvp-on-aws-amplify-and-lightsail">How to Deploy an MVP on AWS Amplify and Lightsail</PostLink>.
 
 ## Render's free API goes to sleep
 
@@ -95,7 +97,7 @@ Once you're a business, you have users to impress and a dev environment to run, 
 
 ## Already launched on Vercel and Render?
 
-You don't have to stay there. Build the AWS setup next to the old one, test it on its own addresses, then switch DNS with lowered TTLs and a written-down rollback. Users never notice. The [setup guide](/blog/deploy-mvp-on-aws-amplify-and-lightsail) covers this in its "Moving from Vercel and Render" section.
+You don't have to stay there. Build the AWS setup next to the old one, test it on its own addresses, then switch DNS with lowered TTLs and a written-down rollback. Users never notice. The <PostLink slug="deploy-mvp-on-aws-amplify-and-lightsail">setup guide</PostLink> covers this in its "Moving from Vercel and Render" section.
 
 ## The short version
 
@@ -104,4 +106,4 @@ You don't have to stay there. Build the AWS setup next to the old one, test it o
 - Storage and a CDN are extra services either way.
 - Amplify and Lightsail give you an always-on API, branch subdomains, S3 and CloudFront in one account for roughly half the monthly cost of the paid plans, and the price doesn't grow with your team.
 
-The goal of an MVP is to learn whether people want what you're building. That's hard to learn if your API is asleep when they arrive, or if half your budget goes to per-seat plans. When you're ready, follow the [step-by-step guide to Amplify and Lightsail](/blog/deploy-mvp-on-aws-amplify-and-lightsail).
+The goal of an MVP is to learn whether people want what you're building. That's hard to learn if your API is asleep when they arrive, or if half your budget goes to per-seat plans. When you're ready, follow the <PostLink slug="deploy-mvp-on-aws-amplify-and-lightsail">step-by-step guide to Amplify and Lightsail</PostLink>.

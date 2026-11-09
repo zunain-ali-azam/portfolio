@@ -1,0 +1,25 @@
+---
+// A link to another blog post that is safe to use before that post goes live. While the target is
+// scheduled or a draft, the text shows without a link plus when it's coming; the rebuild that
+// publishes the target turns it into a normal link.
+import { getCollection } from 'astro:content';
+import { isPublished } from '@/lib/posts';
+import { shortDate } from '@/lib/format';
+
+interface Props {
+  slug: string;
+}
+
+const { slug } = Astro.props;
+const target = (await getCollection('blog')).find((p) => p.slug === slug);
+if (!target) throw new Error(`PostLink: no blog post "${slug}"`);
+const live = isPublished(target);
+---
+
+{live ? (
+  <a href={`/blog/${slug}`}><slot /></a>
+) : (
+  <>
+    <span><slot /></span>{!target.data.draft && <span class="text-mut"> (coming {shortDate(target.data.date)})</span>}
+  </>
+)}
