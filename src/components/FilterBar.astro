@@ -1,0 +1,23 @@
+---
+// Pill buttons for filtering a list; the page's own script wires up the clicks.
+// The first option starts pressed.
+interface Props {
+  options: string[];
+  label: string;
+}
+
+const { options, label } = Astro.props;
+---
+
+<div class="flex flex-wrap items-center gap-2" id="filter-bar" role="group" aria-label={label}>
+  {options.map((option, i) => (
+    <button
+      type="button"
+      class="filter-btn press rounded-full px-4 py-1.5 text-[0.9375rem] border border-control text-ink hover:border-ink transition-[color,background-color,border-color,transform] duration-100 active:scale-[0.96] aria-pressed:bg-ink aria-pressed:text-paper aria-pressed:border-ink"
+      data-category={option}
+      aria-pressed={i === 0 ? 'true' : 'false'}
+    >
+      {option}
+    </button>
+  ))}
+</div>

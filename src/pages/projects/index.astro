@@ -3,6 +3,7 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
 import PageHeader from '@/components/PageHeader.astro';
 import ProjectFeature from '@/components/ProjectFeature.astro';
 import ProjectRow from '@/components/ProjectRow.astro';
+import FilterBar from '@/components/FilterBar.astro';
 import Faq from '@/components/Faq.astro';
 import { workFaqs } from '@/data/faqs';
 import { getCollection } from 'astro:content';
@@ -27,18 +28,7 @@ const categories = ['All', ...new Set(sorted.flatMap((p) => p.data.category))];
       intro="Products I helped take from the first idea to launch, projects I built solo, and platforms I work on with the IOMechs team."
     />
 
-    <div class="flex flex-wrap items-center gap-2" id="filter-bar" role="group" aria-label="Filter projects by type">
-      {categories.map((cat) => (
-        <button
-          type="button"
-          class="filter-btn press rounded-full px-4 py-1.5 text-[0.9375rem] border border-control text-ink hover:border-ink transition-[color,background-color,border-color,transform] duration-100 active:scale-[0.96] aria-pressed:bg-ink aria-pressed:text-paper aria-pressed:border-ink"
-          data-category={cat}
-          aria-pressed={cat === 'All' ? 'true' : 'false'}
-        >
-          {cat}
-        </button>
-      ))}
-    </div>
+    <FilterBar options={categories} label="Filter projects by type" />
 
     <!-- Every card is the same size: no project gets top billing -->
     <div class="mt-10 grid gap-x-5 gap-y-14 md:grid-cols-2" id="projects-list">

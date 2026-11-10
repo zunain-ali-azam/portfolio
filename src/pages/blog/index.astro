@@ -5,9 +5,14 @@ import PostRow from '@/components/PostRow.astro';
 import Faq from '@/components/Faq.astro';
 import { writingFaqs } from '@/data/faqs';
 import { getPublishedPosts } from '@/lib/posts';
+import FilterBar from '@/components/FilterBar.astro';
 import { readingTime } from '@/lib/format';
+import { TOPICS } from '@/content/topics';
 
 const posts = await getPublishedPosts();
+
+// Only topics that have a live post get a button, so no filter ever comes up empty
+const topics = TOPICS.filter((t) => posts.some((p) => p.data.topics.includes(t)));
 ---
 
 <BaseLayout
@@ -29,19 +34,42 @@ const posts = await getPublishedPosts();
         No posts here yet.
       </p>
     ) : (
-      <div class="border-b border-rule">
-        {posts.map((post) => (
-          <PostRow
-            title={post.data.title}
-            description={post.data.description}
-            date={post.data.date}
-            slug={post.slug}
-            minutes={readingTime(post.body)}
-          />
-        ))}
-      </div>
+      <>
+        {topics.length > 1 && (
+          <FilterBar options={['All', ...topics]} label="Filter posts by topic" />
+        )}
+        <div class:list={['border-b border-rule', topics.length > 1 && 'mt-10']}>
+          {posts.map((post) => (
+            <div data-topics={post.data.topics.join(',')}>
+              <PostRow
+                title={post.data.title}
+                description={post.data.description}
+                date={post.data.date}
+                slug={post.slug}
+                minutes={readingTime(post.body)}
+              />
+            </div>
+          ))}
+        </div>
+      </>
     )}
   </div>
 
   <Faq section={writingFaqs} primary={{ href: '/contact', label: 'Send a question' }} secondary={{ href: '/contact#book', label: 'Book a call' }} />
 </BaseLayout>
+
+<script>
+  const buttons = document.querySelectorAll<HTMLButtonElement>('#filter-bar .filter-btn');
+  const items = document.querySelectorAll<HTMLElement>('[data-topics]');
+
+  buttons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const active = btn.dataset.category ?? 'All';
+      buttons.forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+      items.forEach((item) => {
+        const topics = item.dataset.topics?.split(',') ?? [];
+        item.hidden = !(active === 'All' || topics.includes(active));
+      });
+    });
+  });
+</script>

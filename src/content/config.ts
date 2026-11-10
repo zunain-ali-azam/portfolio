@@ -1,4 +1,5 @@
 import { defineCollection, z } from 'astro:content';
+import { TOPICS } from './topics';
 
 const projects = defineCollection({
   type: 'content',
@@ -34,7 +35,10 @@ const blog = defineCollection({
     title: z.string(),
     description: z.string(),
     date: z.coerce.date(),
+    // Fine-grained keywords for search engines, shown on the post
     tags: z.array(z.string()).default([]),
+    // Broad groups for the filter on /blog; a post can sit in more than one
+    topics: z.array(z.enum(TOPICS)).default([]),
     draft: z.boolean().default(false),
     image: z.string().optional(),
     // Slugs of posts to suggest at the end of this one, such as the other half of a pair
