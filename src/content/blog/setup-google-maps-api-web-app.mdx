@@ -14,6 +14,8 @@ Adding a map to a web app looks like a five-minute job. Then you hit a grey box 
 
 This guide covers the whole setup in order: the Google Cloud project, a locked-down API key, loading the Maps JavaScript API the way Google now recommends, and a working map with a marker. It works the same in plain JavaScript, React, Vue, Astro or any other frontend.
 
+![Diagram: your web app requests the Maps JavaScript API with an API key. Google checks that billing is linked, the API is enabled, and the key allows your site and this API. If all pass, the map with a marker loads; if any fails, you get a grey or darkened map and an error such as RefererNotAllowedMapError.](/images/blog/setup-google-maps-api-web-app.png)
+
 ## What you need
 
 - A Google account

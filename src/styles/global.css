@@ -648,3 +648,8 @@ html.theme-switching::view-transition-new(*) {
   scrollbar-width: thin;
   scrollbar-color: rgb(var(--rule)) transparent;
 }
+
+/* Diagrams and screenshots inside posts */
+.prose-site img {
+  @apply my-10 w-full h-auto rounded-2xl border border-rule;
+}

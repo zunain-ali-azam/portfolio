@@ -16,6 +16,8 @@ It comes from moving [Calyndrs](/projects/calyndrs), our event management and di
 
 Expect a few hours for the first environment, and much less for the second, because the same scripts work for both.
 
+![Architecture diagram: a monorepo on GitHub, where develop deploys to dev and main to prod. GitHub Actions tests and deploys the frontend to Amplify and the API to Lightsail, which runs Caddy, pm2 and the API. The API uses S3 with CloudFront for uploads and a managed database, one per environment.](/images/blog/deploy-mvp-on-aws-amplify-and-lightsail.png)
+
 ## What we're building
 
 - **One GitHub organization** with one private **monorepo**: `apps/web` and `apps/api`
