@@ -8,7 +8,8 @@
     "start": "astro dev",
     "build": "astro build && node scripts/set-function-runtime.mjs && node scripts/check-csp.mjs",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "medium-copy": "node scripts/medium-copy.mjs"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
@@ -28,6 +29,7 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
+    "linkedom": "0.18.12",
     "typescript": "^5.9.3"
   }
 }

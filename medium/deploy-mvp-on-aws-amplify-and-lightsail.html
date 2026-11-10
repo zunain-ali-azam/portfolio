@@ -1,0 +1,375 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Medium copy: How to Deploy an MVP on AWS Amplify and Lightsail: Monorepo, CI, S3 and a Dev/Prod Split</title><style>
+body { font: 18px/1.6 Georgia, serif; max-width: 720px; margin: 0 auto; padding: 24px 16px 80px; color: #222; }
+.help { font: 15px/1.5 system-ui, sans-serif; background: #fff8e1; border: 1px solid #f0d98a; border-radius: 10px; padding: 14px 18px; margin-bottom: 28px; }
+.help ol { margin: 8px 0 0; padding-left: 20px; }
+.help button { margin-top: 10px; font: 600 15px system-ui; padding: 8px 14px; border-radius: 8px; border: 0; background: #1a8917; color: #fff; cursor: pointer; }
+pre { background: #f4f4f4; padding: 12px; overflow-x: auto; font-size: 14px; }
+code { background: #f4f4f4; padding: 0 3px; font-size: 15px; }
+.marker { background: #e8f0fe; border: 1px dashed #4a72d9; padding: 10px; font: 14px system-ui; }
+</style></head><body>
+<div class="help">
+  <b>Medium copy of “How to Deploy an MVP on AWS Amplify and Lightsail: Monorepo, CI, S3 and a Dev/Prod Split”</b> · goes live on the site 17 Nov
+  <ol>
+    <li>In Medium, start a new story. Type the title: <b>How to Deploy an MVP on AWS Amplify and Lightsail: Monorepo, CI, S3 and a Dev/Prod Split</b></li>
+    <li>On the next line, type the subtitle: A step-by-step guide to running a startup MVP on AWS: a pnpm monorepo, CI with GitHub Actions, the API on Lightsail with Caddy and pm2, the frontend on Amplify, uploads in S3 behind CloudFront, and separate dev and prod environments.</li>
+    <li>Click <b>Copy article</b>, then paste under the subtitle.</li>
+    <li>Upload each image where a blue box is, then delete the box. Put the cover (<a href="https://zunainaliazam.vercel.app/og/blog/deploy-mvp-on-aws-amplify-and-lightsail.jpg">deploy-mvp-on-aws-amplify-and-lightsail.jpg</a>) at the very top.</li>
+    <li>Story settings → Advanced settings → set the canonical link to <b>https://zunainaliazam.vercel.app/blog/deploy-mvp-on-aws-amplify-and-lightsail</b>.</li>
+    
+  </ol>
+  <button id="copy">Copy article</button> <span id="done"></span>
+</div>
+<article id="article">
+  <p>This guide sets up a startup MVP on AWS from scratch: the frontend on <strong>Amplify</strong>, the API on <strong>Lightsail</strong>, uploads in <strong>S3</strong> behind <strong>CloudFront</strong>, and separate dev and prod environments, deployed from one monorepo by GitHub Actions.</p>
+<p>It comes from moving <a href="https://zunainaliazam.vercel.app/projects/calyndrs">Calyndrs</a>, our event management and discovery platform, off Vercel and Render, so it also covers how to move without downtime if you’ve already launched there. If you’re still deciding where to host, read the comparison first: <a href="https://zunainaliazam.vercel.app/blog/vercel-render-vs-aws-for-startup-mvp" data-astro-source-file="/home/zunain-ali-azam/projects/portfolio/src/components/PostLink.astro" data-astro-source-loc="20:30">Vercel and Render vs AWS for a Startup MVP</a>. The short version: Render’s free API sleeps, a dev environment on its own subdomain needs Vercel Pro, and the paid plans together cost more than this setup.</p>
+<p>Expect a few hours for the first environment, and much less for the second, because the same scripts work for both.</p>
+<p class="marker">[ Upload image here: <a href="https://zunainaliazam.vercel.app/images/blog/deploy-mvp-on-aws-amplify-and-lightsail.png">deploy-mvp-on-aws-amplify-and-lightsail.png</a>. Use this as its alt text: "Architecture diagram: a monorepo on GitHub, where develop deploys to dev and main to prod. GitHub Actions tests and deploys the frontend to Amplify and the API to Lightsail, which runs Caddy, pm2 and the API. The API uses S3 with CloudFront for uploads and a managed database, one per environment." ]</p>
+<h2>What we’re building</h2>
+<ul>
+<li><strong>One GitHub organization</strong> with one private <strong>monorepo</strong>: <code>apps/web</code> and <code>apps/api</code></li>
+<li><strong>Two environments:</strong> the <code>develop</code> branch deploys to dev, <code>main</code> deploys to prod</li>
+<li><strong>Frontend</strong> on Amplify at <code>dev.example.com</code> and <code>example.com</code></li>
+<li><strong>API</strong> on one Lightsail box per environment, at <code>api.dev.example.com</code> and <code>api.example.com</code></li>
+<li><strong>Uploads</strong> in S3, served through CloudFront</li>
+<li><strong>Database</strong> on a managed provider, one database and user per environment</li>
+<li><strong>DNS</strong> at your domain registrar</li>
+</ul>
+<p>Two environments are enough. A separate staging environment is one more thing to keep in sync, and at this size dev does the same job.</p>
+<h2>Step 1: decisions that cost nothing</h2>
+<ol>
+<li><strong>Buy your domain at a registrar</strong> and keep DNS there. Moving hosts later is then a record change, not a domain transfer.</li>
+<li><strong>Create a GitHub organization</strong>, even if you’re one person, and require two-factor authentication before you add anyone.</li>
+<li><strong>Read every URL from environment variables:</strong> the API URL, the site URL and the allowed CORS origins. Adding an environment then means changing config, not code.</li>
+<li><strong>Write a health endpoint:</strong> a <code>GET /health</code> that returns 200 when the app can reach its database. Deploys and monitors use it.</li>
+</ol>
+<h2>Step 2: one monorepo</h2>
+<p>Put the frontend and backend in one repo. If they already live in two, import them <strong>with their history</strong> so <code>git blame</code> still works:</p>
+<pre>mkdir my-app &amp;&amp; cd my-app &amp;&amp; git init
+git commit --allow-empty -m "Start monorepo"
+
+git remote add web https://github.com/you/my-app-frontend.git
+git fetch web
+git merge web/main --allow-unrelated-histories   # then move its files into apps/web</pre>
+<p>Do the same for the backend into <code>apps/api</code>. <code>git filter-repo --to-subdirectory-filter apps/web</code> does the move in one step if you’d rather rewrite the imported history.</p>
+<p>Then add pnpm workspaces and Turborepo, so one install and one command cover both apps:</p>
+<pre># pnpm-workspace.yaml
+packages:
+  - "apps/*"
+  - "packages/*"</pre>
+<pre>// turbo.json
+{
+  "tasks": {
+    "build": { "dependsOn": ["^build"], "outputs": [".next/**", "dist/**"] },
+    "lint": {},
+    "typecheck": {},
+    "test": {}
+  }
+}</pre>
+<p><code>pnpm exec turbo run lint typecheck test</code> now checks everything, and Turborepo skips what didn’t change.</p>
+<p>Branch protection on private repos needs a paid GitHub plan. On the free plan, the rule is discipline: work lands on <code>develop</code>, and <code>main</code> only changes through a pull request.</p>
+<h2>Step 3: CI that runs before anything deploys</h2>
+<p>One workflow runs lint, typecheck and tests on every push to <code>develop</code> and <code>main</code>, and on pull requests. Deploys run only after it passes.</p>
+<p><strong>Pin the runner image.</strong> Use <code>runs-on: ubuntu-24.04</code>, not <code>ubuntu-latest</code>. When GitHub moves <code>ubuntu-latest</code> to a new Ubuntu release, tools that don’t support it yet break. We lost a green CI overnight because Playwright couldn’t install Chromium on the new image. A pinned version only changes when you change it.</p>
+<h2>Step 4: a Lightsail server for the API</h2>
+<p>Lightsail is AWS’s fixed-price VPS. Each plan includes a static IP, a firewall and a set amount of data transfer, so the bill doesn’t move with traffic.</p>
+<ol>
+<li>Create an <strong>Ubuntu LTS</strong> instance in the region closest to your users.</li>
+<li>Attach a <strong>static IP</strong>.</li>
+<li>In the firewall, open only ports <strong>22, 80 and 443</strong>.</li>
+<li>For prod, turn on <strong>automatic snapshots</strong>.</li>
+</ol>
+<p>Choose the size honestly. The smallest plan (512 MB of RAM) runs a NestJS API for dev, leaning on swap. Start prod at <strong>2 GB</strong>. A Node API that runs out of memory gets killed, and that shows up as random 502 errors, which are hard to track down.</p>
+<p>Write the server setup as a script once and run it on every new box:</p>
+<pre>#!/usr/bin/env bash
+set -euo pipefail
+
+# Swap, so a memory spike slows the box down instead of killing the app
+sudo fallocate -l 2G /swapfile &amp;&amp; sudo chmod 600 /swapfile
+sudo mkswap /swapfile &amp;&amp; sudo swapon /swapfile
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+
+# Security updates install themselves
+sudo apt-get update &amp;&amp; sudo apt-get install -y unattended-upgrades
+
+# Node, pnpm and pm2
+curl -fsSL https://deb.nodesource.com/setup_24.x | sudo -E bash -
+sudo apt-get install -y nodejs
+sudo corepack enable
+sudo npm install -g pm2
+
+# A user that only deploys, logged in with a key that only deploys
+sudo adduser --disabled-password --gecos "" deploy
+sudo mkdir -p /home/deploy/.ssh
+echo "$1" | sudo tee /home/deploy/.ssh/authorized_keys   # the deploy key's public half
+sudo chown -R deploy:deploy /home/deploy/.ssh &amp;&amp; sudo chmod 600 /home/deploy/.ssh/authorized_keys
+
+# pm2 restarts the app after a reboot
+sudo env PATH="$PATH" pm2 startup systemd -u deploy --hp /home/deploy</pre>
+<p>Then install <strong>Caddy</strong> as the reverse proxy. It gets and renews Let’s Encrypt certificates by itself, which removes the most common way a small server setup breaks:</p>
+<pre># /etc/caddy/sites/api-prod.caddy
+api.example.com {
+	encode zstd gzip
+	reverse_proxy 127.0.0.1:8080
+	log {
+		output file /var/log/caddy/api-prod.log
+	}
+}</pre>
+<p>Make the app listen on <code>127.0.0.1</code>, not on all interfaces, so it stays unreachable even if a firewall rule slips. Check that SSH password login is off (<code>PasswordAuthentication no</code>).</p>
+<p>Give dev and prod <strong>separate boxes</strong>. It costs a few dollars more than sharing one, and a runaway dev process can’t take prod down. Each environment gets its own folder, port and pm2 name, read from one small config file, so the same scripts work for both:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<ul><li><strong>Folder</strong><br>Dev: <code>/srv/my-app/api-dev</code><br>Prod: <code>/srv/my-app/api-prod</code></li><li><strong>Port</strong><br>Dev: 8081<br>Prod: 8080</li><li><strong>pm2 name</strong><br>Dev: <code>my-app-api-dev</code><br>Prod: <code>my-app-api-prod</code></li><li><strong>Domain</strong><br>Dev: <code>api.dev.example.com</code><br>Prod: <code>api.example.com</code></li></ul>
+<h2>Step 5: deploys with releases and rollback</h2>
+<p>Don’t <code>git pull</code> on the server. Build and test in CI, package the result, upload it, and only switch to it once it’s healthy. The layout on the server:</p>
+<pre>/srv/my-app/api-prod/
+  releases/
+    3f9c2a1/     # one folder per commit
+    8e58e85/
+  current -&gt; releases/8e58e85
+  shared/.env    # secrets live here, never in the release</pre>
+<p>The deploy script:</p>
+<pre>#!/usr/bin/env bash
+set -euo pipefail
+APP=/srv/my-app/api-prod
+SHA="$1"
+REL="$APP/releases/$SHA"
+
+mkdir -p "$REL"
+tar -xzf /tmp/release.tgz -C "$REL"
+ln -sfn "$APP/shared/.env" "$REL/.env"
+(cd "$REL" &amp;&amp; pnpm install --prod --frozen-lockfile)
+
+PREV="$(readlink -f "$APP/current" || true)"
+ln -sfn "$REL" "$APP/current"
+pm2 startOrRestart "$APP/current/ecosystem.config.cjs" --update-env
+
+if ! curl -fsS --retry 10 --retry-delay 3 --retry-all-errors http://127.0.0.1:8080/health; then
+  echo "Health check failed, rolling back to $PREV"
+  ln -sfn "$PREV" "$APP/current"
+  pm2 startOrRestart "$APP/current/ecosystem.config.cjs" --update-env
+  exit 1
+fi
+
+pm2 save
+# Keep the five newest releases
+ls -1dt "$APP"/releases/*/ | tail -n +6 | xargs -r rm -rf</pre>
+<p>A bad release never stays live, and a manual rollback is one symlink and one restart.</p>
+<p>In GitHub Actions, the branch picks the environment, and prod deploys stay switched off until prod exists:</p>
+<pre># .github/workflows/deploy-api.yml
+on:
+  push:
+    branches: [develop, main]
+    paths: ["apps/api/**", "infra/api/**", "pnpm-lock.yaml"]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    if: github.ref_name == 'develop' || vars.PROD_DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-24.04
+    environment: ${{ github.ref_name == 'main' &amp;&amp; 'production' || 'development' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter api build &amp;&amp; pnpm --filter api test
+      - run: bash infra/api/package.sh   # writes release.tgz
+      - name: Upload and deploy
+        env:
+          HOST: ${{ secrets.LIGHTSAIL_HOST }}
+        run: |
+          install -m 600 /dev/null ~/.ssh/key
+          echo "${{ secrets.LIGHTSAIL_SSH_KEY }}" &gt; ~/.ssh/key
+          echo "${{ secrets.LIGHTSAIL_KNOWN_HOSTS }}" &gt;&gt; ~/.ssh/known_hosts
+          scp -i ~/.ssh/key release.tgz "deploy@$HOST:/tmp/release.tgz"
+          ssh -i ~/.ssh/key "deploy@$HOST" "bash -s" -- "$GITHUB_SHA" &lt; infra/api/deploy.sh</pre>
+<p>Store the host, key and known hosts as <strong>environment secrets</strong> (<code>development</code> and <code>production</code>), not repository secrets, so each branch can only reach its own box. Set them from the terminal so nothing extra ends up in the value:</p>
+<pre>gh secret set LIGHTSAIL_HOST --env production --body 203.0.113.10
+gh secret set LIGHTSAIL_SSH_KEY --env production &lt; ~/.ssh/my-app-deploy-prod
+ssh-keyscan -t ed25519 203.0.113.10 2&gt;/dev/null | gh secret set LIGHTSAIL_KNOWN_HOSTS --env production</pre>
+<p>Use a <strong>separate deploy key per environment</strong>, so a leaked dev key can’t reach prod.</p>
+<h2>Step 6: the frontend on Amplify</h2>
+<p>Amplify builds the frontend on every push and serves it through CloudFront, with managed certificates. It handles static sites and server-rendered Next.js.</p>
+<ol>
+<li>Create an Amplify app and connect the monorepo. Add both branches, <code>develop</code> and <code>main</code>.</li>
+<li>Set <code>AMPLIFY_MONOREPO_APP_ROOT=apps/web</code>.</li>
+<li>Set the Node version in <code>amplify.yml</code> to match your local one.</li>
+<li>Under <strong>Custom domains</strong>, add your domain and map branches to subdomains: <code>develop</code> to <code>dev</code>, <code>main</code> to the root and <code>www</code>. Amplify issues the certificate.</li>
+<li>Set environment variables per branch. Variables that reach the browser (<code>NEXT_PUBLIC_*</code>, <code>VITE_*</code>) are <strong>baked in at build time</strong>, so redeploy the branch after changing one.</li>
+</ol>
+<p>For Next.js server rendering with pnpm, Amplify needs a <strong>hoisted</strong> <code>node_modules</code> layout to package <code>next</code>. Set <code>node-linker=hoisted</code> in <code>.npmrc</code>, or <code>nodeLinker: hoisted</code> in <code>pnpm-workspace.yaml</code> on newer pnpm.</p>
+<p>Keep dev out of search results:</p>
+<ol>
+<li>Let an environment variable such as <code>NEXT_PUBLIC_APP_ENV</code> decide whether the site is production. Anywhere else, serve a <code>robots.txt</code> that disallows everything, add <code>noindex</code>, and skip analytics.</li>
+<li>Set canonical URLs from <code>NEXT_PUBLIC_SITE_URL</code>, because Amplify’s own <code>*.amplifyapp.com</code> addresses stay public.</li>
+</ol>
+<p>Get the order right: set the variable to <code>production</code> on <code>main</code> <strong>before</strong> the code that reads it reaches <code>main</code>. Otherwise your live site tells Google not to index it.</p>
+<h2>Step 7: uploads in S3, cached by CloudFront</h2>
+<p>This is the part Vercel and Render don’t include at all, and the main reason to have everything in one AWS account.</p>
+<ol>
+<li>Create <strong>one private S3 bucket per environment</strong>, such as <code>my-app-uploads-dev</code> and <code>my-app-uploads-prod</code>. Leave <strong>Block all public access</strong> on.</li>
+<li>Create a <strong>CloudFront distribution</strong> with the bucket as its origin, using <strong>Origin Access Control</strong> so only CloudFront can read the bucket. Users get files from the edge location nearest to them, and repeat requests never reach S3.</li>
+<li>Optionally give it a subdomain, such as <code>files.example.com</code>, with a free certificate from AWS Certificate Manager. CloudFront certificates must be created in <code>us-east-1</code>.</li>
+<li>Create an <strong>IAM user for the API</strong> with a policy that only allows reading and writing objects in that one bucket. Lightsail instances can’t take an IAM role the way EC2 instances can, so the API uses this user’s access keys from its <code>.env</code>.</li>
+<li>Upload with <strong>presigned URLs</strong>. The API checks who the user is and returns a short-lived URL, and the browser sends the file straight to S3, so large files never pass through your small server.</li>
+</ol>
+<pre>import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+
+const s3 = new S3Client({ region: process.env.AWS_REGION });
+
+export async function createUploadUrl(userId: string, fileName: string, contentType: string) {
+  const key = `users/${userId}/${crypto.randomUUID()}-${fileName}`;
+  const url = await getSignedUrl(
+    s3,
+    new PutObjectCommand({ Bucket: process.env.AWS_BUCKET_NAME, Key: key, ContentType: contentType }),
+    { expiresIn: 300 },
+  );
+  return { url, fileUrl: `https://files.example.com/${key}` };
+}</pre>
+<p>Add a CORS rule to the bucket that allows <code>PUT</code> from your site’s origins, or the browser upload fails.</p>
+<p>If you want it even simpler, <strong>Lightsail object storage</strong> is a bucket with a flat monthly price and an optional Lightsail CDN distribution in front of it. S3 and CloudFront give you more control and scale further; either is fine for an MVP.</p>
+<h2>Step 8: DNS and email</h2>
+<p>Keep DNS at your registrar and add records per environment:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<ul><li><strong><code>api.dev</code></strong><br>Type: A<br>Points to: Dev box’s static IP</li><li><strong><code>api</code></strong><br>Type: A<br>Points to: Prod box’s static IP</li><li><strong><code>dev</code></strong><br>Type: CNAME<br>Points to: The address Amplify gives you</li><li><strong><code>example.com</code></strong><br>Type: ALIAS / ANAME<br>Points to: The address Amplify gives you</li><li><strong><code>www</code></strong><br>Type: CNAME<br>Points to: Same, redirected to the root</li><li><strong><code>files</code></strong><br>Type: CNAME<br>Points to: Your CloudFront distribution</li></ul>
+<p>A root domain can’t be a CNAME, so use your registrar’s ALIAS or ANAME record if it has one. Also add the certificate validation CNAMEs Amplify and Certificate Manager ask for, and <strong>never delete them</strong>: the certificates renew through them.</p>
+<p>Many registrars add your domain to the host field for you, so type <code>api.dev</code>, not <code>api.dev.example.com</code>. Typing the full name creates <code>api.dev.example.com.example.com</code>, and you’ll spend twenty minutes wondering why it doesn’t resolve.</p>
+<p>If the app sends email, set three TXT records before launch:</p>
+<ul>
+<li><strong>SPF</strong>, listing the services allowed to send for your domain</li>
+<li><strong>DKIM</strong>, from your email provider (Amazon SES, Resend, Postmark)</li>
+<li><strong>DMARC</strong>, at <code>_dmarc</code>. Start with <code>v=DMARC1; p=none; rua=mailto:you@example.com</code>. Gmail and Yahoo expect it from bulk senders, and without it more of your password-reset emails land in spam.</li>
+</ul>
+<h2>Step 9: everything that differs per environment</h2>
+<p>Before you call dev done, check everything that must be different in dev and prod. Each one we missed later showed up as a strange bug:</p>
+<ul>
+<li>Database <strong>and</strong> database user</li>
+<li>JWT and OTP secrets: never copy dev’s to prod</li>
+<li>Upload bucket: otherwise dev uploads land next to real users’ files</li>
+<li>CORS origins on the API and on the bucket</li>
+<li>OAuth redirect URIs and the allowed origins on API keys (Google Maps, Google sign-in)</li>
+<li>The <code>.env.example</code> file: keep it listing every variable the code actually reads, because you’ll build the prod <code>.env</code> from it</li>
+</ul>
+<h2>Moving from Vercel and Render without downtime</h2>
+<p>Build the AWS setup <strong>next to</strong> the old one, test it on its own addresses, and only then move the domain. If nothing goes wrong, users never notice the move.</p>
+<ol>
+<li><strong>A day before</strong>, lower the TTL on the records you’ll change to 300 seconds, so the switch spreads in minutes.</li>
+<li><strong>Test prod</strong> on its own URLs: sign-up, sign-in, email links, payments, uploads, maps, everything a user touches.</li>
+<li><strong>Switch the records</strong> for the root domain, <code>www</code> and <code>api</code>. Leave every other record alone, especially <strong>MX, SPF, DKIM and certificate validation</strong>. Deleting the MX record breaks inbound email.</li>
+<li><strong>Watch</strong> the logs and run the user checks again.</li>
+<li><strong>Rollback</strong> means putting the old records back, so write the old values down before you change them.</li>
+</ol>
+<p>After a few quiet days, retire the old setup:</p>
+<ol>
+<li>Remove the domain from the Vercel project, then delete the project.</li>
+<li>Check nothing still calls the old Render URL, export anything you need, suspend the service, then delete it.</li>
+<li>Archive the old repos, with a README line pointing to the monorepo.</li>
+<li>Delete leftover secrets.</li>
+</ol>
+<p>Until you do, you’re paying for two setups and keeping both running.</p>
+<h2>Mistakes we made, so you don’t have to</h2>
+<ul>
+<li><strong><code>ubuntu-latest</code> in CI.</strong> The image moved and broke the end-to-end tests overnight. Pin the version.</li>
+<li><strong>A root-owned log file.</strong> Running <code>sudo caddy validate</code> created the site’s log file as root, so Caddy, which runs as its own user, couldn’t open it and wouldn’t start. Validate as the <code>caddy</code> user, and make the setup script stop if Caddy fails to restart.</li>
+<li><strong>A branch push that deployed nothing.</strong> The deploy workflow filters on changed paths. Pushing a brand-new <code>develop</code> branch with the same content as <code>main</code> changed no paths, so nothing ran. Keep a <code>workflow_dispatch</code> trigger and start the first deploy by hand.</li>
+<li><strong>A 512 MB box.</strong> Fine for dev, not for prod. Size prod for the memory your app uses at peak, plus headroom.</li>
+<li><strong>A pending kernel update.</strong> Unattended upgrades install security fixes but don’t reboot. Check for <code>/var/run/reboot-required</code> and reboot from the Lightsail console when it’s quiet. pm2 brings the app back.</li>
+</ul>
+<h2>Checklist</h2>
+<ul>
+<li>☐  Domain at a registrar you control</li>
+<li>☐  GitHub organization with two-factor authentication required</li>
+<li>☐  Monorepo with one command for lint, typecheck and tests</li>
+<li>☐  CI pinned to a fixed runner image</li>
+<li>☐  <code>develop</code> deploys to dev, <code>main</code> to prod, prod deploys behind a switch</li>
+<li>☐  Lightsail box per environment: static IP, firewall on 22/80/443 only, app on <code>127.0.0.1</code></li>
+<li>☐  Caddy with automatic HTTPS</li>
+<li>☐  Release folders, health check and automatic rollback</li>
+<li>☐  Amplify with <code>develop</code> on <code>dev.</code> and <code>main</code> on the root domain</li>
+<li>☐  Dev kept out of search engines and analytics</li>
+<li>☐  Private S3 bucket per environment, behind CloudFront, with presigned uploads</li>
+<li>☐  Separate database, secrets, deploy key and bucket per environment</li>
+<li>☐  SPF, DKIM and DMARC records</li>
+<li>☐  Snapshots on for prod</li>
+</ul>
+<p>That’s the whole setup: an always-on API, a real dev environment, storage and a CDN, in one account and on one bill. It’s also the setup you can keep after you find product-market fit. When one box isn’t enough, add a second behind a load balancer; the release layout above already supports it.</p>   
+<p><em>Originally published on <a href="https://zunainaliazam.vercel.app/blog/deploy-mvp-on-aws-amplify-and-lightsail">zunainaliazam.vercel.app</a>.</em></p>
+</article>
+<script>
+document.getElementById('copy').onclick = () => {
+  const r = document.createRange(); r.selectNodeContents(document.getElementById('article'));
+  const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+  document.execCommand('copy'); s.removeAllRanges();
+  document.getElementById('done').textContent = 'Copied. Paste it into Medium.';
+};
+</script>
+</body></html>

@@ -1,0 +1,170 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Medium copy: Vercel and Render vs AWS for a Startup MVP: What the Free Tiers Really Cost</title><style>
+body { font: 18px/1.6 Georgia, serif; max-width: 720px; margin: 0 auto; padding: 24px 16px 80px; color: #222; }
+.help { font: 15px/1.5 system-ui, sans-serif; background: #fff8e1; border: 1px solid #f0d98a; border-radius: 10px; padding: 14px 18px; margin-bottom: 28px; }
+.help ol { margin: 8px 0 0; padding-left: 20px; }
+.help button { margin-top: 10px; font: 600 15px system-ui; padding: 8px 14px; border-radius: 8px; border: 0; background: #1a8917; color: #fff; cursor: pointer; }
+pre { background: #f4f4f4; padding: 12px; overflow-x: auto; font-size: 14px; }
+code { background: #f4f4f4; padding: 0 3px; font-size: 15px; }
+.marker { background: #e8f0fe; border: 1px dashed #4a72d9; padding: 10px; font: 14px system-ui; }
+</style></head><body>
+<div class="help">
+  <b>Medium copy of “Vercel and Render vs AWS for a Startup MVP: What the Free Tiers Really Cost”</b> · goes live on the site 14 Nov
+  <ol>
+    <li>In Medium, start a new story. Type the title: <b>Vercel and Render vs AWS for a Startup MVP: What the Free Tiers Really Cost</b></li>
+    <li>On the next line, type the subtitle: Why Vercel and Render's free tiers don't hold up for a startup testing the market, what their paid plans cost once you need an always-on API and a dev environment, and why AWS Amplify and Lightsail give you more for less.</li>
+    <li>Click <b>Copy article</b>, then paste under the subtitle.</li>
+    <li>Upload each image where a blue box is, then delete the box. Put the cover (<a href="https://zunainaliazam.vercel.app/og/blog/vercel-render-vs-aws-for-startup-mvp.jpg">vercel-render-vs-aws-for-startup-mvp.jpg</a>) at the very top.</li>
+    <li>Story settings → Advanced settings → set the canonical link to <b>https://zunainaliazam.vercel.app/blog/vercel-render-vs-aws-for-startup-mvp</b>.</li>
+    <li>On 17 Nov, when it's live, find each “(coming 17 Nov)” and turn the text before it into a link to <a href="https://zunainaliazam.vercel.app/blog/deploy-mvp-on-aws-amplify-and-lightsail">https://zunainaliazam.vercel.app/blog/deploy-mvp-on-aws-amplify-and-lightsail</a>.</li>
+  </ol>
+  <button id="copy">Copy article</button> <span id="done"></span>
+</div>
+<article id="article">
+  <p>The usual advice for an MVP is “put the frontend on Vercel, the API on Render, and worry about infrastructure later.” It sounds cheap and simple. For a startup that’s actually testing the market, it’s usually neither.</p>
+<p>The free tiers aren’t made for a product people use, so you end up on the paid plans. Once you’re paying, an AWS setup with <strong>Amplify</strong> for the frontend and <strong>Lightsail</strong> for the API costs less and gives you more: an API that never sleeps, a dev environment on its own subdomain, file storage and a CDN, all in one account.</p>
+<p>We learned this building <a href="https://zunainaliazam.vercel.app/projects/calyndrs">Calyndrs</a>, our event management and discovery platform. It started on Vercel and Render, and we moved it to Amplify and Lightsail once the free tiers ran out. This post covers the trade-offs and the numbers. If you’ve already decided, read the step-by-step guide: How to Deploy an MVP on AWS Amplify and Lightsail (coming 17 Nov).</p>
+<p class="marker">[ Upload image here: <a href="https://zunainaliazam.vercel.app/images/blog/vercel-render-vs-aws-for-startup-mvp.png">vercel-render-vs-aws-for-startup-mvp.png</a>. Use this as its alt text: "Diagram comparing two setups for the same MVP. Vercel plus Render: frontend on Vercel priced per team member, API on Render that sleeps on the free tier, uploads on a third service, about $55 or more a month. AWS: frontend on Amplify, always-on API on Lightsail, S3 and CloudFront for uploads, about $20 to $30 a month." ]</p>
+<h2>Render’s free API goes to sleep</h2>
+<p>Render’s free web services spin down after about 15 minutes without traffic. The next request waits while the service starts again, which can take close to a minute.</p>
+<p>For an MVP that’s the worst possible time to be slow. Early users arrive one at a time, often after a quiet stretch, so the first person to try your product is the one who waits. Many of them won’t. You lose signups you’ll never hear about, and your market test measures your cold start instead of your product.</p>
+<p>Keeping the API always on means a paid instance. Render charges per service, so a dev API and a prod API are two paid instances, and you still need a database, storage and email on top.</p>
+<h2>Vercel’s free plan isn’t for a business</h2>
+<p>Vercel’s free Hobby plan is for <strong>non-commercial use</strong>. Once your startup charges money, or is simply a business, you’re expected to be on Pro, which is priced <strong>per team member per month</strong>. Add your co-founder and a contractor, and the frontend bill grows with your headcount, not your traffic.</p>
+<p>A dev environment on its own subdomain is behind the same paywall. When we tried to set up a dev subdomain for Calyndrs as a separate dev environment, Vercel asked us to upgrade to Pro: environments beyond the built-in Preview and Production are a paid feature. Without one, your team tests on random preview URLs instead of a stable dev site that the dev API, OAuth settings and API keys can trust.</p>
+<p>On top of that, bandwidth, function calls and build minutes are metered, so a traffic spike can still produce a bill you didn’t plan for.</p>
+<h2>You still need everything else</h2>
+<p>Neither platform stores your users’ uploads. Profile photos, documents and images need a storage bucket somewhere, usually S3 or Cloudinary, which is a third account, a third bill and a third set of keys. If you want those files cached close to users, you need a CDN as well.</p>
+<p>So a “free” Vercel and Render setup that’s ready for real users ends up as:</p>
+<ul>
+<li>Vercel Pro, per member</li>
+<li>One or two always-on Render instances</li>
+<li>A storage service</li>
+<li>Two or three dashboards, bills and sets of secrets</li>
+</ul>
+<h2>Two repos that drift apart</h2>
+<p>These setups usually start as two repos: frontend on Vercel, backend on Render. Every feature that touches both becomes two pull requests, two deploys and a window where one is live and the other isn’t. That isn’t Vercel or Render’s fault, but their split setup makes it the default.</p>
+<h2>What you get on AWS instead</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<ul><li><strong>Frontend with CDN and HTTPS</strong><br>Vercel + Render: Vercel (Pro for a business)<br>AWS: <strong>Amplify</strong>, served through CloudFront, certificates included</li><li><strong>A dev environment on its own subdomain</strong><br>Vercel + Render: Vercel Pro<br>AWS: Amplify maps any branch to any subdomain: <code>develop</code> to <code>dev.example.com</code></li><li><strong>An API that never sleeps</strong><br>Vercel + Render: Paid Render instance per environment<br>AWS: <strong>Lightsail</strong>, a fixed-price server that’s always on</li><li><strong>A static IP for allowlists</strong><br>Vercel + Render: Not on the free tier<br>AWS: Included with Lightsail</li><li><strong>File uploads</strong><br>Vercel + Render: Separate service<br>AWS: <strong>S3</strong> in the same account</li><li><strong>Caching files close to users</strong><br>Vercel + Render: Separate service<br>AWS: <strong>CloudFront</strong>, with an always-free allowance</li><li><strong>Backups of the server</strong><br>Vercel + Render: n/a<br>AWS: Lightsail snapshots</li><li><strong>Bills</strong><br>Vercel + Render: Two or more<br>AWS: One</li></ul>
+<h2>What it costs</h2>
+<p>Rough monthly cost at MVP traffic, at the time of writing. Check each provider’s pricing page before you plan around these numbers.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<ul><li><strong>Frontend</strong><br>Vercel Pro + Render: About $20 per team member<br>Amplify + Lightsail: Amplify bills per build minute, data served and request; a few dollars at MVP traffic</li><li><strong>API, dev and prod</strong><br>Vercel Pro + Render: About $7 or more per always-on instance, times two<br>Amplify + Lightsail: Lightsail: about $5 for a small dev box, $12 for a 2 GB prod box</li><li><strong>Storage and CDN</strong><br>Vercel Pro + Render: Another provider<br>Amplify + Lightsail: S3 is cents per GB; CloudFront’s free allowance covers 1 TB out a month</li><li><strong><strong>Two founders, dev and prod</strong></strong><br>Vercel Pro + Render: <strong>About $55 and up</strong><br>Amplify + Lightsail: <strong>About $20 to $30</strong></li></ul>
+<p>The gap gets bigger with every person you add, because nothing on the AWS side is priced per seat. New AWS accounts also get free tier credits, which can cover the first months.</p>
+<p>Keep the <strong>database managed</strong> either way. MongoDB Atlas, Neon and Supabase all have free tiers that hold up for an MVP. Running your own database means doing your own backups, upgrades and failover, and that work rarely pays off at this stage.</p>
+<h2>What AWS costs you instead</h2>
+<p>The trade-off isn’t money, it’s a few hours of setup and a little ownership:</p>
+<ul>
+<li><strong>Setup takes hours, not minutes.</strong> A server setup script, a deploy workflow, DNS records and an Amplify app. You do it once, and it’s the same for every environment after that.</li>
+<li><strong>You own the server.</strong> Security updates install themselves, but someone reboots the box now and then and keeps an eye on memory.</li>
+<li><strong>No automatic previews for every pull request on the API.</strong> Amplify can preview frontend pull requests; the API has dev and prod.</li>
+</ul>
+<p>For a startup with at least one developer, that’s a good trade. Those hours buy an always-on product, a real dev environment and a bill that doesn’t grow with the team.</p>
+<h2>When Vercel and Render are fine</h2>
+<p>They’re the right choice when:</p>
+<ul>
+<li>It’s a <strong>demo, a hackathon project or a weekend prototype</strong> with no real users yet</li>
+<li>It’s a <strong>personal or non-commercial project</strong>, so Vercel Hobby’s terms fit</li>
+<li>Nobody on the team wants to touch a server, and the paid plans fit the budget</li>
+<li>The app is <strong>frontend only</strong>: a static or mostly static site on Vercel’s free plan can run for years without problems</li>
+</ul>
+<p>Once you’re a business, you have users to impress and a dev environment to run, and the numbers above start to apply.</p>
+<h2>Already launched on Vercel and Render?</h2>
+<p>You don’t have to stay there. Build the AWS setup next to the old one, test it on its own addresses, then switch DNS with lowered TTLs and a written-down rollback. Users never notice. The setup guide (coming 17 Nov) covers this in its “Moving from Vercel and Render” section.</p>
+<h2>The short version</h2>
+<ul>
+<li>Render’s free API sleeps, and your first users pay for it with a long wait.</li>
+<li>Vercel’s free plan is non-commercial, and a dev environment on its own subdomain needs Pro, priced per member.</li>
+<li>Storage and a CDN are extra services either way.</li>
+<li>Amplify and Lightsail give you an always-on API, branch subdomains, S3 and CloudFront in one account for roughly half the monthly cost of the paid plans, and the price doesn’t grow with your team.</li>
+</ul>
+<p>The goal of an MVP is to learn whether people want what you’re building. That’s hard to learn if your API is asleep when they arrive, or if half your budget goes to per-seat plans. When you’re ready, follow the step-by-step guide to Amplify and Lightsail (coming 17 Nov).</p>   
+<p><em>Originally published on <a href="https://zunainaliazam.vercel.app/blog/vercel-render-vs-aws-for-startup-mvp">zunainaliazam.vercel.app</a>.</em></p>
+</article>
+<script>
+document.getElementById('copy').onclick = () => {
+  const r = document.createRange(); r.selectNodeContents(document.getElementById('article'));
+  const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+  document.execCommand('copy'); s.removeAllRanges();
+  document.getElementById('done').textContent = 'Copied. Paste it into Medium.';
+};
+</script>
+</body></html>

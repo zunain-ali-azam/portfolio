@@ -1,0 +1,337 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Medium copy: How to Set Up the Google Maps API in Your Web Application</title><style>
+body { font: 18px/1.6 Georgia, serif; max-width: 720px; margin: 0 auto; padding: 24px 16px 80px; color: #222; }
+.help { font: 15px/1.5 system-ui, sans-serif; background: #fff8e1; border: 1px solid #f0d98a; border-radius: 10px; padding: 14px 18px; margin-bottom: 28px; }
+.help ol { margin: 8px 0 0; padding-left: 20px; }
+.help button { margin-top: 10px; font: 600 15px system-ui; padding: 8px 14px; border-radius: 8px; border: 0; background: #1a8917; color: #fff; cursor: pointer; }
+pre { background: #f4f4f4; padding: 12px; overflow-x: auto; font-size: 14px; }
+code { background: #f4f4f4; padding: 0 3px; font-size: 15px; }
+.marker { background: #e8f0fe; border: 1px dashed #4a72d9; padding: 10px; font: 14px system-ui; }
+</style></head><body>
+<div class="help">
+  <b>Medium copy of “How to Set Up the Google Maps API in Your Web Application”</b> · goes live on the site 10 Nov
+  <ol>
+    <li>In Medium, start a new story. Type the title: <b>How to Set Up the Google Maps API in Your Web Application</b></li>
+    <li>On the next line, type the subtitle: A step-by-step guide to adding Google Maps to a web app: creating and locking down an API key, loading the Maps JavaScript API the modern way, adding markers, keeping your bill at zero, and fixing every common error.</li>
+    <li>Click <b>Copy article</b>, then paste under the subtitle.</li>
+    <li>Upload each image where a blue box is, then delete the box. Put the cover (<a href="https://zunainaliazam.vercel.app/og/blog/setup-google-maps-api-web-app.jpg">setup-google-maps-api-web-app.jpg</a>) at the very top.</li>
+    <li>Story settings → Advanced settings → set the canonical link to <b>https://zunainaliazam.vercel.app/blog/setup-google-maps-api-web-app</b>.</li>
+    <li>On 12 Nov, when it's live, find each “(coming 12 Nov)” and turn the text before it into a link to <a href="https://zunainaliazam.vercel.app/blog/google-cloud-billing-error-or-bacr2-59">https://zunainaliazam.vercel.app/blog/google-cloud-billing-error-or-bacr2-59</a>.</li>
+  </ol>
+  <button id="copy">Copy article</button> <span id="done"></span>
+</div>
+<article id="article">
+  <p>Adding a map to a web app looks like a five-minute job. Then you hit a grey box that says <em>“This page can’t load Google Maps correctly”</em>, a console full of <code>RefererNotAllowedMapError</code>, and a worry that someone will copy your API key and run up your bill.</p>
+<p>This guide covers the whole setup in order: the Google Cloud project, a locked-down API key, loading the Maps JavaScript API the way Google now recommends, and a working map with a marker. It works the same in plain JavaScript, React, Vue, Astro or any other frontend.</p>
+<p class="marker">[ Upload image here: <a href="https://zunainaliazam.vercel.app/images/blog/setup-google-maps-api-web-app.png">setup-google-maps-api-web-app.png</a>. Use this as its alt text: "Diagram: your web app requests the Maps JavaScript API with an API key. Google checks that billing is linked, the API is enabled, and the key allows your site and this API. If all pass, the map with a marker loads; if any fails, you get a grey or darkened map and an error such as RefererNotAllowedMapError." ]</p>
+<h2>What you need</h2>
+<ul>
+<li>A Google account</li>
+<li>A billing account on Google Cloud. Google asks for a card even if you stay within the free usage. More on cost below.</li>
+<li>A web app you can run locally</li>
+</ul>
+<h2>Step 1: Create a Google Cloud project</h2>
+<ol>
+<li>Open the <a href="https://console.cloud.google.com/">Google Cloud Console</a>.</li>
+<li>Click the project picker in the top bar, then <strong>New Project</strong>. Give it a name such as <code>my-app-maps</code>.</li>
+<li>When it asks, link a billing account to the project. Without billing, maps load darkened with a <em>“For development purposes only”</em> watermark. If Google rejects your card with a code like <code>OR_BACR2_59</code>, see how I got past Google Cloud billing error OR_BACR2_59 (coming 12 Nov).</li>
+</ol>
+<p>Use a separate project for each app. Keys, quotas and bills stay apart, and you can shut one down without breaking the others.</p>
+<h2>Step 2: Enable the APIs you need</h2>
+<p>Go to <strong>APIs &amp; Services → Library</strong> and enable only what you’ll use:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<ul><li><strong>Show an interactive map</strong>: <strong>Maps JavaScript API</strong></li><li><strong>Search places / address autocomplete</strong>: <strong>Places API (New)</strong></li><li><strong>Turn addresses into coordinates</strong>: <strong>Geocoding API</strong></li><li><strong>Get directions or travel times</strong>: <strong>Routes API</strong></li></ul>
+<p>For a basic map you only need the <strong>Maps JavaScript API</strong>. Every API you enable is one more thing that can be billed if your key leaks.</p>
+<h2>Step 3: Create an API key</h2>
+<ol>
+<li>Go to <strong>APIs &amp; Services → Credentials</strong> (or <strong>Google Maps Platform → Keys &amp; Credentials</strong>).</li>
+<li>Click <strong>Create credentials → API key</strong>.</li>
+<li>Copy the key. Don’t close the dialog yet. Click <strong>Edit API key</strong> and restrict it, as covered in the next step.</li>
+</ol>
+<h2>Step 4: Restrict the key (don’t skip this)</h2>
+<p>A Maps JavaScript API key <strong>always ends up in the browser</strong>. Anyone can open DevTools and read it. You can’t hide it, so you limit what it can do.</p>
+<p>On the key’s edit page:</p>
+<p><strong>Application restrictions → Websites (HTTP referrers).</strong> Add each origin that is allowed to use the key:</p>
+<pre>https://yourdomain.com/*
+https://www.yourdomain.com/*
+http://localhost:5173/*</pre>
+<p>Use whatever port your dev server runs on: <code>5173</code> for Vite, <code>4321</code> for Astro, <code>3000</code> for Next.js. Keep a separate key for development and remove <code>localhost</code> from the production key.</p>
+<p><strong>API restrictions → Restrict key.</strong> Tick only the APIs from Step 2, such as <strong>Maps JavaScript API</strong>. If someone copies the key, they can’t call Geocoding or Places with it from their own site.</p>
+<p>Restrictions can take a few minutes to apply. If you get errors right after saving, wait a moment before you start debugging.</p>
+<h2>Step 5: Create a Map ID</h2>
+<p>Google’s current marker, <code>AdvancedMarkerElement</code>, needs a <strong>Map ID</strong>. The older <code>google.maps.Marker</code> is deprecated, so new code should use Advanced Markers from the start.</p>
+<ol>
+<li>Go to <strong>Google Maps Platform → Map Management</strong>.</li>
+<li>Click <strong>Create Map ID</strong>, give it a name, and set the map type to <strong>JavaScript</strong>. Choose <strong>Vector</strong> if you want tilt and rotation.</li>
+<li>Copy the Map ID.</li>
+</ol>
+<p>The Map ID is also where you attach cloud-based map styles later, so you can restyle the map without a code change.</p>
+<h2>Step 6: Store the key in an environment variable</h2>
+<p>Keep the key out of your source code so you can use different keys for development and production. Each framework has its own prefix for variables that are exposed to the browser:</p>
+<pre># .env
+# Vite / Vue / React (Vite)
+VITE_GOOGLE_MAPS_API_KEY=your-key
+VITE_GOOGLE_MAPS_MAP_ID=your-map-id
+
+# Astro: PUBLIC_GOOGLE_MAPS_API_KEY
+# Next.js: NEXT_PUBLIC_GOOGLE_MAPS_API_KEY</pre>
+<p>Make sure <code>.env</code> is in your <code>.gitignore</code>. To be clear: this does <strong>not</strong> make the key secret, because the bundle still contains it. The restrictions from Step 4 are what protect you. The environment variable only keeps the key out of your repo and makes it easy to swap per environment.</p>
+<h2>Step 7: Load the Maps JavaScript API</h2>
+<p>There are two good options.</p>
+<h3>Option A: the official npm loader (recommended for apps with a bundler)</h3>
+<pre>npm install @googlemaps/js-api-loader
+npm install -D @types/google.maps   # if you use TypeScript</pre>
+<p>Version 2 of the loader exports two functions, <code>setOptions</code> and <code>importLibrary</code>:</p>
+<pre>// src/lib/maps.ts
+import { setOptions, importLibrary } from '@googlemaps/js-api-loader';
+
+setOptions({
+  key: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
+  v: 'weekly',
+});
+
+export { importLibrary };</pre>
+<p>Call <code>setOptions</code> once, before you load any library. The first <code>importLibrary</code> call loads the API script. Later calls reuse it.</p>
+<p>If you’re upgrading from v1: the <code>Loader</code> class and <code>loader.load()</code> are gone, and <code>apiKey</code> / <code>version</code> are now <code>key</code> / <code>v</code>.</p>
+<h3>Option B: a script tag (no build step)</h3>
+<pre>&lt;script
+  async
+  src="https://maps.googleapis.com/maps/api/js?key=YOUR_KEY&amp;loading=async&amp;callback=initMap"
+&gt;&lt;/script&gt;</pre>
+<p><code>loading=async</code> tells Google you’re loading the script asynchronously, which is the recommended way. Inside <code>initMap</code> you can call <code>google.maps.importLibrary()</code> in the same way as below. Google’s documentation also has a short inline “bootstrap loader” snippet that you can paste instead.</p>
+<h2>Step 8: Render a map with a marker</h2>
+<p>Give the map a container <strong>with a height</strong>. A map with zero height is the most common reason for “it loads but I see nothing”.</p>
+<pre>&lt;div id="map" style="height: 400px; width: 100%;"&gt;&lt;/div&gt;</pre>
+<p>Then load the libraries you need and create the map:</p>
+<pre>import { importLibrary } from './lib/maps';
+
+async function initMap() {
+  const { Map } = await importLibrary('maps');
+  const { AdvancedMarkerElement } = await importLibrary('marker');
+
+  const position = { lat: 31.5204, lng: 74.3587 }; // Lahore
+
+  const map = new Map(document.getElementById('map') as HTMLElement, {
+    center: position,
+    zoom: 13,
+    mapId: import.meta.env.VITE_GOOGLE_MAPS_MAP_ID,
+  });
+
+  new AdvancedMarkerElement({
+    map,
+    position,
+    title: 'Our office',
+  });
+}
+
+initMap();</pre>
+<p>That gives you a working, interactive map. Each library (<code>maps</code>, <code>marker</code>, <code>places</code>, <code>geocoding</code>, <code>routes</code>) loads only when you ask for it, so you don’t download code you don’t use.</p>
+<h3>Using it in React</h3>
+<p>The same code works in a <code>useEffect</code> with a <code>ref</code> in place of <code>getElementById</code>. If you’d rather use components, <a href="https://visgl.github.io/react-google-maps/"><code>@vis.gl/react-google-maps</code></a> is maintained with Google and wraps all of this in <code>&lt;APIProvider&gt;</code>, <code>&lt;Map&gt;</code> and <code>&lt;AdvancedMarker&gt;</code>.</p>
+<h2>Step 9: Keep the bill at zero (or close to it)</h2>
+<p>Since March 2025, Google Maps Platform gives each API (each “SKU”) its <strong>own free monthly allowance</strong>. This replaced the old shared $200 credit. Most core SKUs, including Dynamic Maps (one load of a JavaScript map), are in the <strong>Essentials</strong> tier, which includes <strong>10,000 free calls per month</strong>. Pro and Enterprise SKUs have smaller free allowances. Prices change, so check the official <a href="https://developers.google.com/maps/billing-and-pricing/pricing">pricing page</a> before you plan for a large number of users.</p>
+<p>Two settings will protect you from a surprise bill:</p>
+<ol>
+<li><strong>Budget alert.</strong> Go to <strong>Billing → Budgets &amp; alerts</strong> and create a budget, for example $5, with email alerts. Note that a budget only warns you. It does not stop usage.</li>
+<li><strong>Quota caps.</strong> Go to <strong>APIs &amp; Services → [the API] → Quotas</strong> and lower the requests-per-day limit. When you reach a quota, Google returns an error and doesn’t bill you. This is the setting that actually stops spending.</li>
+</ol>
+<p>If all you need is a pin on your contact page, look at the <strong>Maps Embed API</strong>. It’s a plain <code>&lt;iframe&gt;</code>, needs no JavaScript, and has no usage cost.</p>
+<h2>Common errors and how to fix them</h2>
+<p>When something goes wrong, the Maps JavaScript API writes the reason to the <strong>browser console</strong>, in the form <code>Google Maps API error: [ErrorCode]</code> (or <code>warning</code>). Open DevTools before you start guessing. An <strong>error</strong> means the map can’t load; a <strong>warning</strong> means it loads, but something in your setup is off.</p>
+<p>A map that loads <strong>darkened with a “For development purposes only” watermark</strong> is almost always a key or billing problem. The console tells you which.</p>
+<h3>Key and project errors</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<ul><li><strong><code>RefererNotAllowedMapError</code></strong><br>What it means: The page’s URL isn’t in the key’s allowed websites<br>How to fix it: Add the exact origin under <strong>Application restrictions</strong>, with the port and <code>/*</code>: <code>http://localhost:5173/*</code>. Add <code>www</code> and non-<code>www</code> separately, or use <code>https://*.example.com/*</code> for subdomains</li><li><strong><code>ApiNotActivatedMapError</code></strong><br>What it means: The Maps JavaScript API isn’t enabled in this project<br>How to fix it: Enable it in <strong>APIs &amp; Services → Library</strong> (Step 2). Check you’re in the same project the key belongs to</li><li><strong><code>ApiTargetBlockedMapError</code></strong><br>What it means: The key’s API restrictions don’t include the API you’re calling<br>How to fix it: Tick the API under <strong>API restrictions</strong>. Using Places or Geocoding from the map? Each needs its own tick</li><li><strong><code>BillingNotEnabledMapError</code></strong><br>What it means: The project has no billing account, or the free trial ended<br>How to fix it: Link one under <strong>Billing</strong>, or activate the full account after the trial. You still get the free monthly usage</li><li><strong><code>InvalidKeyMapError</code></strong><br>What it means: Google can’t find the key you sent<br>How to fix it: The key is mistyped, deleted or empty. Log the environment variable, and restart the dev server after editing <code>.env</code></li><li><strong><code>MissingKeyMapError</code></strong><br>What it means: The request had no key at all<br>How to fix it: The environment variable is undefined at build time. Check its prefix (<code>VITE_</code>, <code>PUBLIC_</code>, <code>NEXT_PUBLIC_</code>) and that it’s set on your host too, not only locally</li><li><strong><code>ExpiredKeyMapError</code></strong><br>What it means: The key expired, or it’s so new Google doesn’t recognise it yet<br>How to fix it: For a new key, wait a few minutes and reload. Otherwise create a new key</li><li><strong><code>OverQuotaMapError</code></strong><br>What it means: You’ve hit a usage limit<br>How to fix it: If it’s the daily cap from Step 9, the cap is doing its job: raise it or wait for the daily reset. Then find out where the traffic came from</li><li><strong><code>DeletedApiProjectMapError</code></strong><br>What it means: The key’s Google Cloud project was deleted<br>How to fix it: Create a new project and key, or restore the project within its 30-day recovery period</li><li><strong><code>ApiProjectMapError</code></strong><br>What it means: Google couldn’t resolve the key or its project, sometimes temporarily<br>How to fix it: Reload after a minute. If it persists, create a new key</li><li><strong><code>ProjectDeniedMapError</code></strong><br>What it means: The project can’t make the request<br>How to fix it: Check the project’s status and notices in the Cloud Console</li><li><strong><code>NotLoadingAPIFromGoogleMapsError</code></strong><br>What it means: The script isn’t loaded straight from <code>maps.googleapis.com</code><br>How to fix it: Load it from Google, as in Step 7, not from a copy or a proxy</li><li><strong><code>InvalidClientIdMapError</code></strong><br>What it means: The page uses the old Premium Plan <code>client=</code> ID<br>How to fix it: Client IDs stopped working on 31 May 2026. Switch to an API key</li><li><strong><code>RefererDeniedMapError</code> or <code>TOSViolationMapError</code></strong><br>What it means: Google blocked the site for breaking the Terms of Service<br>How to fix it: Fix the issue Google emailed you about, then use the appeal form linked from the error</li></ul>
+<h3>Warnings</h3>
+<p>These don’t stop the map, but they point at a mistake you should fix:</p>
+<ul>
+<li><strong><code>NoApiKeys</code></strong> or <strong><code>InvalidKey</code></strong>: the key is missing or doesn’t look like a key. Same fixes as <code>MissingKeyMapError</code> and <code>InvalidKeyMapError</code>.</li>
+<li><strong><code>KeyLooksLikeProjectNumber</code></strong>: you pasted the project number instead of an API key. Copy the key from <strong>Credentials</strong>.</li>
+<li><strong><code>InvalidVersion</code></strong> or <strong><code>RetiredVersion</code></strong>: the <code>v</code> value is wrong or too old. Use <code>weekly</code>, <code>quarterly</code> or <code>beta</code>.</li>
+<li><strong><code>SensorNotRequired</code></strong>, <strong><code>SignatureNotRequired</code></strong> and <strong><code>SignedInNotSupported</code></strong>: leftovers from old tutorials. Remove those parameters from the script URL.</li>
+</ul>
+<h3>Problems with no error code</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<ul><li><strong>Blank space where the map should be, console clean</strong><br>Likely cause: The container has no height (a <code>div</code> defaults to 0)<br>How to fix it: Give the map element an explicit height, e.g. <code>height: 400px</code></li><li><strong>Map loads, but in the wrong place or zoomed out to the whole world</strong><br>Likely cause: <code>center</code> or <code>zoom</code> is missing<br>How to fix it: Pass both when creating the map</li><li><strong><code>google is not defined</code></strong><br>Likely cause: Your code runs before the API has loaded<br>How to fix it: Wait for <code>await importLibrary('maps')</code> before touching <code>google.maps</code></li><li><strong>Console says you included the API multiple times</strong><br>Likely cause: The script loads twice, for example a script tag plus the loader, or a component that mounts twice<br>How to fix it: Load it in one place. With the npm loader, call <code>setOptions</code> once at app start</li><li><strong>Advanced Markers don’t appear, or a warning about a Map ID</strong><br>Likely cause: <code>mapId</code> isn’t set on the map<br>How to fix it: Pass the Map ID from Step 5. Without one, <code>AdvancedMarkerElement</code> can’t render</li><li><strong>Map fails with no clear error on your live site only</strong><br>Likely cause: Your Content Security Policy blocks Google’s scripts or tiles<br>How to fix it: Allow <code>https://maps.googleapis.com</code> in <code>script-src</code> and <code>connect-src</code>, and <code>https://maps.gstatic.com</code> in <code>img-src</code> and <code>font-src</code></li><li><strong>Places API (legacy) can’t be enabled, or the old <code>Autocomplete</code> widget fails in a new project</strong><br>Likely cause: Since March 2025, new projects only get Places API (New)<br>How to fix it: Enable <strong>Places API (New)</strong> and use the <code>PlaceAutocompleteElement</code> from <code>importLibrary('places')</code></li><li><strong>Geocoding or Places called from your server returns <code>REQUEST_DENIED</code></strong><br>Likely cause: The key is restricted to websites (HTTP referrers), which only works in the browser<br>How to fix it: Use a separate server key restricted by IP address, and keep it out of the frontend</li></ul>
+<h3>When you’re stuck: check in this order</h3>
+<ol>
+<li><strong>Is the key sent?</strong> In DevTools’ <strong>Network</strong> tab, find the request to <code>maps.googleapis.com/maps/api/js</code> and check it has a <code>key=</code> parameter with your key.</li>
+<li><strong>Is billing linked</strong> to the project the key belongs to?</li>
+<li><strong>Is the API enabled</strong>, and ticked under the key’s API restrictions?</li>
+<li><strong>Does the page’s exact origin match</strong> an allowed referrer, including protocol and port?</li>
+<li><strong>Have you hit a quota cap</strong> you set yourself?</li>
+<li><strong>Did you just change the key?</strong> Wait a few minutes and reload before you change anything else.</li>
+</ol>
+<h2>Checklist</h2>
+<ul>
+<li>☐  Google Cloud project with billing linked</li>
+<li>☐  Only the APIs you need enabled</li>
+<li>☐  API key restricted by HTTP referrer <strong>and</strong> by API</li>
+<li>☐  Separate keys for development and production</li>
+<li>☐  Map ID created and passed to the map</li>
+<li>☐  Key loaded from an environment variable, <code>.env</code> git-ignored</li>
+<li>☐  Budget alert and daily quota caps set</li>
+</ul>
+<p>Follow these steps and Google Maps should work in any web app on the first try, with little risk of a leaked key turning into a large bill.</p>   
+<p><em>Originally published on <a href="https://zunainaliazam.vercel.app/blog/setup-google-maps-api-web-app">zunainaliazam.vercel.app</a>.</em></p>
+</article>
+<script>
+document.getElementById('copy').onclick = () => {
+  const r = document.createRange(); r.selectNodeContents(document.getElementById('article'));
+  const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+  document.execCommand('copy'); s.removeAllRanges();
+  document.getElementById('done').textContent = 'Copied. Paste it into Medium.';
+};
+</script>
+</body></html>
