@@ -14,7 +14,8 @@ const projects = defineCollection({
     github: z.string().url().optional(),
     live: z.string().url().optional(),
     image: z.string().optional(),
-    // 1200x630 JPEG for link previews; social sites don't all accept WebP
+    // JPEG for link previews (social sites don't all accept WebP). Blog covers are 16:9 at
+    // 2800x1576 so the same file works as a Medium cover
     ogImage: z.string().optional(),
     featured: z.boolean().default(false),
     order: z.number().default(99),
