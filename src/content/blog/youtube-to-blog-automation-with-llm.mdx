@@ -10,7 +10,7 @@ draft: false
 
 A good tutorial video is also a good article that nobody has written yet. The person who made the video rarely has time to write it, and a transcript isn't an article. It's spoken, it wanders, and it has no headings, no code you can copy and nothing for search engines to read.
 
-At IOMechs, the [Code with Ahsan](https://www.youtube.com/channel/UCAys-Lg76QcRNGc0dOr_bXA) channel publishes technical tutorials on Angular, React, AI and Google's Gemini tools, and the plan is to put written versions of them on the IOMechs blog. So I built **[yt2blog](/projects/yt2blog)**, a command-line tool that takes a YouTube URL and produces a review-ready article: restructured into sections, with the video embedded, "watch this part" links to the right moments, SEO metadata and structured data. It saves the article as Markdown and can send it to Ghost or Sanity as a draft for a person to review and publish.
+Plenty of developers and companies publish technical tutorials on YouTube and want a written version of each one on their blog, for readers who'd rather skim and for search engines that can't watch a video. So I built **[yt2blog](/projects/yt2blog)**, a command-line tool that takes a YouTube URL and produces a review-ready article: restructured into sections, with the video embedded, "watch this part" links to the right moments, SEO metadata and structured data. It saves the article as Markdown and can send it to Ghost or Sanity as a draft for a person to review and publish.
 
 The code is open source on [GitHub](https://github.com/zunain-ali-azam/youtube-to-blog-automation). This post covers how it works and the decisions that made the output something you can actually publish.
 
@@ -58,7 +58,7 @@ A tutorial is short enough for that. In my test runs the input was 8,000 to 16,0
 
 The answer comes back as JSON that has to match an `Article` schema, and pydantic validates it: title, slug, meta fields with length limits, intro, learning points, sections, takeaways, FAQ and tags. If validation fails, the tool retries up to twice and includes the error, so the model can fix exactly what was wrong. On Anthropic's API the schema is enforced directly. Other providers get it as `response_format` and in the system prompt too, because not every OpenAI-compatible API enforces `response_format`.
 
-There's no separate cleanup step for the transcript. Auto-generated captions spell "Ahsan" as "sn" or "essien", and Whisper heard "Geely EX3" as "Gilly EX2" in one of my test videos. The glossary tells the model which names and terms to expect, and it fixes them as it writes.
+There's no separate cleanup step for the transcript. In my test videos, auto-generated captions wrote ElevenLabs as "11 labs", and Whisper heard "Geely EX3" as "Gilly EX2". The glossary tells the model which names and terms to expect, and it fixes them as it writes.
 
 ## Captions or Whisper
 
@@ -126,7 +126,7 @@ Add `.[whisper]` to the install if you want local transcription. The model downl
 
 ## What's next
 
-yt2blog is at version 0.2.0 and still runs against a local Ghost install. Every site-specific value comes from `.env`, so moving it to the IOMechs blog is a configuration change. Next on the list:
+yt2blog is at version 0.2.0 and still runs against a local Ghost install. Every site-specific value comes from `.env`, so pointing it at a production blog is a configuration change. Next on the list:
 
 - **Payload CMS** as a third destination
 - **A publishing webhook**, so that when an editor publishes the post, the job is marked live and the article can be linked from the video's description
