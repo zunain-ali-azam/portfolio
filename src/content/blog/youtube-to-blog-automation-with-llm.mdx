@@ -1,0 +1,135 @@
+---
+title: "YouTube to Blog Automation: How I Built yt2blog to Turn a Video into a Review-Ready Article"
+description: "How yt2blog turns a YouTube tutorial into a blog draft with one command: captions or Whisper, one structured LLM call, real code from the video's repo, quality checks, and Ghost or Sanity drafts that never overwrite a human's edits."
+date: 2026-11-18T12:00:00+05:00
+tags: ["AI", "LLM", "Python", "Automation", "Ghost", "Sanity"]
+topics: ["AI & automation"]
+image: "/og/blog/youtube-to-blog-automation-with-llm.jpg"
+draft: false
+---
+
+A good tutorial video is also a good article that nobody has written yet. The person who made the video rarely has time to write it, and a transcript isn't an article. It's spoken, it wanders, and it has no headings, no code you can copy and nothing for search engines to read.
+
+At IOMechs, the [Code with Ahsan](https://www.youtube.com/channel/UCAys-Lg76QcRNGc0dOr_bXA) channel publishes technical tutorials on Angular, React, AI and Google's Gemini tools, and the plan is to put written versions of them on the IOMechs blog. So I built **[yt2blog](/projects/yt2blog)**, a command-line tool that takes a YouTube URL and produces a review-ready article: restructured into sections, with the video embedded, "watch this part" links to the right moments, SEO metadata and structured data. It saves the article as Markdown and can send it to Ghost or Sanity as a draft for a person to review and publish.
+
+The code is open source on [GitHub](https://github.com/zunain-ali-azam/youtube-to-blog-automation). This post covers how it works and the decisions that made the output something you can actually publish.
+
+![Diagram of how yt2blog turns a video into a draft. Gather: a YouTube URL, then metadata (title, chapters, thumbnail), then the transcript from captions or local Whisper. Write and verify: one LLM call writes the whole article as validated JSON, real code is cut from the video's repo, and checks warn but never fail. Hand off: a Markdown file is always saved, plus a Ghost or Sanity draft, and a person reviews and publishes it.](/images/blog/youtube-to-blog-automation-with-llm.png)
+
+## What it does
+
+Run `yt2blog` with no arguments and it walks you through one step at a time: your YouTube Data API key, which LLM provider and model to use, the video, where the transcript should come from, and whether the article should also go to a CMS. Then the stages run as a live checklist in the terminal.
+
+If you already have everything set up, one command does the whole run:
+
+```bash
+yt2blog run https://www.youtube.com/watch?v=VIDEO_ID
+```
+
+The result is a Markdown file with the SEO fields in its front matter, and the article itself:
+
+- a title written for readers, not the video's title
+- an intro, a "what you'll learn" list and the embedded video
+- sections in the order that makes sense to read, each with a link to that part of the video
+- code blocks, key takeaways and a short FAQ
+- a meta title and description, Open Graph and Twitter fields, and `VideoObject` and `FAQPage` JSON-LD
+
+## The pipeline
+
+Each run goes through the same stages:
+
+| Stage | What it does |
+| --- | --- |
+| `metadata` | Title, description, chapters and thumbnail from the YouTube Data API |
+| `transcript` | YouTube's captions, or a local Whisper transcript when there are none |
+| `generate` | One LLM call writes the whole article |
+| `code` | Swaps code blocks for the real lines from the video's GitHub repo |
+| `checks` | Quality warnings |
+| `render` | Markdown, HTML and JSON-LD |
+| `ghost` or `sanity` | Creates or updates a draft in the CMS |
+
+Every stage writes its output to a folder named after the video ID. A stage whose output already exists is skipped, so if a run fails halfway, running it again picks up at the stage that failed. You don't pay for the LLM call twice because a network request timed out later.
+
+## One LLM call, not a chain
+
+My first instinct was a chain of prompts: clean up the transcript, outline it, write each section, then write the SEO fields. I went with a single call instead. The model gets the video's metadata, its chapters, the raw transcript and a glossary of technical terms, and returns the whole article at once.
+
+A tutorial is short enough for that. In my test runs the input was 8,000 to 16,000 tokens and the article came back in 5,000 to 7,000. One call means the intro, the sections and the FAQ are written with the whole video in mind, and there's one prompt to tune instead of five.
+
+The answer comes back as JSON that has to match an `Article` schema, and pydantic validates it: title, slug, meta fields with length limits, intro, learning points, sections, takeaways, FAQ and tags. If validation fails, the tool retries up to twice and includes the error, so the model can fix exactly what was wrong. On Anthropic's API the schema is enforced directly. Other providers get it as `response_format` and in the system prompt too, because not every OpenAI-compatible API enforces `response_format`.
+
+There's no separate cleanup step for the transcript. Auto-generated captions spell "Ahsan" as "sn" or "essien", and Whisper heard "Geely EX3" as "Gilly EX2" in one of my test videos. The glossary tells the model which names and terms to expect, and it fixes them as it writes.
+
+## Captions or Whisper
+
+YouTube's captions are free and instant, but on most videos they're auto-generated, and not every video has them. For those, yt2blog can transcribe the audio locally with faster-whisper. `TRANSCRIPT_METHOD=auto` uses captions when a video has them and Whisper when it doesn't.
+
+To decide which Whisper model to trust, I added a command that compares the two:
+
+```bash
+yt2blog compare-transcripts https://www.youtube.com/watch?v=VIDEO_ID
+```
+
+It writes a report with how much the transcripts disagree, the differences that come up most often and every difference with a timestamp link. On my test videos, captions and Whisper disagreed on 4% to 12% of words. Most of that was harmless: "going to" against "gonna", "km" against "kilometers". The useful part is the list of repeated differences. Names and technical terms that show up there are what belongs in the glossary.
+
+The comparison also showed that the bigger model isn't always closer. On one 21-minute tutorial, Whisper `small` disagreed with the captions on 11.5% of words, mostly by leaving out about 400 of them. `turbo` brought that down to 5.1%.
+
+## Never let the model write the code
+
+In a programming tutorial, the code is the part readers copy. A model writing it from a transcript gets it slightly wrong, and slightly wrong code is worse than none.
+
+So when the video's description links a GitHub repo, the `code` stage lists the repo's files and makes two small LLM calls. The first picks which files are likely to hold each code block. The second reads those files with line numbers and returns, for each block, a file and a line range. The tool then cuts those lines out of the real file itself. The model chooses where the code is, but never types it.
+
+Blocks it can't match stay in the article, marked as transcribed from the video. In my test on a Gemini CLI tutorial, one of the three code blocks matched a file in the linked repo. The other two were shell commands from the video rather than lines from a file, so they were flagged for a person to check against the video.
+
+## Checks that warn instead of fail
+
+After writing, a `checks` stage looks for problems a reviewer should know about. It never stops the run:
+
+- length outside 600 to 3,000 words
+- meta title, meta description or excerpt over their limits
+- a missing intro, takeaways or sections
+- any run of 25 or more words copied straight from the transcript
+- code blocks that are still unverified
+- "watch this part" timestamps past the end of the video
+- HTML outside the allowed tags, unknown internal links and broken external links
+
+The copied-text check compares every 25-word run in the article against the transcript. The style guide asks for a written explainer, not a transcript, and this is how I know whether the model followed it. The checks print at the end of every run, so the reviewer starts with a list of things to look at, not a blank page.
+
+## Drafts only, and never overwrite a human
+
+yt2blog never publishes anything. It creates a **draft** in Ghost or Sanity, and a person reads it, edits it and presses publish.
+
+That made updates the tricky part. If I improve a prompt and run a video again, the draft should update. But if an editor has already rewritten the intro in the CMS, updating it would quietly throw their work away. So the tool remembers which version it last pushed. Ghost only accepts an edit with the post's current `updated_at`, and Sanity's patch carries an `ifRevisionID`. If the post has been published or edited since the last push, the update stops and says why, and the editor's version stays.
+
+The cover image, author and date are never touched on update either. Those are an editor's choices.
+
+## Any LLM provider
+
+I built it on Anthropic's API, but a tool like this shouldn't tie a team to one provider. `LLM_PROVIDER` switches between Anthropic, OpenAI, Gemini, Groq, DeepSeek, OpenRouter, Mistral, a local Ollama, or any other OpenAI-compatible API. Each provider's key has its own variable, so you can keep several in `.env` and switch with one line.
+
+How reliably a model returns valid JSON depends on the model, which is one more reason the validation and retries exist.
+
+## Try it
+
+You need Python 3.11 or newer, a YouTube Data API key and a key for an LLM provider.
+
+```bash
+git clone https://github.com/zunain-ali-azam/youtube-to-blog-automation.git
+cd youtube-to-blog-automation
+python3 -m venv .venv
+.venv/bin/pip install -e ".[dev]"
+.venv/bin/yt2blog
+```
+
+Add `.[whisper]` to the install if you want local transcription. The model downloads the first time you use it.
+
+## What's next
+
+yt2blog is at version 0.2.0 and still runs against a local Ghost install. Every site-specific value comes from `.env`, so moving it to the IOMechs blog is a configuration change. Next on the list:
+
+- **Payload CMS** as a third destination
+- **A publishing webhook**, so that when an editor publishes the post, the job is marked live and the article can be linked from the video's description
+- **Slack notifications** when a draft is ready to review
+
+If you publish videos and want them as articles too, or want to build something like this for your own content, the [project page](/projects/yt2blog) has the details and the code is on [GitHub](https://github.com/zunain-ali-azam/youtube-to-blog-automation).

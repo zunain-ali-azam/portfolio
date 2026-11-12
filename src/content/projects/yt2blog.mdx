@@ -1,0 +1,38 @@
+---
+title: "yt2blog"
+description: "An open-source command-line tool that turns a YouTube video into a review-ready blog article: captions or Whisper, one structured LLM call, real code from the video's repo, quality checks, and a Ghost or Sanity draft. Built for turning Code with Ahsan tutorials into posts for the IOMechs blog."
+metaTitle: "yt2blog: YouTube to blog automation with an LLM"
+metaDescription: "yt2blog turns a YouTube video into an SEO-ready blog draft in Ghost or Sanity, with any LLM provider, Whisper transcripts and real code from the repo."
+tech: ["Python", "Typer", "Rich", "Pydantic", "Anthropic API", "faster-whisper", "YouTube Data API", "Ghost Admin API", "Sanity", "pytest"]
+category: ["AI", "Developer Tools"]
+github: "https://github.com/zunain-ali-azam/youtube-to-blog-automation"
+ogImage: "/og/yt2blog.jpg"
+featured: true
+order: 3.5
+yearCompleted: 2026
+highlights:
+  - "Built a resumable pipeline (metadata, transcript, generate, code, checks, render, CMS) where every stage caches its output, so a failed run picks up where it stopped"
+  - "Writes the whole article in one LLM call, returned as JSON against a pydantic schema and retried with the validation error when it doesn't match"
+  - "Supports Anthropic, OpenAI, Gemini, Groq, DeepSeek, OpenRouter, Mistral, Ollama and any OpenAI-compatible API, switched with one setting"
+  - "Uses YouTube captions or local faster-whisper transcription, with a report that compares the two to pick a Whisper model"
+  - "Replaces code blocks with the real lines from the video's GitHub repo: the LLM picks the file and line range, the tool cuts the code"
+  - "Flags copied passages, unverified code, bad timestamps, broken links and SEO field lengths as warnings for the reviewer"
+  - "Creates Ghost and Sanity drafts and updates them in place, refusing when an editor has changed or published the post since the last push"
+  - "Guided terminal setup with Typer and Rich, and 72 pytest tests that make no network calls"
+---
+
+import PostLink from '@/components/PostLink.astro';
+
+## Overview
+
+A tutorial video already holds an article, but a transcript isn't one. yt2blog takes a YouTube URL and writes a restructured explainer: an intro, sections in reading order with links to the right moment in the video, code blocks, takeaways, a short FAQ, SEO metadata and `VideoObject` and `FAQPage` JSON-LD. The video is embedded as a companion, not the main content.
+
+I built it for IOMechs, to turn the tutorials on the Code with Ahsan channel into posts for the IOMechs blog. It's a solo project and open source.
+
+## How it works
+
+Run `yt2blog` and it asks for the keys, the video and the destination one step at a time, then shows the stages as a live checklist. The finished article is always saved as Markdown. It can also go to Ghost or Sanity as a draft, so a person reviews it and decides when to publish.
+
+The model never writes the code readers will copy. When the video links a GitHub repo, it only picks where each block lives, and the tool cuts those lines from the real file. Anything it can't match is flagged for review.
+
+I wrote up the decisions behind it in <PostLink slug="youtube-to-blog-automation-with-llm">YouTube to Blog Automation: How I Built yt2blog</PostLink>.
