@@ -7,7 +7,7 @@
 //   pnpm medium-copy                 every post
 //   pnpm medium-copy <slug> [...]    only these
 // Open the file in a browser, click "Copy article" and paste into a new Medium story.
-import { readdirSync, readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import { readdirSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseHTML } from 'linkedom';
 
@@ -103,9 +103,6 @@ for (const slug of slugs) {
   });
 
   const url = `${SITE}/blog/${slug}`;
-  // Medium's cover is 16:9 (about 1400x788), so a post can have its own in public/og/medium/;
-  // otherwise the 1200x630 link-preview image is used
-  const cover = existsSync(`public/og/medium/${slug}.jpg`) ? `og/medium/${slug}.jpg` : `og/blog/${slug}.jpg`;
   const laterSteps = [...later].map(
     ([u, d]) => `<li>On ${d}, when it's live, find each “(coming ${d})” and turn the text before it into a link to <a href="${u}">${u}</a>.</li>`
   );
@@ -124,7 +121,7 @@ code { background: #f4f4f4; padding: 0 3px; font-size: 15px; }
     <li>In Medium, start a new story. Type the title: <b>${escape(title)}</b></li>
     <li>On the next line, type the subtitle: ${escape(subtitle)}</li>
     <li>Click <b>Copy article</b>, then paste under the subtitle.</li>
-    <li>Upload each image where a blue box is, then delete the box. Put the cover (<a href="${SITE}/${cover}">${slug}.jpg</a>) at the very top, and pick it as the featured image when you publish.</li>
+    <li>Upload each image where a blue box is, then delete the box. Put the cover (<a href="${SITE}/og/blog/${slug}.jpg">${slug}.jpg</a>) at the very top, and pick it as the featured image when you publish.</li>
     <li>Story settings → Advanced settings → set the canonical link to <b>${url}</b>.</li>
     ${laterSteps.join('\n    ')}
   </ol>
