@@ -129,7 +129,6 @@ code { background: #f4f4f4; padding: 0 3px; font-size: 15px; }
 </div>
 <article id="article">
 ${body.innerHTML}
-<p><em>Originally published on <a href="${url}">zunainaliazam.vercel.app</a>.</em></p>
 </article>
 <script>
 document.getElementById('copy').onclick = () => {
