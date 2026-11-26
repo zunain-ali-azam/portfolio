@@ -30,7 +30,9 @@ const faq: FaqSection = {
       : team
         ? {
             q: `Did you build ${title} on your own?`,
-            a: `No, it was a team effort${role ? `, and I'm one of its ${role.toLowerCase()}s` : ''}. I was part of it from the first idea to launch; the highlights above are my contributions.`,
+            a: role
+              ? `No, it's built by a team, and I work on it as a ${role}. The highlights above are my contributions.`
+              : 'No, it was a team effort. I was part of it from the first idea to launch; the highlights above are my contributions.',
           }
         : {
             q: `Did you build ${title} yourself?`,
@@ -101,7 +103,9 @@ const jsonLd = [
         <p class="mt-4 max-w-[60ch] text-mut">
           {employer
             ? `Built at ${employer} as part of a team. The highlights below are my own contributions.`
-            : 'Built by a team, and I was part of it from the first idea to launch. The highlights below are my own contributions.'}
+            : role
+              ? `Built by a team, where I work as a ${role}. The highlights below are my own contributions.`
+              : 'Built by a team, and I was part of it from the first idea to launch. The highlights below are my own contributions.'}
         </p>
       )}
       {(live || github) && (

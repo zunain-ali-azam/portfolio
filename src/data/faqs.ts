@@ -30,7 +30,7 @@ export const homeFaqs: FaqSection = {
     },
     {
       q: 'Are you available for full-time roles, freelance, or both?',
-      a: `Both. I'm a software engineer at IOMechs and co-founder of ${link('/projects/calyndrs', 'Calyndrs')},
+      a: `Both. I'm a software engineer at IOMechs and a part-time full-stack engineer at ${link('/projects/calyndrs', 'Calyndrs')},
         and I'm open to remote roles anywhere, relocating for the right role, and freelance projects. Tell me
         your timeline when you get in touch and I'll be straight with you about whether I can meet it.`,
     },
@@ -94,8 +94,8 @@ export const workFaqs: FaqSection = {
   faqs: [
     {
       q: 'Which of these did you build yourself?',
-      a: `Propertease and Medical NER are solo projects. Calyndrs, which I co-founded, and InsightEdu were team
-        efforts that I was part of from the first idea to launch. Estenarh, AZM and NowCut are IOMechs products
+      a: `Propertease and Medical NER are solo projects. Calyndrs, where I work part-time, and InsightEdu are team
+        efforts. Estenarh, AZM and NowCut are IOMechs products
         built by a team. Each project page lists exactly what my part was.`,
     },
     {
@@ -123,7 +123,7 @@ export const experienceFaqs: FaqSection = {
     {
       q: 'What are you doing right now?',
       a: `I've been a software engineer at IOMechs since February 2025, working on Estenarh, AZM and NowCut, and
-        I co-founded ${link('/projects/calyndrs', 'Calyndrs')} in April 2026.`,
+        since April 2026 I've also worked part-time as a full-stack engineer on ${link('/projects/calyndrs', 'Calyndrs')}.`,
     },
     {
       q: 'Are you open to new roles?',
@@ -132,7 +132,7 @@ export const experienceFaqs: FaqSection = {
     {
       q: 'Have you led work, or mostly contributed?',
       a: `Both. I led Estenarh's Next.js 14 to 16 and Angular 14 to 17 migrations and its website's performance
-        and SEO work, and as a co-founder I've been part of Calyndrs from the first idea to launch, on product decisions as well as code. On
+        and SEO work, and on Calyndrs I set up the AWS deployment and the CI pipeline that gates every merge on tests. On
         team projects I own features end to end, like NowCut's promo codes, commission tiers and role-based access.`,
     },
     {
@@ -155,7 +155,7 @@ export const aboutFaqs: FaqSection = {
     },
     {
       q: 'What is Calyndrs?',
-      a: `An event management and discovery platform I co-founded in 2026. Organizers create, promote and analyze
+      a: `An event management and discovery platform I've worked on part-time as a full-stack engineer since April 2026. Organizers create, promote and analyze
         events, venues and event companies plug into the same workflows, and attendees find and book.
         ${link('/projects/calyndrs', 'More on Calyndrs')}.`,
     },

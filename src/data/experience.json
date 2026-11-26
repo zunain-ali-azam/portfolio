@@ -2,18 +2,17 @@
   {
     "company": "Calyndrs",
     "location": "Karachi, Pakistan",
-    "role": "Co-founder",
-    "type": "Own product",
+    "role": "Full-Stack Engineer",
+    "type": "Part-time",
     "start": "Apr 2026",
     "end": null,
     "current": true,
     "bullets": [
-      "Co-founded Calyndrs, an event management and discovery platform, and have been part of the team building it from the first idea to launch.",
-      "Worked on event creation, RSVPs, payments, marketing workflows, attendee engagement and performance analytics, with event discovery and booking for attendees.",
-      "Helped design the workflows connecting organizers, venues and event management companies.",
-      "Set up testing: Vitest unit tests for authentication and event/calendar CRUD flows, and React Testing Library and Playwright integration and end-to-end tests with MSW-mocked APIs."
+      "Built Calyndrs, an event management and discovery platform, with Next.js and NestJS for creating, promoting and analyzing events.",
+      "Deployed on AWS: S3 with CloudFront for media, Amplify for the frontend, and Lightsail on Linux with Caddy as reverse proxy for the backend.",
+      "Set up a CI pipeline that runs unit (Vitest), integration and E2E (React Testing Library, Playwright) tests with MSW on every pull request and blocks merges until all checks pass."
     ],
-    "tech": ["Next.js", "Nest.js", "MongoDB", "TypeScript", "Tailwind CSS", "Vitest", "Playwright"]
+    "tech": ["Next.js", "NestJS", "MongoDB", "TypeScript", "AWS", "Vitest", "Playwright"]
   },
   {
     "company": "IOMechs",
